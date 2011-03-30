@@ -44,3 +44,9 @@
 - serialize without extensions
 - added overloaded methods
 - deserialize without extensions
+
+1.7.6
+- xmlignore on properties handled
+- date output fix -> 0000 format
+- special case optimized dictionary<string,string> output {"prop":"value",...} insteadof [{"k":"prop","v":"value"},...]
+- override serialize nulls to output

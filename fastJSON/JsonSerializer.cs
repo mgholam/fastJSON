@@ -13,26 +13,28 @@ namespace fastJSON
         readonly bool useMinimalDataSetSchema;
         readonly bool fastguid = true;
         readonly bool useExtension = true;
+        readonly bool serializeNulls = true;
         readonly int _MAX_DEPTH = 10;
         int _current_depth = 0;
 
-        internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions)
+        internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions, bool SerializeNulls)
         {
             this.useMinimalDataSetSchema = UseMinimalDataSetSchema;
             this.fastguid = UseFastGuid;
             this.useExtension = UseExtensions;
+            this.serializeNulls = SerializeNulls;
         }
 
         internal string ConvertToJSON(object obj)
         {
-            WriteValue(obj);
+            WriteObject(obj);
 
             return _output.ToString();
         }
 
         private void WriteValue(object obj)
         {
-            if (obj == null || obj is DBNull)
+        	if (serializeNulls && (obj == null || obj is DBNull))
                 _output.Append("null");
 
             else if (obj is string || obj is char)
@@ -56,6 +58,9 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
+            else if (obj is IDictionary<string, string>)
+                WriteStringDictionary((IDictionary)obj);
+
             else if (obj is IDictionary)
                 WriteDictionary((IDictionary)obj);
 
@@ -63,7 +68,7 @@ namespace fastJSON
                 WriteDataset((DataSet)obj);
 
             else if (obj is byte[])
-                WriteBytes((byte[])obj);
+            	WriteBytes((byte[])obj);
 
             else if (obj is Array || obj is IList || obj is ICollection)
                 WriteArray((IEnumerable)obj);
@@ -99,7 +104,7 @@ namespace fastJSON
             // datetime format standard : yyyy-MM-dd HH:mm:ss
 
             _output.Append("\"");
-            _output.Append(dateTime.Year.ToString("0000",NumberFormatInfo.InvariantInfo));
+            _output.Append(dateTime.Year.ToString("0000", NumberFormatInfo.InvariantInfo));
             _output.Append("-");
             _output.Append(dateTime.Month.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append("-");
@@ -186,7 +191,7 @@ namespace fastJSON
             }
 
             List<Getters> g = JSON.Instance.GetGetters(t);
-            foreach (Getters p in g)
+            foreach (var p in g)
             {
                 if (append)
                     _output.Append(',');
@@ -194,8 +199,9 @@ namespace fastJSON
                 WritePair(p.Name, o);
                 if (o != null && useExtension)
                 {
-                    if (p.propertyType == typeof(System.Object))
-                        map.Add(p.Name, o.GetType().ToString());
+                	Type tt = o.GetType();
+                	if (tt == typeof(System.Object))
+                        map.Add(p.Name, tt.ToString());
                 }
                 append = true;
             }
@@ -280,7 +286,6 @@ namespace fastJSON
 
                 pendingSeparator = true;
             }
-
             _output.Append(']');
         }
 

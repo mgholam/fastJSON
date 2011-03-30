@@ -16,11 +16,12 @@ namespace consoletest
     
     public class NoExt
     {
+    	[System.Xml.Serialization.XmlIgnore()]
     	public string Name { get; set; }
     	public string Address { get; set;}
     	public int Age { get; set;}
     	public baseclass[] objs { get; set;}
-        public Dictionary<string, object> dic { get; set; }
+        public Dictionary<string, string> dic { get; set; }
     }
     
     class Program
@@ -47,12 +48,12 @@ namespace consoletest
             ne.Name = "hello";
             ne.Address = "here";
             ne.Age= 10;
-            ne.dic = new Dictionary<string, object>();
-            ne.dic.Add("hello", Guid.NewGuid());
+            ne.dic = new Dictionary<string, string>();
+            ne.dic.Add("hello", Guid.NewGuid().ToString());
             ne.objs = new baseclass[] { new class1("a","1",Guid.NewGuid()), new class2("b","2","desc") };
 
             //fastJSON.JSON.Instance.UseSerializerExtension = false;
-
+            //fastJSON.JSON.Instance.UseFastGuid = false;
             string str = fastJSON.JSON.Instance.ToJSON(ne, false);
             object dic = fastJSON.JSON.Instance.Parse(str);
             object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);//<NoExt>(str);
@@ -65,18 +66,18 @@ namespace consoletest
             ds = CreateDataset();
             Console.WriteLine("-dataset");
             dsser = false;
-            bin_serialize();
+            //bin_serialize();
             fastjson_serialize();
-            bin_deserialize();
-            fastjson_deserialize();
+            //bin_deserialize();
+            //fastjson_deserialize();
 
             dsser = true;
             Console.WriteLine();
             Console.WriteLine("+dataset");
-            bin_serialize();
+            //bin_serialize();
             fastjson_serialize();
-            bin_deserialize();
-            fastjson_deserialize();
+            //bin_deserialize();
+            //fastjson_deserialize();
 
             #region [ other tests]
 
