@@ -27,7 +27,7 @@ namespace fastJSON
 
         internal string ConvertToJSON(object obj)
         {
-            WriteObject(obj);
+            WriteValue(obj);
 
             return _output.ToString();
         }
