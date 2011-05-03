@@ -77,7 +77,7 @@ namespace consoletest
             //bin_serialize();
             fastjson_serialize();
             //bin_deserialize();
-            //fastjson_deserialize();
+            fastjson_deserialize();
 
             #region [ other tests]
 

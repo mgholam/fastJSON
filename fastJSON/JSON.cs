@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.IO;
@@ -20,6 +21,7 @@ namespace fastJSON
 		public bool UseOptimizedDatasetSchema = true;
 		public bool UseFastGuid = true;
 		public bool UseSerializerExtension = true;
+		public bool IndentOutput = false;
 		public bool SerializeNullValues = true;
 
 		public string ToJSON(object obj)
@@ -46,7 +48,7 @@ namespace fastJSON
 		                     bool enableOptimizedDatasetSchema,
 		                     bool serializeNullValues)
 		{
-			return new JSONSerializer(enableOptimizedDatasetSchema, enableFastGuid, enableSerializerExtensions, serializeNullValues).ConvertToJSON(obj);
+			return new JSONSerializer(enableOptimizedDatasetSchema, enableFastGuid, enableSerializerExtensions, serializeNullValues, IndentOutput).ConvertToJSON(obj);
 		}
 
 		public object Parse(string json)
@@ -105,25 +107,33 @@ namespace fastJSON
 		private delegate object CreateObject();
 		private object FastCreateInstance(Type objtype)
 		{
-			CreateObject c = null;
-			if (_constrcache.TryGetValue(objtype, out c))
+			try
 			{
-				return c();
-			}
-			else
-			{
-				DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
-				ILGenerator ilGen = dynMethod.GetILGenerator();
+				CreateObject c = null;
+				if (_constrcache.TryGetValue(objtype, out c))
+				{
+					return c();
+				}
+				else
+				{
+					DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
+					ILGenerator ilGen = dynMethod.GetILGenerator();
 
-				ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
-				ilGen.Emit(OpCodes.Ret);
-				c = (CreateObject)dynMethod.CreateDelegate(typeof(CreateObject));
-				_constrcache.Add(objtype, c);
-				return c();
+					ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
+					ilGen.Emit(OpCodes.Ret);
+					c = (CreateObject)dynMethod.CreateDelegate(typeof(CreateObject));
+					_constrcache.Add(objtype, c);
+					return c();
+				}
+			}
+			catch( Exception exc )
+			{
+				throw new Exception(string.Format( "Failed to fast create instance for type '{0}' from assemebly '{1}'", 
+                    objtype.FullName, objtype.AssemblyQualifiedName ), exc );
 			}
 		}
 
-		internal struct myPropInfo
+		private struct myPropInfo
 		{
 			public bool filled;
 			public Type pt;
@@ -136,6 +146,7 @@ namespace fastJSON
 			public bool isByteArray;
 			public bool isGuid;
 			public bool isDataSet;
+			public bool isDataTable;
 			public bool isHashtable;
 			public GenericSetter setter;
 			public bool isEnum;
@@ -152,7 +163,7 @@ namespace fastJSON
 		}
 
 		SafeDictionary<string, SafeDictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
-		internal  SafeDictionary<string, myPropInfo> Getproperties(Type type, string typename)
+		private SafeDictionary<string, myPropInfo> Getproperties(Type type, string typename)
 		{
 			SafeDictionary<string, myPropInfo> sd = null;
 			if (_propertycache.TryGetValue(typename, out sd))
@@ -183,6 +194,7 @@ namespace fastJSON
 					d.isGuid = (p.PropertyType == typeof(Guid) || p.PropertyType == typeof(Guid?));
 					d.isHashtable = p.PropertyType == typeof(Hashtable);
 					d.isDataSet = p.PropertyType == typeof(DataSet);
+					d.isDataTable = p.PropertyType == typeof( DataTable );
 					d.setter = CreateSetMethod(p);
 					d.changeType = GetChangeType(p.PropertyType);
 					d.isEnum = p.PropertyType.IsEnum;
@@ -203,7 +215,7 @@ namespace fastJSON
 				return sd;
 			}
 		}
-		internal delegate void GenericSetter(object target, object value);
+		private delegate void GenericSetter(object target, object value);
 
 		private static GenericSetter CreateSetMethod(PropertyInfo propertyInfo)
 		{
@@ -370,6 +382,9 @@ namespace fastJSON
 						else if (pi.isDataSet)
 							oset = CreateDataset((Dictionary<string, object>)v);
 						
+						else if( pi.isDataTable )
+							oset = this.CreateDataTable( ( Dictionary< string, object > )v );
+
 						else if (pi.isStringDictionary )
 							oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes);
 
@@ -558,24 +573,7 @@ namespace fastJSON
 			ds.BeginInit();
 
 			// read dataset schema here
-			var schema = reader["$schema"];
-
-			if (schema is string)
-			{
-				TextReader tr = new StringReader((string)schema);
-				ds.ReadXmlSchema(tr);
-			}
-			else
-			{
-				DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, typeof(DatasetSchema));
-				ds.DataSetName = ms.Name;
-				for (int i = 0; i < ms.Info.Count; i += 3)
-				{
-					if (ds.Tables.Contains(ms.Info[i]) == false)
-						ds.Tables.Add(ms.Info[i]);
-					ds.Tables[ms.Info[i]].Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
-				}
-			}
+            ReadSchema(reader, ds);
 
 			foreach (KeyValuePair<string, object> pair in reader)
 			{
@@ -585,35 +583,101 @@ namespace fastJSON
 				if (rows == null) continue;
 
 				DataTable dt = ds.Tables[pair.Key];
-				dt.BeginInit();
-				dt.BeginLoadData();
-				List<int> guidcols = new List<int>();
-
-				foreach (DataColumn c in dt.Columns)
-					if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
-						guidcols.Add(c.Ordinal);
-
-				foreach (ArrayList row in rows)
-				{
-					object[] v = new object[row.Count];
-					row.CopyTo(v, 0);
-					foreach (int i in guidcols)
-					{
-						string s = (string)v[i];
-						if (s != null && s.Length < 36)
-							v[i] = new Guid(Convert.FromBase64String(s));
-					}
-					dt.Rows.Add(v);
-				}
-
-				dt.EndLoadData();
-				dt.EndInit();
+                ReadDataTable(rows, dt);
 			}
 
 			ds.EndInit();
 
 			return ds;
+		}
 
+        private void ReadSchema(Dictionary<string, object> reader, DataSet ds)
+        {
+            var schema = reader["$schema"];
+
+            if (schema is string)
+            {
+                TextReader tr = new StringReader((string)schema);
+                ds.ReadXmlSchema(tr);
+            }
+            else
+            {
+                DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, typeof(DatasetSchema));
+                ds.DataSetName = ms.Name;
+                for (int i = 0; i < ms.Info.Count; i += 3)
+                {
+                    if (ds.Tables.Contains(ms.Info[i]) == false)
+                        ds.Tables.Add(ms.Info[i]);
+                    ds.Tables[ms.Info[i]].Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
+                }
+            }
+        }
+
+        private static void ReadDataTable(ArrayList rows, DataTable dt)
+        {
+            dt.BeginInit();
+            dt.BeginLoadData();
+            List<int> guidcols = new List<int>();
+
+            foreach (DataColumn c in dt.Columns)
+                if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
+                    guidcols.Add(c.Ordinal);
+
+            foreach (ArrayList row in rows)
+            {
+                object[] v = new object[row.Count];
+                row.CopyTo(v, 0);
+                foreach (int i in guidcols)
+                {
+                    string s = (string)v[i];
+                    if (s != null && s.Length < 36)
+                        v[i] = new Guid(Convert.FromBase64String(s));
+                }
+                dt.Rows.Add(v);
+            }
+
+            dt.EndLoadData();
+            dt.EndInit();
+        }
+
+		DataTable CreateDataTable( Dictionary< string, object > reader )
+		{
+			var dt = new DataTable();
+
+			// read dataset schema here
+			var schema = reader[ "$schema" ];
+
+			if( schema is string )
+			{
+				TextReader tr = new StringReader( ( string )schema );
+				dt.ReadXmlSchema( tr );
+			}
+			else
+			{
+				var ms = ( DatasetSchema )this.ParseDictionary( ( Dictionary< string, object > )schema, typeof( DatasetSchema ) );
+				dt.TableName = ms.Name;
+				for( int i = 0; i < ms.Info.Count; i += 2 )
+				{
+					dt.Columns.Add( ms.Info[ i ], Type.GetType( ms.Info[ i + 1 ] ) );
+				}
+			}
+
+			foreach( var pair in reader )
+			{
+				if( pair.Key == "$type" || pair.Key == "$schema" )
+					continue;
+
+				var rows = ( ArrayList )pair.Value;
+				if( rows == null )
+					continue;
+
+				if( !dt.TableName.Equals( pair.Key, StringComparison.InvariantCultureIgnoreCase ))
+					continue;
+
+                ReadDataTable(rows, dt);
+			}
+
+			return dt;
 		}
 	}
 }
