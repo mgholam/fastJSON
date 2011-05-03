@@ -50,3 +50,8 @@
 - date output fix -> 0000 format
 - special case optimized dictionary<string,string> output {"prop":"value",...} insteadof [{"k":"prop","v":"value"},...]
 - override serialize nulls to output
+
+1.7.7
+- datatable support 
+- indented output
+- bug fix 
