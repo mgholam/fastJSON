@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+#if SILVERLIGHT
+
+#else
 using System.Data;
+#endif
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -37,7 +41,7 @@ namespace fastJSON
 
         private void WriteValue(object obj)
         {
-        	if (serializeNulls && (obj == null || obj is DBNull))
+            if (serializeNulls && (obj == null || obj is DBNull))
                 _output.Append("null");
 
             else if (obj is string || obj is char)
@@ -66,15 +70,15 @@ namespace fastJSON
 
             else if (obj is IDictionary)
                 WriteDictionary((IDictionary)obj);
-
+#if !SILVERLIGHT
             else if (obj is DataSet)
                 WriteDataset((DataSet)obj);
 
-			else if( obj is DataTable )
-				this.WriteDataTable( ( DataTable )obj );
-
+            else if (obj is DataTable)
+                this.WriteDataTable((DataTable)obj);
+#endif
             else if (obj is byte[])
-            	WriteBytes((byte[])obj);
+                WriteBytes((byte[])obj);
 
             else if (obj is Array || obj is IList || obj is ICollection)
                 WriteArray((IEnumerable)obj);
@@ -82,9 +86,22 @@ namespace fastJSON
             else if (obj is Enum)
                 WriteEnum((Enum)obj);
 
+#if CUSTOMTYPE
+            else if (JSON.Instance.IsTypeRegistered(obj.GetType()))
+                WriteCustom(obj);
+#endif
             else
                 WriteObject(obj);
         }
+
+#if CUSTOMTYPE
+        private void WriteCustom(object obj)
+        {
+            Serialize s;
+            JSON.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
+            WriteStringFast(s(obj));
+        }
+#endif
 
         private void WriteEnum(Enum e)
         {
@@ -102,7 +119,11 @@ namespace fastJSON
 
         private void WriteBytes(byte[] bytes)
         {
+#if !SILVERLIGHT
             WriteStringFast(Convert.ToBase64String(bytes, 0, bytes.Length, Base64FormattingOptions.None));
+#else
+            WriteStringFast(Convert.ToBase64String(bytes, 0, bytes.Length));
+#endif
         }
 
         private void WriteDateTime(DateTime dateTime)
@@ -123,7 +144,7 @@ namespace fastJSON
             _output.Append(dateTime.Second.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append("\"");
         }
-
+#if !SILVERLIGHT
         private DatasetSchema GetSchema(DataSet ds)
         {
             if (ds == null) return null;
@@ -208,7 +229,7 @@ namespace fastJSON
 			// end datatable
 			this._output.Append( '}' );
 		}
-
+#endif
         private void WriteObject(object obj)
         {
             Indent();

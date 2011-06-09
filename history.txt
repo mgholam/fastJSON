@@ -55,3 +55,8 @@
 - datatable support 
 - indented output
 - bug fix 
+
+1.8
+- SilverLight4 support merged into source
+- RegisterCustomType() for custom serializer
+

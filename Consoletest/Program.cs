@@ -8,12 +8,19 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace consoletest
 {
-    public class Return
+    public class Return 
     {
         public object ReturnEntity { get; set; }
         public string Name { get; set; }
+        public TimeSpan time { get; set;  }
+        public System.Drawing.Point point { get; set; }
     }
-    
+
+    public class returns : List<Return>
+    {
+        public string name { get; set; }
+    }
+
     public class NoExt
     {
     	[System.Xml.Serialization.XmlIgnore()]
@@ -36,14 +43,26 @@ namespace consoletest
 
         public static void Main(string[] args)
         {
-            Return r = new Return();
-            r.Name = "hello";
-            r.ReturnEntity = 
-	            //	new List<int>( new int[] { 1,2,3,4,5 });
-	            // Guid.NewGuid();
-	            //	CreateDataset();
-	            new object[] { new Return() };
-            
+            //returns rr = new returns();
+            //rr.name = "jjkjkjhkj";
+            //Return r = new Return();
+            //r.Name = "hello";
+            //r.ReturnEntity = 
+            //    //	new List<int>( new int[] { 1,2,3,4,5 });
+            //    // Guid.NewGuid();
+            //    //	CreateDataset();
+            //    new object[] { new Return() };
+            //r.time = new TimeSpan(1, 2, 3);
+            //r.point = new System.Drawing.Point(10, 10);
+
+            //rr.Add(r);
+
+            //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
+            //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
+
+            //string ts = fastJSON.JSON.Instance.ToJSON(rr);
+            //object tsd = fastJSON.JSON.Instance.ToObject(ts);
+
             NoExt ne = new NoExt();
             ne.Name = "hello";
             ne.Address = "here";
@@ -97,7 +116,31 @@ namespace consoletest
             #endregion
         }
 
+        private static string pser(object data)
+        {
+            System.Drawing.Point p = (System.Drawing.Point) data;
+            return p.X.ToString() + "," + p.Y.ToString();
+        }
 
+        private static object pdes(string data)
+        {
+            string[] ss = data.Split(',');
+
+            return new System.Drawing.Point(
+                int.Parse(ss[0]),
+                int.Parse(ss[1])
+                );
+        }
+
+        private static string tsser(object data)
+        {
+            return ((TimeSpan)data).Ticks.ToString();
+        }
+
+        private static object tsdes(string data)
+        {
+            return new TimeSpan(long.Parse(data));
+        }
 
         public static colclass CreateObject()
         {
