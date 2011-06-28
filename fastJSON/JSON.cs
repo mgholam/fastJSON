@@ -208,51 +208,68 @@ namespace fastJSON
                 PropertyInfo[] pr = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
                 foreach (PropertyInfo p in pr)
                 {
-                    myPropInfo d = new myPropInfo();
-                    d.filled = true;
-                    d.pt = p.PropertyType;
-                    d.Name = p.Name;
-                    d.isDictionary = p.PropertyType.Name.Contains("Dictionary");
-                    if (d.isDictionary)
-                        d.GenericTypes = p.PropertyType.GetGenericArguments();
-                    d.isValueType = p.PropertyType.IsValueType;
-                    d.isGenericType = p.PropertyType.IsGenericType;
-                    d.isArray = p.PropertyType.IsArray;
-                    if (d.isArray)
-                        d.bt = p.PropertyType.GetElementType();
-                    if (d.isGenericType)
-                        d.bt = p.PropertyType.GetGenericArguments()[0];
-                    d.isByteArray = p.PropertyType == typeof(byte[]);
-                    d.isGuid = (p.PropertyType == typeof(Guid) || p.PropertyType == typeof(Guid?));
-#if !SILVERLIGHT
-                    d.isHashtable = p.PropertyType == typeof(Hashtable);
-                    d.isDataSet = p.PropertyType == typeof(DataSet);
-                    d.isDataTable = p.PropertyType == typeof(DataTable);
-#endif
+                    myPropInfo d = CreateMyProp(p.PropertyType, p.Name);
                     d.setter = CreateSetMethod(p);
-                    d.changeType = GetChangeType(p.PropertyType);
-                    d.isEnum = p.PropertyType.IsEnum;
-                    d.isDateTime = p.PropertyType == typeof(DateTime) || p.PropertyType == typeof(DateTime?);
-                    d.isInt = p.PropertyType == typeof(int) || p.PropertyType == typeof(int?);
-                    d.isLong = p.PropertyType == typeof(long) || p.PropertyType == typeof(long?);
-                    d.isString = p.PropertyType == typeof(string);
-                    d.isBool = p.PropertyType == typeof(bool) || p.PropertyType == typeof(bool?);
-                    d.isClass = p.PropertyType.IsClass;
                     d.getter = CreateGetMethod(p);
-
-                    if (d.isDictionary && d.GenericTypes[0] == typeof(string) && d.GenericTypes[1] == typeof(string))
-                        d.isStringDictionary = true;
-
-#if CUSTOMTYPE
-                    if (IsTypeRegistered(p.PropertyType))
-                        d.isCustomType = true;
-#endif
                     sd.Add(p.Name, d);
                 }
+                FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+                foreach (FieldInfo f in fi)
+                {
+                    myPropInfo d = CreateMyProp(f.FieldType, f.Name);
+                    d.setter = CreateSetField(type, f);
+                    d.getter = CreateGetField(type, f);
+                    sd.Add(f.Name, d);
+                }
+
                 _propertycache.Add(typename, sd);
                 return sd;
             }
         }
+
+        private myPropInfo CreateMyProp(Type t, string name)
+        {
+            myPropInfo d = new myPropInfo();
+            d.filled = true;
+            d.pt = t;
+            d.Name = name;
+            d.isDictionary = t.Name.Contains("Dictionary");
+            if (d.isDictionary)
+                d.GenericTypes = t.GetGenericArguments();
+            d.isValueType = t.IsValueType;
+            d.isGenericType = t.IsGenericType;
+            d.isArray = t.IsArray;
+            if (d.isArray)
+                d.bt = t.GetElementType();
+            if (d.isGenericType)
+                d.bt = t.GetGenericArguments()[0];
+            d.isByteArray = t == typeof(byte[]);
+            d.isGuid = (t == typeof(Guid) || t == typeof(Guid?));
+#if !SILVERLIGHT
+            d.isHashtable = t == typeof(Hashtable);
+            d.isDataSet = t == typeof(DataSet);
+            d.isDataTable = t == typeof(DataTable);
+#endif
+
+            d.changeType = GetChangeType(t);
+            d.isEnum = t.IsEnum;
+            d.isDateTime = t == typeof(DateTime) || t == typeof(DateTime?);
+            d.isInt = t == typeof(int) || t == typeof(int?);
+            d.isLong = t == typeof(long) || t == typeof(long?);
+            d.isString = t == typeof(string);
+            d.isBool = t == typeof(bool) || t == typeof(bool?);
+            d.isClass = t.IsClass;
+
+            if (d.isDictionary && d.GenericTypes[0] == typeof(string) && d.GenericTypes[1] == typeof(string))
+                d.isStringDictionary = true;
+
+#if CUSTOMTYPE
+                    if (IsTypeRegistered(t))
+                        d.isCustomType = true;
+#endif
+            return d;
+        }
+
         private delegate void GenericSetter(object target, object value);
 
         private static GenericSetter CreateSetMethod(PropertyInfo propertyInfo)
@@ -282,6 +299,38 @@ namespace fastJSON
         }
 
         internal delegate object GenericGetter(object obj);
+
+        private static GenericGetter CreateGetField(Type type, FieldInfo fieldInfo)
+        {
+            DynamicMethod dynamicGet = new DynamicMethod("_", typeof(object), new Type[] { typeof(object) }, type, true);
+            ILGenerator il = dynamicGet.GetILGenerator();
+
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, fieldInfo);
+            if (fieldInfo.FieldType.IsValueType)
+                il.Emit(OpCodes.Box, fieldInfo.FieldType);
+            il.Emit(OpCodes.Ret);
+
+            return (GenericGetter)dynamicGet.CreateDelegate(typeof(GenericGetter));
+        }
+
+        private static GenericSetter CreateSetField(Type type, FieldInfo fieldInfo)
+        {
+            Type[] arguments = new Type[2];
+            arguments[0] = arguments[1] = typeof(object);
+
+            DynamicMethod dynamicSet = new DynamicMethod("_", typeof(void), arguments, type, true);
+            ILGenerator il = dynamicSet.GetILGenerator();
+
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            if (fieldInfo.FieldType.IsValueType)
+                il.Emit(OpCodes.Unbox_Any, fieldInfo.FieldType);
+            il.Emit(OpCodes.Stfld, fieldInfo);
+            il.Emit(OpCodes.Ret);
+
+            return (GenericSetter)dynamicSet.CreateDelegate(typeof(GenericSetter));
+        }
 
         private GenericGetter CreateGetMethod(PropertyInfo propertyInfo)
         {
@@ -332,8 +381,26 @@ namespace fastJSON
                     gg.propertyType = p.PropertyType;
                     getters.Add(gg);
                 }
-
             }
+
+            FieldInfo[] fi = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
+            foreach (var f in fi)
+            {
+                object[] att = f.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
+                if (att != null && att.Length > 0)
+                    continue;
+
+                JSON.GenericGetter g = CreateGetField(type, f);
+                if (g != null)
+                {
+                    Getters gg = new Getters();
+                    gg.Name = f.Name;
+                    gg.Getter = g;
+                    gg.propertyType = f.FieldType;
+                    getters.Add(gg);
+                }
+            }
+
             _getterscache.Add(type, getters);
             return getters;
         }
@@ -565,7 +632,7 @@ namespace fastJSON
 #else
         private object CreateArray(ArrayList data, Type pt, Type bt)
         {
-            ArrayList col = new ArrayList();     
+            ArrayList col = new ArrayList();
             // create an array of objects
             foreach (object ob in data)
             {

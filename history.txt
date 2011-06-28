@@ -60,3 +60,5 @@
 - SilverLight4 support merged into source
 - RegisterCustomType() for custom serializer
 
+1.9
+- added support for public field serialize and deserialize

@@ -12,8 +12,9 @@ namespace consoletest
     {
         public object ReturnEntity { get; set; }
         public string Name { get; set; }
-        public TimeSpan time { get; set;  }
-        public System.Drawing.Point point { get; set; }
+        //public TimeSpan time { get; set;  }
+        public string Field1;
+        public int Field2;
     }
 
     public class returns : List<Return>
@@ -45,8 +46,10 @@ namespace consoletest
         {
             //returns rr = new returns();
             //rr.name = "jjkjkjhkj";
-            //Return r = new Return();
-            //r.Name = "hello";
+            Return r = new Return();
+            r.Name = "hello";
+            r.Field1 = "dsasdF";
+            r.Field2 = 2312;
             //r.ReturnEntity = 
             //    //	new List<int>( new int[] { 1,2,3,4,5 });
             //    // Guid.NewGuid();
@@ -60,8 +63,8 @@ namespace consoletest
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
 
-            //string ts = fastJSON.JSON.Instance.ToJSON(rr);
-            //object tsd = fastJSON.JSON.Instance.ToObject(ts);
+            string ts = fastJSON.JSON.Instance.ToJSON(r);
+            object tsd = fastJSON.JSON.Instance.ToObject(ts);
 
             NoExt ne = new NoExt();
             ne.Name = "hello";
