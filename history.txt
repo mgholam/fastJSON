@@ -62,3 +62,6 @@
 
 1.9
 - added support for public field serialize and deserialize
+
+1.9.1
+- fixed SerializeNullValues = false bug 

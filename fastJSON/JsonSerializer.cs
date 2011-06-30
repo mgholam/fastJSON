@@ -41,7 +41,7 @@ namespace fastJSON
 
         private void WriteValue(object obj)
         {
-            if (serializeNulls && (obj == null || obj is DBNull))
+            if (obj == null || obj is DBNull)
                 _output.Append("null");
 
             else if (obj is string || obj is char)
@@ -167,14 +167,14 @@ namespace fastJSON
             return m;
         }
 
-		private string GetXmlSchema( DataTable dt )
-		{
-			using( var writer = new StringWriter())
-			{
-				dt.WriteXmlSchema( writer );
- 				return dt.ToString();
-			}
-		}
+        private string GetXmlSchema(DataTable dt)
+        {
+            using (var writer = new StringWriter())
+            {
+                dt.WriteXmlSchema(writer);
+                return dt.ToString();
+            }
+        }
 
         private void WriteDataset(DataSet ds)
         {
@@ -215,20 +215,20 @@ namespace fastJSON
             _output.Append(']');
         }
 
-		void WriteDataTable( DataTable dt )
-		{
-			this._output.Append( '{' );
-			if( this.useExtension )
-			{
-				this.WritePair( "$schema", this.useMinimalDataSetSchema ? ( object )this.GetSchema( dt.DataSet ) : this.GetXmlSchema( dt ) );
-				this._output.Append( ',' );
-			}
+        void WriteDataTable(DataTable dt)
+        {
+            this._output.Append('{');
+            if (this.useExtension)
+            {
+                this.WritePair("$schema", this.useMinimalDataSetSchema ? (object)this.GetSchema(dt.DataSet) : this.GetXmlSchema(dt));
+                this._output.Append(',');
+            }
 
             WriteDataTableData(dt);
 
-			// end datatable
-			this._output.Append( '}' );
-		}
+            // end datatable
+            this._output.Append('}');
+        }
 #endif
         private void WriteObject(object obj)
         {
@@ -253,21 +253,26 @@ namespace fastJSON
                 if (append)
                     _output.Append(',');
                 object o = p.Getter(obj);
-                WritePair(p.Name, o);
-                if (o != null && useExtension)
+                if ((o == null || o is DBNull) && serializeNulls == false)
+                    append = false;
+                else
                 {
-                	Type tt = o.GetType();
-                	if (tt == typeof(System.Object))
-                        map.Add(p.Name, tt.ToString());
+                    WritePair(p.Name, o);
+                    if (o != null && useExtension)
+                    {
+                        Type tt = o.GetType();
+                        if (tt == typeof(System.Object))
+                            map.Add(p.Name, tt.ToString());
+                    }
+                    append = true;
                 }
-                append = true;
             }
             if (map.Count > 0 && useExtension)
             {
                 _output.Append(",\"$map\":");
                 WriteStringDictionary(map);
             }
-            _current_depth--;    
+            _current_depth--;
             Indent();
             _output.Append('}');
             _current_depth--;
@@ -284,13 +289,15 @@ namespace fastJSON
             if (_Indent)
             {
                 _output.Append("\r\n");
-                for (int i = 0; i < _current_depth-(dec?1:0); i++)
+                for (int i = 0; i < _current_depth - (dec ? 1 : 0); i++)
                     _output.Append("\t");
             }
         }
 
         private void WritePairFast(string name, string value)
         {
+            if ((value == null || value is DBNull) && serializeNulls == false)
+                return;
             Indent();
             WriteStringFast(name);
 
@@ -301,7 +308,9 @@ namespace fastJSON
 
         private void WritePair(string name, object value)
         {
-			Indent();
+            if ((value == null || value is DBNull) && serializeNulls == false)
+                return;
+            Indent();
             WriteStringFast(name);
 
             _output.Append(':');
@@ -311,7 +320,7 @@ namespace fastJSON
 
         private void WriteArray(IEnumerable array)
         {
-			Indent();
+            Indent();
             _output.Append('[');
 
             bool pendingSeperator = false;

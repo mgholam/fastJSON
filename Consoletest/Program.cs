@@ -62,7 +62,7 @@ namespace consoletest
 
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
-
+            fastJSON.JSON.Instance.SerializeNullValues = false;
             string ts = fastJSON.JSON.Instance.ToJSON(r);
             object tsd = fastJSON.JSON.Instance.ToObject(ts);
 
