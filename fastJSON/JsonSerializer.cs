@@ -296,7 +296,7 @@ namespace fastJSON
 
         private void WritePairFast(string name, string value)
         {
-            if ((value == null || value is DBNull) && serializeNulls == false)
+            if ((value == null) && serializeNulls == false)
                 return;
             Indent();
             WriteStringFast(name);

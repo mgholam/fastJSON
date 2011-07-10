@@ -65,3 +65,6 @@
 
 1.9.1
 - fixed SerializeNullValues = false bug 
+
+1.9.2
+- fixed to fullname instaed of name when searching for types in property cache (namespace1.myclass , namespace2.myclass are now different)

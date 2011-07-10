@@ -440,7 +440,7 @@ namespace fastJSON
             if (type == null)
                 throw new Exception("Cannot determine type");
 
-            string typename = type.Name;
+            string typename = type.FullName;
             object o = FastCreateInstance(type);
             SafeDictionary<string, myPropInfo> props = Getproperties(type, typename);
             foreach (string name in d.Keys)
