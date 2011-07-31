@@ -129,19 +129,22 @@ namespace fastJSON
         private void WriteDateTime(DateTime dateTime)
         {
             // datetime format standard : yyyy-MM-dd HH:mm:ss
+            DateTime dt = dateTime;
+            if (JSON.Instance.UseUTCDateTime)
+                dt = dateTime.ToUniversalTime();
 
             _output.Append("\"");
-            _output.Append(dateTime.Year.ToString("0000", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Year.ToString("0000", NumberFormatInfo.InvariantInfo));
             _output.Append("-");
-            _output.Append(dateTime.Month.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Month.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append("-");
-            _output.Append(dateTime.Day.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Day.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(" ");
-            _output.Append(dateTime.Hour.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Hour.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(":");
-            _output.Append(dateTime.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(":");
-            _output.Append(dateTime.Second.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append("\"");
         }
 #if !SILVERLIGHT

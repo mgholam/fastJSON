@@ -29,7 +29,7 @@ namespace fastJSON
         public bool UseSerializerExtension = true;
         public bool IndentOutput = false;
         public bool SerializeNullValues = true;
-
+        public bool UseUTCDateTime = false;
 
         public string ToJSON(object obj)
         {
@@ -419,6 +419,9 @@ namespace fastJSON
             else if (conversionType == typeof(Guid))
                 return CreateGuid((string)value);
 
+            else if (conversionType.IsEnum)
+                return CreateEnum(conversionType, (string)value);
+
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
         }
         #endregion
@@ -610,7 +613,11 @@ namespace fastJSON
             int hour = (int)CreateLong(value.Substring(11, 2));
             int min = (int)CreateLong(value.Substring(14, 2));
             int sec = (int)CreateLong(value.Substring(17, 2));
-            return new DateTime(year, month, day, hour, min, sec);
+
+            if (UseUTCDateTime == false)
+                return new DateTime(year, month, day, hour, min, sec);
+            else
+                return new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc).ToLocalTime();
         }
 
 #if SILVERLIGHT
@@ -783,15 +790,20 @@ namespace fastJSON
             }
         }
 
-        private static void ReadDataTable(ArrayList rows, DataTable dt)
+        private void ReadDataTable(ArrayList rows, DataTable dt)
         {
             dt.BeginInit();
             dt.BeginLoadData();
             List<int> guidcols = new List<int>();
+            List<int> datecol = new List<int>();
 
             foreach (DataColumn c in dt.Columns)
+            {
                 if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
                     guidcols.Add(c.Ordinal);
+                if (UseUTCDateTime && ( c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
+                    datecol.Add(c.Ordinal);
+            }
 
             foreach (ArrayList row in rows)
             {
@@ -802,6 +814,15 @@ namespace fastJSON
                     string s = (string)v[i];
                     if (s != null && s.Length < 36)
                         v[i] = new Guid(Convert.FromBase64String(s));
+                }
+                if (UseUTCDateTime)
+                {
+                    foreach (int i in datecol)
+                    {
+                        string s = (string)v[i];
+                        if (s != null)
+                            v[i] = CreateDateTime(s);
+                    }
                 }
                 dt.Rows.Add(v);
             }

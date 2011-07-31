@@ -68,3 +68,7 @@
 
 1.9.2
 - fixed to fullname instaed of name when searching for types in property cache (namespace1.myclass , namespace2.myclass are now different)
+
+1.9.3
+- UTC datetime handling via UseUTCDateTime = true property 
+- added support for enum as key in dictionary
