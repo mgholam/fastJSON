@@ -30,6 +30,7 @@ namespace fastJSON
         public bool IndentOutput = false;
         public bool SerializeNullValues = true;
         public bool UseUTCDateTime = false;
+        public bool ShowReadOnlyProperties = false;
 
         public string ToJSON(object obj)
         {
@@ -192,6 +193,7 @@ namespace fastJSON
             public bool isStringDictionary;
             public string Name;
             public bool isCustomType;
+            public bool CanWrite;
         }
 
         SafeDictionary<string, SafeDictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
@@ -209,6 +211,7 @@ namespace fastJSON
                 foreach (PropertyInfo p in pr)
                 {
                     myPropInfo d = CreateMyProp(p.PropertyType, p.Name);
+                    d.CanWrite = p.CanWrite;
                     d.setter = CreateSetMethod(p);
                     d.getter = CreateGetMethod(p);
                     sd.Add(p.Name, d);
@@ -231,6 +234,7 @@ namespace fastJSON
         {
             myPropInfo d = new myPropInfo();
             d.filled = true;
+            d.CanWrite = true;
             d.pt = t;
             d.Name = name;
             d.isDictionary = t.Name.Contains("Dictionary");
@@ -366,7 +370,7 @@ namespace fastJSON
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
-                if (!p.CanWrite) continue;
+                if (!p.CanWrite && ShowReadOnlyProperties == false) continue;
 
                 object[] att = p.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
                 if (att != null && att.Length > 0)
@@ -537,7 +541,8 @@ namespace fastJSON
                         else
                             oset = v;
 
-                        pi.setter(o, oset);
+                        if (pi.CanWrite)
+                            pi.setter(o, oset);
                     }
                 }
             }
@@ -605,6 +610,7 @@ namespace fastJSON
 
         private DateTime CreateDateTime(string value)
         {
+            bool utc = false;
             //                   0123456789012345678
             // datetime format = yyyy-MM-dd HH:mm:ss
             int year = (int)CreateLong(value.Substring(0, 4));
@@ -614,7 +620,10 @@ namespace fastJSON
             int min = (int)CreateLong(value.Substring(14, 2));
             int sec = (int)CreateLong(value.Substring(17, 2));
 
-            if (UseUTCDateTime == false)
+            if (value.EndsWith("Z"))
+                utc = true;
+
+            if (UseUTCDateTime == false && utc == false)
                 return new DateTime(year, month, day, hour, min, sec);
             else
                 return new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc).ToLocalTime();
@@ -801,7 +810,7 @@ namespace fastJSON
             {
                 if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
                     guidcols.Add(c.Ordinal);
-                if (UseUTCDateTime && ( c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
+                if (UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
                     datecol.Add(c.Ordinal);
             }
 

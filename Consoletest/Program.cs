@@ -15,6 +15,8 @@ namespace consoletest
         //public TimeSpan time { get; set;  }
         public string Field1;
         public int Field2;
+        public string ppp { get { return "sdfas df "; } }
+        public DateTime date { get; set; }
     }
 
     public class returns : List<Return>
@@ -50,6 +52,7 @@ namespace consoletest
             r.Name = "hello";
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
+            r.date = DateTime.Now;
             //r.ReturnEntity = 
             //    //	new List<int>( new int[] { 1,2,3,4,5 });
             //    // Guid.NewGuid();
@@ -63,6 +66,8 @@ namespace consoletest
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
             fastJSON.JSON.Instance.SerializeNullValues = false;
+            fastJSON.JSON.Instance.ShowReadOnlyProperties = true;
+            fastJSON.JSON.Instance.UseUTCDateTime = true;
             string ts = fastJSON.JSON.Instance.ToJSON(r);
             object tsd = fastJSON.JSON.Instance.ToObject(ts);
 

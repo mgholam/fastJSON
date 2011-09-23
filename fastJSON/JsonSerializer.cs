@@ -145,6 +145,10 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(":");
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
+
+            if (JSON.Instance.UseUTCDateTime)
+                _output.Append("Z");
+
             _output.Append("\"");
         }
 #if !SILVERLIGHT
