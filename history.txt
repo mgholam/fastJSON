@@ -77,3 +77,6 @@
 - ShowReadOnlyProperties added for exporting readonly properties (default = false)
 - if datetime value ends in "Z" then automatic UTC time calculated 
 - if using UTC datetime the output end in a "Z" (standards compliant) 
+
+1.9.5
+- bug fix datatable schema serialize & deserialize

@@ -152,6 +152,25 @@ namespace fastJSON
             _output.Append("\"");
         }
 #if !SILVERLIGHT
+        private DatasetSchema GetSchema(DataTable ds)
+        {
+            if (ds == null) return null;
+
+            DatasetSchema m = new DatasetSchema();
+            m.Info = new List<string>();
+            m.Name = ds.TableName;
+
+            foreach (DataColumn c in ds.Columns)
+            {
+                m.Info.Add(ds.TableName);
+                m.Info.Add(c.ColumnName);
+                m.Info.Add(c.DataType.ToString());
+            }
+            // TODO : serialize relations and constraints here
+
+            return m;
+        }
+
         private DatasetSchema GetSchema(DataSet ds)
         {
             if (ds == null) return null;
@@ -227,7 +246,7 @@ namespace fastJSON
             this._output.Append('{');
             if (this.useExtension)
             {
-                this.WritePair("$schema", this.useMinimalDataSetSchema ? (object)this.GetSchema(dt.DataSet) : this.GetXmlSchema(dt));
+                this.WritePair("$schema", this.useMinimalDataSetSchema ? (object)this.GetSchema(dt) : this.GetXmlSchema(dt));
                 this._output.Append(',');
             }
 

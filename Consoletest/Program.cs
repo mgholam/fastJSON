@@ -17,6 +17,7 @@ namespace consoletest
         public int Field2;
         public string ppp { get { return "sdfas df "; } }
         public DateTime date { get; set; }
+        public DataTable ds { get; set; }
     }
 
     public class returns : List<Return>
@@ -53,6 +54,8 @@ namespace consoletest
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
             r.date = DateTime.Now;
+            r.ds = CreateDataset().Tables[0];
+
             //r.ReturnEntity = 
             //    //	new List<int>( new int[] { 1,2,3,4,5 });
             //    // Guid.NewGuid();

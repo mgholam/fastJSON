@@ -192,7 +192,9 @@ namespace fastJSON
             public GenericGetter getter;
             public bool isStringDictionary;
             public string Name;
+#if CUSTOMTYPE
             public bool isCustomType;
+#endif
             public bool CanWrite;
         }
 
@@ -855,10 +857,10 @@ namespace fastJSON
             else
             {
                 var ms = (DatasetSchema)this.ParseDictionary((Dictionary<string, object>)schema, typeof(DatasetSchema));
-                dt.TableName = ms.Name;
-                for (int i = 0; i < ms.Info.Count; i += 2)
+                dt.TableName = ms.Info[0];
+                for (int i = 0; i < ms.Info.Count; i += 3)
                 {
-                    dt.Columns.Add(ms.Info[i], Type.GetType(ms.Info[i + 1]));
+                    dt.Columns.Add(ms.Info[i+1], Type.GetType(ms.Info[i + 2]));
                 }
             }
 

@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>consoletest</RootNamespace>
     <AssemblyName>consoletest</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <NoStdLib>False</NoStdLib>
@@ -65,6 +65,9 @@
       <Project>{207E91B1-C9F8-4913-88E1-3549EF5F3273}</Project>
       <Name>fastJSON</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
