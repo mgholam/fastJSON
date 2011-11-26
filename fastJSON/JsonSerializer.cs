@@ -21,7 +21,9 @@ namespace fastJSON
         readonly bool serializeNulls = true;
         readonly int _MAX_DEPTH = 10;
         bool _Indent = false;
+        bool _useGlobalTypes = true;
         int _current_depth = 0;
+        private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
 
         internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions, bool SerializeNulls, bool IndentOutput)
         {
@@ -30,13 +32,37 @@ namespace fastJSON
             this.useExtension = UseExtensions;
             _Indent = IndentOutput;
             this.serializeNulls = SerializeNulls;
+            if (useExtension == false)
+                _useGlobalTypes = false;
         }
 
         internal string ConvertToJSON(object obj)
         {
             WriteValue(obj);
 
-            return _output.ToString();
+            string str = "";
+            if (_useGlobalTypes)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("{\"$types\":{");
+                bool pendingSeparator = false;
+                foreach (var kv in _globalTypes)
+                {
+                    if (pendingSeparator) sb.Append(',');
+                    pendingSeparator = true;
+                    sb.Append("\"");
+                    sb.Append(kv.Key);
+                    sb.Append("\":\"");
+                    sb.Append(kv.Value);
+                    sb.Append("\"");
+                }
+                sb.Append("},");
+                str = sb.ToString() + _output.ToString();
+            }
+            else
+                str = _output.ToString();
+
+            return str;
         }
 
         private void WriteValue(object obj)
@@ -65,7 +91,7 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
-            else if (obj is IDictionary<string, string>)
+            else if (obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
                 WriteStringDictionary((IDictionary)obj);
 
             else if (obj is IDictionary)
@@ -210,8 +236,11 @@ namespace fastJSON
                 WritePair("$schema", useMinimalDataSetSchema ? (object)GetSchema(ds) : ds.GetXmlSchema());
                 _output.Append(',');
             }
+            bool tablesep = false;
             foreach (DataTable table in ds.Tables)
             {
+                if (tablesep) _output.Append(",");
+                tablesep = true;
                 WriteDataTableData(table);
             }
             // end dataset
@@ -224,8 +253,11 @@ namespace fastJSON
             _output.Append(table.TableName);
             _output.Append("\":[");
             DataColumnCollection cols = table.Columns;
+            bool rowseparator = false;
             foreach (DataRow row in table.Rows)
             {
+                if (rowseparator) _output.Append(",");
+                rowseparator = true;
                 _output.Append('[');
 
                 bool pendingSeperator = false;
@@ -256,20 +288,41 @@ namespace fastJSON
             this._output.Append('}');
         }
 #endif
+        bool _firstWritten = false;
         private void WriteObject(object obj)
         {
             Indent();
+            if (_useGlobalTypes == false)
+                _output.Append('{');
+            else
+            {
+                if (_firstWritten)
+                    _output.Append("{");
+            }
+            _firstWritten = true;
             _current_depth++;
             if (_current_depth > _MAX_DEPTH)
                 throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
 
-            _output.Append('{');
+
             Dictionary<string, string> map = new Dictionary<string, string>();
             Type t = obj.GetType();
             bool append = false;
             if (useExtension)
             {
-                WritePairFast("$type", JSON.Instance.GetTypeAssemblyName(t));
+                if (_useGlobalTypes == false)
+                    WritePairFast("$type", JSON.Instance.GetTypeAssemblyName(t));
+                else
+                {
+                    int dt = 0;
+                    string ct = JSON.Instance.GetTypeAssemblyName(t);
+                    if (_globalTypes.TryGetValue(ct, out dt) == false)
+                    {
+                        dt = _globalTypes.Count + 1;
+                        _globalTypes.Add(ct, dt);
+                    }
+                    WritePairFast("$type", dt.ToString());
+                }
                 append = true;
             }
 
@@ -353,6 +406,7 @@ namespace fastJSON
 
             foreach (object obj in array)
             {
+                Indent();
                 if (pendingSeperator) _output.Append(',');
 
                 WriteValue(obj);
@@ -374,7 +428,7 @@ namespace fastJSON
             {
                 if (pendingSeparator) _output.Append(',');
 
-                WritePairFast((string)entry.Key, (string)entry.Value);
+                WritePair((string)entry.Key, entry.Value);
 
                 pendingSeparator = true;
             }

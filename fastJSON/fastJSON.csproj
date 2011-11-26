@@ -47,7 +47,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>CUSTOMTYPE</DefineConstants>
+    <DefineConstants>CUSTOMTYPE-</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>

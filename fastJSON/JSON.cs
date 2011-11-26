@@ -31,6 +31,7 @@ namespace fastJSON
         public bool SerializeNullValues = true;
         public bool UseUTCDateTime = false;
         public bool ShowReadOnlyProperties = false;
+        public bool UsingGlobalTypes = true;
 
         public string ToJSON(object obj)
         {
@@ -78,8 +79,7 @@ namespace fastJSON
         {
             Dictionary<string, object> ht = new JsonParser(json).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
-
-            return ParseDictionary(ht, type);
+            return ParseDictionary(ht, null, type);
         }
 
 #if CUSTOMTYPE
@@ -266,12 +266,12 @@ namespace fastJSON
             d.isBool = t == typeof(bool) || t == typeof(bool?);
             d.isClass = t.IsClass;
 
-            if (d.isDictionary && d.GenericTypes[0] == typeof(string) && d.GenericTypes[1] == typeof(string))
+            if (d.isDictionary && d.GenericTypes.Length>0 && d.GenericTypes[0] == typeof(string))
                 d.isStringDictionary = true;
 
 #if CUSTOMTYPE
-                    if (IsTypeRegistered(t))
-                        d.isCustomType = true;
+            if (IsTypeRegistered(t))
+                d.isCustomType = true;
 #endif
             return d;
         }
@@ -433,18 +433,36 @@ namespace fastJSON
         #endregion
 
 
-        private object ParseDictionary(Dictionary<string, object> d, Type type)
+        private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type)
         {
             object tn = "";
+            if (d.TryGetValue("$types", out tn))
+            {
+                UsingGlobalTypes = true;
+                globaltypes = new Dictionary<string, object>();
+                foreach (var kv in (Dictionary<string, object>)tn)
+                {
+                    globaltypes.Add((string)kv.Value, kv.Key);
+                }
+            }
+
             bool found = d.TryGetValue("$type", out tn);
 #if !SILVERLIGHT
             if (found == false && type == typeof(System.Object))
             {
-                return CreateDataset(d);
+                return CreateDataset(d, globaltypes);
             }
 #endif
             if (found)
+            {
+                if (UsingGlobalTypes)
+                {
+                    object tname = "";
+                    if (globaltypes.TryGetValue((string)tn, out tname))
+                        tn = tname;
+                }
                 type = GetTypeFromCache((string)tn);
+            }
 
             if (type == null)
                 throw new Exception("Cannot determine type");
@@ -489,7 +507,7 @@ namespace fastJSON
 #if SILVERLIGHT
                             oset = CreateGenericList((List<object>)v, pi.pt, pi.bt);
 #else
-                            oset = CreateGenericList((ArrayList)v, pi.pt, pi.bt);
+                            oset = CreateGenericList((ArrayList)v, pi.pt, pi.bt, globaltypes);
 #endif
                         else if (pi.isByteArray)
                             oset = Convert.FromBase64String((string)v);
@@ -498,24 +516,24 @@ namespace fastJSON
 #if SILVERLIGHT
                             oset = CreateArray((List<object>)v, pi.pt, pi.bt);
 #else
-                            oset = CreateArray((ArrayList)v, pi.pt, pi.bt);
+                            oset = CreateArray((ArrayList)v, pi.pt, pi.bt, globaltypes);
 #endif
                         else if (pi.isGuid)
                             oset = CreateGuid((string)v);
 #if !SILVERLIGHT
                         else if (pi.isDataSet)
-                            oset = CreateDataset((Dictionary<string, object>)v);
+                            oset = CreateDataset((Dictionary<string, object>)v, globaltypes);
 
                         else if (pi.isDataTable)
-                            oset = this.CreateDataTable((Dictionary<string, object>)v);
+                            oset = this.CreateDataTable((Dictionary<string, object>)v, globaltypes);
 #endif
 
                         else if (pi.isStringDictionary)
-                            oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes);
+                            oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes);
 
 #if !SILVERLIGHT
                         else if (pi.isDictionary || pi.isHashtable)
-                            oset = CreateDictionary((ArrayList)v, pi.pt, pi.GenericTypes);
+                            oset = CreateDictionary((ArrayList)v, pi.pt, pi.GenericTypes, globaltypes);
 #else 
                         else if (pi.isDictionary)
                             oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes);
@@ -528,7 +546,7 @@ namespace fastJSON
                             oset = CreateDateTime((string)v);
 
                         else if (pi.isClass && v is Dictionary<string, object>)
-                            oset = ParseDictionary((Dictionary<string, object>)v, pi.pt);
+                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt);
 
                         else if (pi.isValueType)
                             oset = ChangeType(v, pi.changeType);
@@ -538,7 +556,7 @@ namespace fastJSON
                             oset = CreateArray((List<object>)v, pi.pt, typeof(object));
 #else
                         else if (v is ArrayList)
-                            oset = CreateArray((ArrayList)v, pi.pt, typeof(object));
+                            oset = CreateArray((ArrayList)v, pi.pt, typeof(object), globaltypes);
 #endif
                         else
                             oset = v;
@@ -648,14 +666,14 @@ namespace fastJSON
             return col;
         }
 #else
-        private object CreateArray(ArrayList data, Type pt, Type bt)
+        private object CreateArray(ArrayList data, Type pt, Type bt, Dictionary<string, object> globalTypes)
         {
             ArrayList col = new ArrayList();
             // create an array of objects
             foreach (object ob in data)
             {
                 if (ob is IDictionary)
-                    col.Add(ParseDictionary((Dictionary<string, object>)ob, bt));
+                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt));
                 else
                     col.Add(ChangeType(ob, bt));
             }
@@ -667,7 +685,7 @@ namespace fastJSON
 #if SILVERLIGHT
         private object CreateGenericList(List<object> data, Type pt, Type bt)
 #else
-        private object CreateGenericList(ArrayList data, Type pt, Type bt)
+        private object CreateGenericList(ArrayList data, Type pt, Type bt, Dictionary<string, object> globalTypes)
 #endif
         {
             IList col = (IList)FastCreateInstance(pt);
@@ -675,7 +693,7 @@ namespace fastJSON
             foreach (object ob in data)
             {
                 if (ob is IDictionary)
-                    col.Add(ParseDictionary((Dictionary<string, object>)ob, bt));
+                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt));
 #if SILVERLIGHT
                 else if (ob is List<object>)
                     col.Add(((List<object>)ob).ToArray());
@@ -689,7 +707,7 @@ namespace fastJSON
             return col;
         }
 
-        private object CreateStringKeyDictionary(Dictionary<string, object> reader, Type pt, Type[] types)
+        private object CreateStringKeyDictionary(Dictionary<string, object> reader, Type pt, Type[] types, Dictionary<string,object> globalTypes)
         {
             var col = (IDictionary)FastCreateInstance(pt);
             Type t1 = null;
@@ -703,7 +721,11 @@ namespace fastJSON
             foreach (KeyValuePair<string, object> values in reader)
             {
                 var key = values.Key;//ChangeType(values.Key, t1);
-                var val = ChangeType(values.Value, t2);
+                object val = null;
+                if (values.Value is Dictionary<string, object>)
+                    val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2);
+                else
+                    val = ChangeType(values.Value, t2);
                 col.Add(key, val);
             }
 
@@ -713,7 +735,7 @@ namespace fastJSON
 #if SILVERLIGHT
         private object CreateDictionary(List<object> reader, Type pt, Type[] types)
 #else
-        private object CreateDictionary(ArrayList reader, Type pt, Type[] types)
+        private object CreateDictionary(ArrayList reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
 #endif
         {
             IDictionary col = (IDictionary)FastCreateInstance(pt);
@@ -731,12 +753,12 @@ namespace fastJSON
                 object val = values["v"];
 
                 if (key is Dictionary<string, object>)
-                    key = ParseDictionary((Dictionary<string, object>)key, t1);
+                    key = ParseDictionary((Dictionary<string, object>)key, globalTypes, t1);
                 else
                     key = ChangeType(key, t1);
 
                 if (val is Dictionary<string, object>)
-                    val = ParseDictionary((Dictionary<string, object>)val, t2);
+                    val = ParseDictionary((Dictionary<string, object>)val, globalTypes, t2);
                 else
                     val = ChangeType(val, t2);
 
@@ -754,14 +776,14 @@ namespace fastJSON
             return conversionType;
         }
 #if !SILVERLIGHT
-        private DataSet CreateDataset(Dictionary<string, object> reader)
+        private DataSet CreateDataset(Dictionary<string, object> reader, Dictionary<string, object> globalTypes)
         {
             DataSet ds = new DataSet();
             ds.EnforceConstraints = false;
             ds.BeginInit();
 
             // read dataset schema here
-            ReadSchema(reader, ds);
+            ReadSchema(reader, ds, globalTypes);
 
             foreach (KeyValuePair<string, object> pair in reader)
             {
@@ -779,7 +801,7 @@ namespace fastJSON
             return ds;
         }
 
-        private void ReadSchema(Dictionary<string, object> reader, DataSet ds)
+        private void ReadSchema(Dictionary<string, object> reader, DataSet ds, Dictionary<string, object> globalTypes)
         {
             var schema = reader["$schema"];
 
@@ -790,7 +812,7 @@ namespace fastJSON
             }
             else
             {
-                DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, typeof(DatasetSchema));
+                DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema));
                 ds.DataSetName = ms.Name;
                 for (int i = 0; i < ms.Info.Count; i += 3)
                 {
@@ -842,7 +864,7 @@ namespace fastJSON
             dt.EndInit();
         }
 
-        DataTable CreateDataTable(Dictionary<string, object> reader)
+        DataTable CreateDataTable(Dictionary<string, object> reader, Dictionary<string, object> globalTypes)
         {
             var dt = new DataTable();
 
@@ -856,11 +878,11 @@ namespace fastJSON
             }
             else
             {
-                var ms = (DatasetSchema)this.ParseDictionary((Dictionary<string, object>)schema, typeof(DatasetSchema));
+                var ms = (DatasetSchema)this.ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema));
                 dt.TableName = ms.Info[0];
                 for (int i = 0; i < ms.Info.Count; i += 3)
                 {
-                    dt.Columns.Add(ms.Info[i+1], Type.GetType(ms.Info[i + 2]));
+                    dt.Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
                 }
             }
 

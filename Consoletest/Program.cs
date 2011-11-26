@@ -32,7 +32,7 @@ namespace consoletest
     	public string Address { get; set;}
     	public int Age { get; set;}
     	public baseclass[] objs { get; set;}
-        public Dictionary<string, string> dic { get; set; }
+        public Dictionary<string, class1> dic { get; set; }
     }
     
     class Program
@@ -68,9 +68,11 @@ namespace consoletest
 
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
             //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
-            fastJSON.JSON.Instance.SerializeNullValues = false;
+            fastJSON.JSON.Instance.SerializeNullValues = true;
             fastJSON.JSON.Instance.ShowReadOnlyProperties = true;
             fastJSON.JSON.Instance.UseUTCDateTime = true;
+            fastJSON.JSON.Instance.IndentOutput = false;
+            fastJSON.JSON.Instance.UsingGlobalTypes = false;
             string ts = fastJSON.JSON.Instance.ToJSON(r);
             object tsd = fastJSON.JSON.Instance.ToObject(ts);
 
@@ -78,8 +80,8 @@ namespace consoletest
             ne.Name = "hello";
             ne.Address = "here";
             ne.Age= 10;
-            ne.dic = new Dictionary<string, string>();
-            ne.dic.Add("hello", Guid.NewGuid().ToString());
+            ne.dic = new Dictionary<string, class1>();
+            ne.dic.Add("hello", new class1("asda","asdas",Guid.NewGuid()));
             ne.objs = new baseclass[] { new class1("a","1",Guid.NewGuid()), new class2("b","2","desc") };
 
             //fastJSON.JSON.Instance.UseSerializerExtension = false;

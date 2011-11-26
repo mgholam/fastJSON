@@ -80,3 +80,9 @@
 
 1.9.5
 - bug fix datatable schema serialize & deserialize
+
+1.9.6
+- added a $types extension for global type definitions which reduce the size of the output json
+- added UsingGlobalTypes config for controling the above (default = true)
+- bug fix datatable commas between arrays and table definitions (less lint complaining)
+- string key dictionaries are serialized optimally now (not K V format)
