@@ -505,7 +505,7 @@ namespace fastJSON
 
                         else if (pi.isGenericType && pi.isValueType == false && pi.isDictionary == false)
 #if SILVERLIGHT
-                            oset = CreateGenericList((List<object>)v, pi.pt, pi.bt);
+                            oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 #else
                             oset = CreateGenericList((ArrayList)v, pi.pt, pi.bt, globaltypes);
 #endif
@@ -514,7 +514,7 @@ namespace fastJSON
 
                         else if (pi.isArray && pi.isValueType == false)
 #if SILVERLIGHT
-                            oset = CreateArray((List<object>)v, pi.pt, pi.bt);
+                            oset = CreateArray((List<object>)v, pi.pt, pi.bt, globaltypes);
 #else
                             oset = CreateArray((ArrayList)v, pi.pt, pi.bt, globaltypes);
 #endif
@@ -536,7 +536,7 @@ namespace fastJSON
                             oset = CreateDictionary((ArrayList)v, pi.pt, pi.GenericTypes, globaltypes);
 #else 
                         else if (pi.isDictionary)
-                            oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes);
+                            oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes);
 #endif
 
                         else if (pi.isEnum)
@@ -553,7 +553,7 @@ namespace fastJSON
 
 #if SILVERLIGHT
                         else if (v is List<object>)
-                            oset = CreateArray((List<object>)v, pi.pt, typeof(object));
+                            oset = CreateArray((List<object>)v, pi.pt, typeof(object), globaltypes);
 #else
                         else if (v is ArrayList)
                             oset = CreateArray((ArrayList)v, pi.pt, typeof(object), globaltypes);
@@ -650,7 +650,7 @@ namespace fastJSON
         }
 
 #if SILVERLIGHT
-        private object CreateArray(List<object> data, Type pt, Type bt)
+        private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
         {
             Array col = Array.CreateInstance(bt, data.Count);
             // create an array of objects
@@ -658,7 +658,7 @@ namespace fastJSON
             {
                 object ob = data[i];
                 if (ob is IDictionary)
-                    col.SetValue(ParseDictionary((Dictionary<string, object>)ob, bt), i);
+                    col.SetValue(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt), i);
                 else
                     col.SetValue(ChangeType(ob, bt), i);
             }
@@ -683,7 +683,7 @@ namespace fastJSON
 
 
 #if SILVERLIGHT
-        private object CreateGenericList(List<object> data, Type pt, Type bt)
+        private object CreateGenericList(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
 #else
         private object CreateGenericList(ArrayList data, Type pt, Type bt, Dictionary<string, object> globalTypes)
 #endif
@@ -733,7 +733,7 @@ namespace fastJSON
         }
 
 #if SILVERLIGHT
-        private object CreateDictionary(List<object> reader, Type pt, Type[] types)
+        private object CreateDictionary(List<object> reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
 #else
         private object CreateDictionary(ArrayList reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
 #endif
