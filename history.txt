@@ -86,3 +86,12 @@
 - added UsingGlobalTypes config for controling the above (default = true)
 - bug fix datatable commas between arrays and table definitions (less lint complaining)
 - string key dictionaries are serialized optimally now (not K V format)
+
+1.9.6.1
+- bug fix SilverLight version to support GlobalTypes 
+
+1.9.7 
+- removed indent logic from serializer
+- added Beautify(json) method to JSON
+- added locks on SafeDictionary
+- added FillObject(obj,json) for filling an existing object

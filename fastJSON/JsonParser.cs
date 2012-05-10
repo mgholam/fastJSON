@@ -35,10 +35,13 @@ namespace fastJSON
         readonly StringBuilder s = new StringBuilder();
         Token lookAheadToken = Token.None;
         int index;
+        bool _ignorecase = false;
 
-        internal JsonParser(string json)
+
+        internal JsonParser(string json, bool ignorecase)
         {
             this.json = json.ToCharArray();
+            _ignorecase = ignorecase;
         }
 
         public object Decode()
@@ -70,6 +73,8 @@ namespace fastJSON
 
                             // name
                             string name = ParseString();
+                            if (_ignorecase)
+                                name = name.ToLower();
 
                             // :
                             if (NextToken() != Token.Colon)

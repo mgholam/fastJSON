@@ -20,17 +20,15 @@ namespace fastJSON
         readonly bool useExtension = true;
         readonly bool serializeNulls = true;
         readonly int _MAX_DEPTH = 10;
-        bool _Indent = false;
         bool _useGlobalTypes = true;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
 
-        internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions, bool SerializeNulls, bool IndentOutput)
+        internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions, bool SerializeNulls)
         {
             this.useMinimalDataSetSchema = UseMinimalDataSetSchema;
             this.fastguid = UseFastGuid;
             this.useExtension = UseExtensions;
-            _Indent = IndentOutput;
             this.serializeNulls = SerializeNulls;
             if (useExtension == false)
                 _useGlobalTypes = false;
@@ -291,7 +289,6 @@ namespace fastJSON
         bool _firstWritten = false;
         private void WriteObject(object obj)
         {
-            Indent();
             if (_useGlobalTypes == false)
                 _output.Append('{');
             else
@@ -352,32 +349,15 @@ namespace fastJSON
                 WriteStringDictionary(map);
             }
             _current_depth--;
-            Indent();
             _output.Append('}');
             _current_depth--;
 
-        }
-
-        private void Indent()
-        {
-            Indent(false);
-        }
-
-        private void Indent(bool dec)
-        {
-            if (_Indent)
-            {
-                _output.Append("\r\n");
-                for (int i = 0; i < _current_depth - (dec ? 1 : 0); i++)
-                    _output.Append("\t");
-            }
         }
 
         private void WritePairFast(string name, string value)
         {
             if ((value == null) && serializeNulls == false)
                 return;
-            Indent();
             WriteStringFast(name);
 
             _output.Append(':');
@@ -389,7 +369,6 @@ namespace fastJSON
         {
             if ((value == null || value is DBNull) && serializeNulls == false)
                 return;
-            Indent();
             WriteStringFast(name);
 
             _output.Append(':');
@@ -399,27 +378,23 @@ namespace fastJSON
 
         private void WriteArray(IEnumerable array)
         {
-            Indent();
             _output.Append('[');
 
             bool pendingSeperator = false;
 
             foreach (object obj in array)
             {
-                Indent();
                 if (pendingSeperator) _output.Append(',');
 
                 WriteValue(obj);
 
                 pendingSeperator = true;
             }
-            Indent();
             _output.Append(']');
         }
 
         private void WriteStringDictionary(IDictionary dic)
         {
-            Indent();
             _output.Append('{');
 
             bool pendingSeparator = false;
@@ -432,13 +407,11 @@ namespace fastJSON
 
                 pendingSeparator = true;
             }
-            Indent();
             _output.Append('}');
         }
 
         private void WriteDictionary(IDictionary dic)
         {
-            Indent();
             _output.Append('[');
 
             bool pendingSeparator = false;
@@ -446,23 +419,19 @@ namespace fastJSON
             foreach (DictionaryEntry entry in dic)
             {
                 if (pendingSeparator) _output.Append(',');
-                Indent();
                 _output.Append('{');
                 WritePair("k", entry.Key);
                 _output.Append(",");
                 WritePair("v", entry.Value);
-                Indent();
                 _output.Append('}');
 
                 pendingSeparator = true;
             }
-            Indent();
             _output.Append(']');
         }
 
         private void WriteStringFast(string s)
         {
-            //Indent();
             _output.Append('\"');
             _output.Append(s);
             _output.Append('\"');
@@ -470,7 +439,6 @@ namespace fastJSON
 
         private void WriteString(string s)
         {
-            //Indent();
             _output.Append('\"');
 
             int runIndex = -1;

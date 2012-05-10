@@ -27,11 +27,13 @@ namespace fastJSON
         public bool UseOptimizedDatasetSchema = true;
         public bool UseFastGuid = true;
         public bool UseSerializerExtension = true;
-        public bool IndentOutput = false;
         public bool SerializeNullValues = true;
         public bool UseUTCDateTime = false;
         public bool ShowReadOnlyProperties = false;
         public bool UsingGlobalTypes = true;
+        public bool IgnoreCaseOnDeserialize = false;
+
+        private Formatter _formatter = new Formatter();
 
         public string ToJSON(object obj)
         {
@@ -57,12 +59,12 @@ namespace fastJSON
                              bool enableOptimizedDatasetSchema,
                              bool serializeNullValues)
         {
-            return new JSONSerializer(enableOptimizedDatasetSchema, enableFastGuid, enableSerializerExtensions, serializeNullValues, IndentOutput).ConvertToJSON(obj);
+            return new JSONSerializer(enableOptimizedDatasetSchema, enableFastGuid, enableSerializerExtensions, serializeNullValues).ConvertToJSON(obj);
         }
 
         public object Parse(string json)
         {
-            return new JsonParser(json).Decode();
+            return new JsonParser(json, IgnoreCaseOnDeserialize).Decode();
         }
 
         public T ToObject<T>(string json)
@@ -77,9 +79,21 @@ namespace fastJSON
 
         public object ToObject(string json, Type type)
         {
-            Dictionary<string, object> ht = new JsonParser(json).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json, IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
-            return ParseDictionary(ht, null, type);
+            return ParseDictionary(ht, null, type, null);
+        }
+
+        public string Beautify(string input)
+        {
+            return _formatter.PrettyPrint(input);
+        }
+
+        public object FillObject(object input, string json)
+        {
+            Dictionary<string, object> ht = new JsonParser(json, IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
+            if (ht == null) return null;
+            return ParseDictionary(ht, null, input.GetType(), input);
         }
 
 #if CUSTOMTYPE
@@ -266,7 +280,7 @@ namespace fastJSON
             d.isBool = t == typeof(bool) || t == typeof(bool?);
             d.isClass = t.IsClass;
 
-            if (d.isDictionary && d.GenericTypes.Length>0 && d.GenericTypes[0] == typeof(string))
+            if (d.isDictionary && d.GenericTypes.Length > 0 && d.GenericTypes[0] == typeof(string))
                 d.isStringDictionary = true;
 
 #if CUSTOMTYPE
@@ -433,7 +447,7 @@ namespace fastJSON
         #endregion
 
 
-        private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type)
+        private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type, object input)
         {
             object tn = "";
             if (d.TryGetValue("$types", out tn))
@@ -468,10 +482,14 @@ namespace fastJSON
                 throw new Exception("Cannot determine type");
 
             string typename = type.FullName;
-            object o = FastCreateInstance(type);
+            object o = input;
+            if (o == null)
+                o = FastCreateInstance(type);
             SafeDictionary<string, myPropInfo> props = Getproperties(type, typename);
-            foreach (string name in d.Keys)
+            foreach (string n in d.Keys)
             {
+                string name = n;
+                if (IgnoreCaseOnDeserialize) name = name.ToLower();
                 if (name == "$map")
                 {
                     ProcessMap(o, props, (Dictionary<string, object>)d[name]);
@@ -546,7 +564,7 @@ namespace fastJSON
                             oset = CreateDateTime((string)v);
 
                         else if (pi.isClass && v is Dictionary<string, object>)
-                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt);
+                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, null);
 
                         else if (pi.isValueType)
                             oset = ChangeType(v, pi.changeType);
@@ -673,7 +691,7 @@ namespace fastJSON
             foreach (object ob in data)
             {
                 if (ob is IDictionary)
-                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt));
+                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
                 else
                     col.Add(ChangeType(ob, bt));
             }
@@ -693,7 +711,7 @@ namespace fastJSON
             foreach (object ob in data)
             {
                 if (ob is IDictionary)
-                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt));
+                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
 #if SILVERLIGHT
                 else if (ob is List<object>)
                     col.Add(((List<object>)ob).ToArray());
@@ -707,7 +725,7 @@ namespace fastJSON
             return col;
         }
 
-        private object CreateStringKeyDictionary(Dictionary<string, object> reader, Type pt, Type[] types, Dictionary<string,object> globalTypes)
+        private object CreateStringKeyDictionary(Dictionary<string, object> reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
         {
             var col = (IDictionary)FastCreateInstance(pt);
             Type t1 = null;
@@ -723,7 +741,7 @@ namespace fastJSON
                 var key = values.Key;//ChangeType(values.Key, t1);
                 object val = null;
                 if (values.Value is Dictionary<string, object>)
-                    val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2);
+                    val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2, null);
                 else
                     val = ChangeType(values.Value, t2);
                 col.Add(key, val);
@@ -753,12 +771,12 @@ namespace fastJSON
                 object val = values["v"];
 
                 if (key is Dictionary<string, object>)
-                    key = ParseDictionary((Dictionary<string, object>)key, globalTypes, t1);
+                    key = ParseDictionary((Dictionary<string, object>)key, globalTypes, t1, null);
                 else
                     key = ChangeType(key, t1);
 
                 if (val is Dictionary<string, object>)
-                    val = ParseDictionary((Dictionary<string, object>)val, globalTypes, t2);
+                    val = ParseDictionary((Dictionary<string, object>)val, globalTypes, t2, null);
                 else
                     val = ChangeType(val, t2);
 
@@ -812,7 +830,7 @@ namespace fastJSON
             }
             else
             {
-                DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema));
+                DatasetSchema ms = (DatasetSchema)ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema), null);
                 ds.DataSetName = ms.Name;
                 for (int i = 0; i < ms.Info.Count; i += 3)
                 {
@@ -878,7 +896,7 @@ namespace fastJSON
             }
             else
             {
-                var ms = (DatasetSchema)this.ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema));
+                var ms = (DatasetSchema)this.ParseDictionary((Dictionary<string, object>)schema, globalTypes, typeof(DatasetSchema), null);
                 dt.TableName = ms.Info[0];
                 for (int i = 0; i < ms.Info.Count; i += 3)
                 {

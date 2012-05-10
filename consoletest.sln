@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "consoletest", "consoletest\consoletest.csproj", "{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON", "fastJSON\fastJSON.csproj", "{207E91B1-C9F8-4913-88E1-3549EF5F3273}"
@@ -16,9 +16,11 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Debug|x86.ActiveCfg = Debug|x86
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Debug|x86.Build.0 = Debug|x86
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Release|x86.ActiveCfg = Release|x86
 		{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}.Release|x86.Build.0 = Release|x86
 		{207E91B1-C9F8-4913-88E1-3549EF5F3273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

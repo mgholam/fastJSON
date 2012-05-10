@@ -71,10 +71,10 @@ namespace consoletest
             fastJSON.JSON.Instance.SerializeNullValues = true;
             fastJSON.JSON.Instance.ShowReadOnlyProperties = true;
             fastJSON.JSON.Instance.UseUTCDateTime = true;
-            fastJSON.JSON.Instance.IndentOutput = false;
             fastJSON.JSON.Instance.UsingGlobalTypes = false;
-            string ts = fastJSON.JSON.Instance.ToJSON(r);
-            object tsd = fastJSON.JSON.Instance.ToObject(ts);
+            //fastJSON.JSON.Instance.IgnoreCaseOnDeserialize = true;
+            //string ts = fastJSON.JSON.Instance.ToJSON(r);
+            //object tsd = fastJSON.JSON.Instance.ToObject(ts);
 
             NoExt ne = new NoExt();
             ne.Name = "hello";
@@ -87,8 +87,12 @@ namespace consoletest
             //fastJSON.JSON.Instance.UseSerializerExtension = false;
             //fastJSON.JSON.Instance.UseFastGuid = false;
             string str = fastJSON.JSON.Instance.ToJSON(ne, false);
+            string strr = fastJSON.JSON.Instance.Beautify(str);
             object dic = fastJSON.JSON.Instance.Parse(str);
             object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);//<NoExt>(str);
+
+            NoExt nee = new NoExt();
+            fastJSON.JSON.Instance.FillObject(nee, strr);
 
             Console.WriteLine(".net version = " + Environment.Version);
             Console.WriteLine("press key : (E)xotic ");
@@ -101,7 +105,7 @@ namespace consoletest
             //bin_serialize();
             fastjson_serialize();
             //bin_deserialize();
-            //fastjson_deserialize();
+            fastjson_deserialize();
 
             dsser = true;
             Console.WriteLine();

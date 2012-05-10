@@ -6,24 +6,36 @@ namespace fastJSON
     internal class SafeDictionary<TKey, TValue>
     {
         private readonly object _Padlock = new object();
-        private readonly Dictionary<TKey, TValue> _Dictionary = new Dictionary<TKey, TValue>();
+        private readonly Dictionary<TKey, TValue> _Dictionary;
 
+        public SafeDictionary(int capacity)
+        {
+            _Dictionary = new Dictionary<TKey, TValue>(capacity);
+        }
+
+        public SafeDictionary()
+        {
+            _Dictionary = new Dictionary<TKey, TValue>();
+        }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return _Dictionary.TryGetValue(key, out value);
+            lock (_Padlock)
+                return _Dictionary.TryGetValue(key, out value);
         }
 
         public TValue this[TKey key]
         {
             get
             {
-                return _Dictionary[key];
+                lock (_Padlock)
+                    return _Dictionary[key];
             }
-        }
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return ((ICollection<KeyValuePair<TKey, TValue>>)_Dictionary).GetEnumerator();
+            set
+            {
+                lock (_Padlock)
+                    _Dictionary[key] = value;
+            }
         }
 
         public void Add(TKey key, TValue value)
