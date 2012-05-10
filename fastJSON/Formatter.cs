@@ -3,157 +3,84 @@ using System.Text;
 
 namespace fastJSON
 {
-	internal class Formatter
-	{
-		#region class members
-		const string Space = " ";
-		const int DefaultIndent = 0;
-		const string Indent = Space + Space + Space + Space;
-		static readonly string NewLine = "\r\n";
-		#endregion
+    internal static class Formatter
+    {
+        public static string Indent = "    ";
 
-		private enum JsonContextType
-		{
-			Object, Array
-		}
+        public static void AppendIndent(StringBuilder sb, int count)
+        {
+            for (; count > 0; --count) sb.Append(Indent);
+        }
 
-		static void BuildIndents(int indents, StringBuilder output)
-		{
-			indents += DefaultIndent;
-			for (; indents > 0; indents--)
-				output.Append(Indent);
-		}
+        public static bool IsEscaped(StringBuilder sb, int index)
+        {
+            bool escaped = false;
+            while (index > 0 && sb[--index] == '\\') escaped = !escaped;
+            return escaped;
+        }
 
+        public static string PrettyPrint(string input)
+        {
+            var output = new StringBuilder(input.Length * 2);
+            char? quote = null;
+            int depth = 0;
 
-		bool inDoubleString = false;
-		bool inSingleString = false;
-		bool inVariableAssignment = false;
-		char prevChar = '\0';
+            for (int i = 0; i < input.Length; ++i)
+            {
+                char ch = input[i];
 
-		Stack<JsonContextType> context = new Stack<JsonContextType>();
+                switch (ch)
+                {
+                    case '{':
+                    case '[':
+                        output.Append(ch);
+                        if (!quote.HasValue)
+                        {
+                            output.AppendLine();
+                            AppendIndent(output, ++depth);
+                        }
+                        break;
+                    case '}':
+                    case ']':
+                        if (quote.HasValue)
+                            output.Append(ch);
+                        else
+                        {
+                            output.AppendLine();
+                            AppendIndent(output, --depth);
+                            output.Append(ch);
+                        }
+                        break;
+                    case '"':
+                    case '\'':
+                        output.Append(ch);
+                        if (quote.HasValue)
+                        {
+                            if (!IsEscaped(output, i))
+                                quote = null;
+                        }
+                        else quote = ch;
+                        break;
+                    case ',':
+                        output.Append(ch);
+                        if (!quote.HasValue)
+                        {
+                            output.AppendLine();
+                            AppendIndent(output, depth);
+                        }
+                        break;
+                    case ':':
+                        if (quote.HasValue) output.Append(ch);
+                        else output.Append(" : ");
+                        break;
+                    default:
+                        if (quote.HasValue || !char.IsWhiteSpace(ch))
+                            output.Append(ch);
+                        break;
+                }
+            }
 
-		bool InString()
-		{
-			return inDoubleString || inSingleString;
-		}
-
-		public string PrettyPrint(string input)
-		{
-			var output = new StringBuilder(input.Length * 2);
-			char c;
-
-			for (int i = 0; i < input.Length; i++)
-			{
-				c = input[i];
-
-				switch (c)
-				{
-					case '{':
-						if (!InString())
-						{
-							if (inVariableAssignment || (context.Count > 0 && context.Peek() != JsonContextType.Array))
-							{
-								output.Append(NewLine);
-								BuildIndents(context.Count, output);
-							}
-							output.Append(c);
-							context.Push(JsonContextType.Object);
-							output.Append(NewLine);
-							BuildIndents(context.Count, output);
-						}
-						else
-							output.Append(c);
-
-						break;
-
-					case '}':
-						if (!InString())
-						{
-							output.Append(NewLine);
-							context.Pop();
-							BuildIndents(context.Count, output);
-							output.Append(c);
-						}
-						else
-							output.Append(c);
-
-						break;
-
-					case '[':
-						output.Append(c);
-
-						if (!InString())
-							context.Push(JsonContextType.Array);
-
-						break;
-
-					case ']':
-						if (!InString())
-						{
-							output.Append(c);
-							context.Pop();
-						}
-						else
-							output.Append(c);
-
-						break;
-
-					case '=':
-						output.Append(c);
-						break;
-
-					case ',':
-						output.Append(c);
-
-						if (!InString() && context.Peek() != JsonContextType.Array)
-						{
-							BuildIndents(context.Count, output);
-							output.Append(NewLine);
-							BuildIndents(context.Count, output);
-							inVariableAssignment = false;
-						}
-
-						break;
-
-					case '\'':
-						if (!inDoubleString && prevChar != '\\')
-							inSingleString = !inSingleString;
-
-						output.Append(c);
-						break;
-
-					case ':':
-						if (!InString())
-						{
-							inVariableAssignment = true;
-							output.Append(Space);
-							output.Append(c);
-							output.Append(Space);
-						}
-						else
-							output.Append(c);
-
-						break;
-
-					case '"':
-						if (!inSingleString && prevChar != '\\')
-							inDoubleString = !inDoubleString;
-
-						output.Append(c);
-						break;
-					case ' ':
-						if (InString())
-							output.Append(c);
-						break;
-
-					default:
-						output.Append(c);
-						break;
-				}
-				prevChar = c;
-			}
-
-			return output.ToString();
-		}
-	}
+            return output.ToString();
+        }
+    }
 }

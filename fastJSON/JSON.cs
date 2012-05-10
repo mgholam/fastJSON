@@ -33,7 +33,6 @@ namespace fastJSON
         public bool UsingGlobalTypes = true;
         public bool IgnoreCaseOnDeserialize = false;
 
-        private Formatter _formatter = new Formatter();
 
         public string ToJSON(object obj)
         {
@@ -86,7 +85,7 @@ namespace fastJSON
 
         public string Beautify(string input)
         {
-            return _formatter.PrettyPrint(input);
+            return Formatter.PrettyPrint(input);
         }
 
         public object FillObject(object input, string json)
