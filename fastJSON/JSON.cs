@@ -17,6 +17,46 @@ namespace fastJSON
     public delegate string Serialize(object data);
     public delegate object Deserialize(string data);
 
+    public class JSONParamters
+    {
+        /// <summary>
+        /// Use the optimized fast Dataset Schema format (dfault = True)
+        /// </summary>
+        public bool UseOptimizedDatasetSchema = true;
+        /// <summary>
+        /// Use the fast GUID format (default = True)
+        /// </summary>
+        public bool UseFastGuid = true;
+        /// <summary>
+        /// Serialize null values to the output (default = True)
+        /// </summary>
+        public bool SerializeNullValues = true;
+        /// <summary>
+        /// Use the UTC date format (default = True)
+        /// </summary>
+        public bool UseUTCDateTime = true;
+        /// <summary>
+        /// Show the readonly properties of types in the output (default = False)
+        /// </summary>
+        public bool ShowReadOnlyProperties = false;
+        /// <summary>
+        /// Use the $types extension to optimise the output json (default = True)
+        /// </summary>
+        public bool UsingGlobalTypes = true;
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IgnoreCaseOnDeserialize = false;
+        /// <summary>
+        /// Anonymous types have read only properties 
+        /// </summary>
+        public bool EnableAnonymousTypes = false;
+        /// <summary>
+        /// Enable fastJSON extensions $types, $type, $map (default = True)
+        /// </summary>
+        public bool UseExtensions = true;
+    }
+
     public class JSON
     {
         public readonly static JSON Instance = new JSON();
@@ -24,46 +64,29 @@ namespace fastJSON
         private JSON()
         {
         }
-        public bool UseOptimizedDatasetSchema = true;
-        public bool UseFastGuid = true;
-        public bool UseSerializerExtension = true;
-        public bool SerializeNullValues = true;
-        public bool UseUTCDateTime = false;
-        public bool ShowReadOnlyProperties = false;
-        public bool UsingGlobalTypes = true;
-        public bool IgnoreCaseOnDeserialize = false;
-
+        /// <summary>
+        /// You can set these paramters globally for all calls
+        /// </summary>
+        public JSONParamters Parameters = new JSONParamters();
+        private JSONParamters _params;
 
         public string ToJSON(object obj)
         {
-            return ToJSON(obj, UseSerializerExtension, UseFastGuid, UseOptimizedDatasetSchema, SerializeNullValues);
+            _params = Parameters;
+            return ToJSON(obj, Parameters);
         }
 
-        public string ToJSON(object obj,
-                             bool enableSerializerExtensions)
+        public string ToJSON(object obj, JSONParamters param)
         {
-            return ToJSON(obj, enableSerializerExtensions, UseFastGuid, UseOptimizedDatasetSchema, SerializeNullValues);
-        }
-
-        public string ToJSON(object obj,
-                             bool enableSerializerExtensions,
-                             bool enableFastGuid)
-        {
-            return ToJSON(obj, enableSerializerExtensions, enableFastGuid, UseOptimizedDatasetSchema, SerializeNullValues);
-        }
-
-        public string ToJSON(object obj,
-                             bool enableSerializerExtensions,
-                             bool enableFastGuid,
-                             bool enableOptimizedDatasetSchema,
-                             bool serializeNullValues)
-        {
-            return new JSONSerializer(enableOptimizedDatasetSchema, enableFastGuid, enableSerializerExtensions, serializeNullValues).ConvertToJSON(obj);
+            _params = param;
+            // FEATURE : enable extensions when you can deserialize anon types
+            if (_params.EnableAnonymousTypes) { _params.UseExtensions = false; _params.UsingGlobalTypes = false; }
+            return new JSONSerializer(param).ConvertToJSON(obj);
         }
 
         public object Parse(string json)
         {
-            return new JsonParser(json, IgnoreCaseOnDeserialize).Decode();
+            return new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
         }
 
         public T ToObject<T>(string json)
@@ -78,7 +101,7 @@ namespace fastJSON
 
         public object ToObject(string json, Type type)
         {
-            Dictionary<string, object> ht = new JsonParser(json, IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return ParseDictionary(ht, null, type, null);
         }
@@ -90,9 +113,19 @@ namespace fastJSON
 
         public object FillObject(object input, string json)
         {
-            Dictionary<string, object> ht = new JsonParser(json, IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return ParseDictionary(ht, null, input.GetType(), input);
+        }
+
+        public object DeepCopy(object obj)
+        {
+            return ToObject(ToJSON(obj));
+        }
+
+        public T DeepCopy<T>(T obj)
+        {
+            return ToObject<T>(ToJSON(obj));
         }
 
 #if CUSTOMTYPE
@@ -300,7 +333,7 @@ namespace fastJSON
             Type[] arguments = new Type[2];
             arguments[0] = arguments[1] = typeof(object);
 
-            DynamicMethod setter = new DynamicMethod("_", typeof(void), arguments);
+            DynamicMethod setter = new DynamicMethod("_", typeof(void), arguments, true);
             ILGenerator il = setter.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
@@ -360,7 +393,7 @@ namespace fastJSON
             Type[] arguments = new Type[1];
             arguments[0] = typeof(object);
 
-            DynamicMethod getter = new DynamicMethod("_", typeof(object), arguments);
+            DynamicMethod getter = new DynamicMethod("_", typeof(object), arguments, true);
             ILGenerator il = getter.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
@@ -385,7 +418,7 @@ namespace fastJSON
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
-                if (!p.CanWrite && ShowReadOnlyProperties == false) continue;
+                if (!p.CanWrite && _params.ShowReadOnlyProperties == false && _params.EnableAnonymousTypes == false) continue;
 
                 object[] att = p.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
                 if (att != null && att.Length > 0)
@@ -445,13 +478,15 @@ namespace fastJSON
         }
         #endregion
 
-
+        #region [   p r i v a t e   m e t h o d s   ]
+        bool usingglobals = false;
         private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type, object input)
         {
             object tn = "";
+
             if (d.TryGetValue("$types", out tn))
             {
-                UsingGlobalTypes = true;
+                usingglobals = true;
                 globaltypes = new Dictionary<string, object>();
                 foreach (var kv in (Dictionary<string, object>)tn)
                 {
@@ -468,7 +503,7 @@ namespace fastJSON
 #endif
             if (found)
             {
-                if (UsingGlobalTypes)
+                if (usingglobals)
                 {
                     object tname = "";
                     if (globaltypes.TryGetValue((string)tn, out tname))
@@ -488,7 +523,7 @@ namespace fastJSON
             foreach (string n in d.Keys)
             {
                 string name = n;
-                if (IgnoreCaseOnDeserialize) name = name.ToLower();
+                if (_params.IgnoreCaseOnDeserialize) name = name.ToLower();
                 if (name == "$map")
                 {
                     ProcessMap(o, props, (Dictionary<string, object>)d[name]);
@@ -660,7 +695,7 @@ namespace fastJSON
             if (value.EndsWith("Z"))
                 utc = true;
 
-            if (UseUTCDateTime == false && utc == false)
+            if (_params.UseUTCDateTime == false && utc == false)
                 return new DateTime(year, month, day, hour, min, sec);
             else
                 return new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc).ToLocalTime();
@@ -851,7 +886,7 @@ namespace fastJSON
             {
                 if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
                     guidcols.Add(c.Ordinal);
-                if (UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
+                if (_params.UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
                     datecol.Add(c.Ordinal);
             }
 
@@ -865,7 +900,7 @@ namespace fastJSON
                     if (s != null && s.Length < 36)
                         v[i] = new Guid(Convert.FromBase64String(s));
                 }
-                if (UseUTCDateTime)
+                if (_params.UseUTCDateTime)
                 {
                     foreach (int i in datecol)
                     {
@@ -921,5 +956,7 @@ namespace fastJSON
             return dt;
         }
 #endif
+        #endregion
     }
+
 }

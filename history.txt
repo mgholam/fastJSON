@@ -95,3 +95,9 @@
 - added Beautify(json) method to JSON
 - added locks on SafeDictionary
 - added FillObject(obj,json) for filling an existing object
+
+1.9.8
+- added DeepCopy(obj) and DeepCopy<T>(obj)
+- refactored code to JSONParameters and removed the JSON overloads
+- added support to serialize anonymous types (deserialize is not possible at the moment)
+- bug fix $types output with non object root

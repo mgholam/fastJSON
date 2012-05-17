@@ -15,23 +15,14 @@ namespace fastJSON
     internal class JSONSerializer
     {
         private readonly StringBuilder _output = new StringBuilder();
-        readonly bool useMinimalDataSetSchema;
-        readonly bool fastguid = true;
-        readonly bool useExtension = true;
-        readonly bool serializeNulls = true;
         readonly int _MAX_DEPTH = 10;
-        bool _useGlobalTypes = true;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
+        private JSONParamters _params;
 
-        internal JSONSerializer(bool UseMinimalDataSetSchema, bool UseFastGuid, bool UseExtensions, bool SerializeNulls)
+        internal JSONSerializer(JSONParamters param)
         {
-            this.useMinimalDataSetSchema = UseMinimalDataSetSchema;
-            this.fastguid = UseFastGuid;
-            this.useExtension = UseExtensions;
-            this.serializeNulls = SerializeNulls;
-            if (useExtension == false)
-                _useGlobalTypes = false;
+            _params = param;
         }
 
         internal string ConvertToJSON(object obj)
@@ -39,10 +30,10 @@ namespace fastJSON
             WriteValue(obj);
 
             string str = "";
-            if (_useGlobalTypes)
+            if (_params.UsingGlobalTypes)
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("{\"$types\":{");
+                sb.Append("\"$types\":{");
                 bool pendingSeparator = false;
                 foreach (var kv in _globalTypes)
                 {
@@ -55,7 +46,7 @@ namespace fastJSON
                     sb.Append("\"");
                 }
                 sb.Append("},");
-                str = sb.ToString() + _output.ToString();
+                str = _output.Replace("$types$", sb.ToString()).ToString();
             }
             else
                 str = _output.ToString();
@@ -135,7 +126,7 @@ namespace fastJSON
 
         private void WriteGuid(Guid g)
         {
-            if (fastguid == false)
+            if (_params.UseFastGuid == false)
                 WriteStringFast(g.ToString());
             else
                 WriteBytes(g.ToByteArray());
@@ -154,7 +145,7 @@ namespace fastJSON
         {
             // datetime format standard : yyyy-MM-dd HH:mm:ss
             DateTime dt = dateTime;
-            if (JSON.Instance.UseUTCDateTime)
+            if (_params.UseUTCDateTime)
                 dt = dateTime.ToUniversalTime();
 
             _output.Append("\"");
@@ -170,7 +161,7 @@ namespace fastJSON
             _output.Append(":");
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
 
-            if (JSON.Instance.UseUTCDateTime)
+            if (_params.UseUTCDateTime)
                 _output.Append("Z");
 
             _output.Append("\"");
@@ -190,7 +181,7 @@ namespace fastJSON
                 m.Info.Add(c.ColumnName);
                 m.Info.Add(c.DataType.ToString());
             }
-            // TODO : serialize relations and constraints here
+            // FEATURE : serialize relations and constraints here
 
             return m;
         }
@@ -212,7 +203,7 @@ namespace fastJSON
                     m.Info.Add(c.DataType.ToString());
                 }
             }
-            // TODO : serialize relations and constraints here
+            // FEATURE : serialize relations and constraints here
 
             return m;
         }
@@ -229,9 +220,9 @@ namespace fastJSON
         private void WriteDataset(DataSet ds)
         {
             _output.Append('{');
-            if (useExtension)
+            if ( _params.UseExtensions)
             {
-                WritePair("$schema", useMinimalDataSetSchema ? (object)GetSchema(ds) : ds.GetXmlSchema());
+                WritePair("$schema", _params.UseOptimizedDatasetSchema ? (object)GetSchema(ds) : ds.GetXmlSchema());
                 _output.Append(',');
             }
             bool tablesep = false;
@@ -274,9 +265,9 @@ namespace fastJSON
         void WriteDataTable(DataTable dt)
         {
             this._output.Append('{');
-            if (this.useExtension)
+            if (_params.UseExtensions)
             {
-                this.WritePair("$schema", this.useMinimalDataSetSchema ? (object)this.GetSchema(dt) : this.GetXmlSchema(dt));
+                this.WritePair("$schema", _params.UseOptimizedDatasetSchema ? (object)this.GetSchema(dt) : this.GetXmlSchema(dt));
                 this._output.Append(',');
             }
 
@@ -286,17 +277,19 @@ namespace fastJSON
             this._output.Append('}');
         }
 #endif
-        bool _firstWritten = false;
+        bool _TypesWritten = false;
         private void WriteObject(object obj)
         {
-            if (_useGlobalTypes == false)
+            if (_params.UsingGlobalTypes == false)
                 _output.Append('{');
             else
             {
-                if (_firstWritten)
+                if (_TypesWritten== false)
+                    _output.Append("{$types$");
+                else
                     _output.Append("{");
             }
-            _firstWritten = true;
+            _TypesWritten = true;
             _current_depth++;
             if (_current_depth > _MAX_DEPTH)
                 throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
@@ -305,9 +298,9 @@ namespace fastJSON
             Dictionary<string, string> map = new Dictionary<string, string>();
             Type t = obj.GetType();
             bool append = false;
-            if (useExtension)
+            if (_params.UseExtensions)
             {
-                if (_useGlobalTypes == false)
+                if (_params.UsingGlobalTypes == false)
                     WritePairFast("$type", JSON.Instance.GetTypeAssemblyName(t));
                 else
                 {
@@ -329,12 +322,12 @@ namespace fastJSON
                 if (append)
                     _output.Append(',');
                 object o = p.Getter(obj);
-                if ((o == null || o is DBNull) && serializeNulls == false)
+                if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
                     append = false;
                 else
                 {
                     WritePair(p.Name, o);
-                    if (o != null && useExtension)
+                    if (o != null && _params.UseExtensions)
                     {
                         Type tt = o.GetType();
                         if (tt == typeof(System.Object))
@@ -343,7 +336,7 @@ namespace fastJSON
                     append = true;
                 }
             }
-            if (map.Count > 0 && useExtension)
+            if (map.Count > 0 && _params.UseExtensions)
             {
                 _output.Append(",\"$map\":");
                 WriteStringDictionary(map);
@@ -356,7 +349,7 @@ namespace fastJSON
 
         private void WritePairFast(string name, string value)
         {
-            if ((value == null) && serializeNulls == false)
+            if ((value == null) && _params.SerializeNullValues == false)
                 return;
             WriteStringFast(name);
 
@@ -367,7 +360,7 @@ namespace fastJSON
 
         private void WritePair(string name, object value)
         {
-            if ((value == null || value is DBNull) && serializeNulls == false)
+            if ((value == null || value is DBNull) && _params.SerializeNullValues == false)
                 return;
             WriteStringFast(name);
 

@@ -47,34 +47,15 @@ namespace consoletest
 
         public static void Main(string[] args)
         {
-            //returns rr = new returns();
-            //rr.name = "jjkjkjhkj";
+            var q = new { Name = "asassa", Address = "asadasd", Age = 12 };
+            string sq = fastJSON.JSON.Instance.ToJSON(q, new fastJSON.JSONParamters { EnableAnonymousTypes = true });
+
             Return r = new Return();
             r.Name = "hello";
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
             r.date = DateTime.Now;
             r.ds = CreateDataset().Tables[0];
-
-            //r.ReturnEntity = 
-            //    //	new List<int>( new int[] { 1,2,3,4,5 });
-            //    // Guid.NewGuid();
-            //    //	CreateDataset();
-            //    new object[] { new Return() };
-            //r.time = new TimeSpan(1, 2, 3);
-            //r.point = new System.Drawing.Point(10, 10);
-
-            //rr.Add(r);
-
-            //fastJSON.JSON.Instance.RegisterCustomType(typeof(TimeSpan), tsser, tsdes);
-            //fastJSON.JSON.Instance.RegisterCustomType(typeof(System.Drawing.Point), pser, pdes);
-            fastJSON.JSON.Instance.SerializeNullValues = true;
-            fastJSON.JSON.Instance.ShowReadOnlyProperties = true;
-            fastJSON.JSON.Instance.UseUTCDateTime = true;
-            fastJSON.JSON.Instance.UsingGlobalTypes = false;
-            //fastJSON.JSON.Instance.IgnoreCaseOnDeserialize = true;
-            //string ts = fastJSON.JSON.Instance.ToJSON(r);
-            //object tsd = fastJSON.JSON.Instance.ToObject(ts);
 
             NoExt ne = new NoExt();
             ne.Name = "hello";
@@ -84,12 +65,10 @@ namespace consoletest
             ne.dic.Add("hello", new class1("asda","asdas",Guid.NewGuid()));
             ne.objs = new baseclass[] { new class1("a","1",Guid.NewGuid()), new class2("b","2","desc") };
 
-            //fastJSON.JSON.Instance.UseSerializerExtension = false;
-            //fastJSON.JSON.Instance.UseFastGuid = false;
-            string str = fastJSON.JSON.Instance.ToJSON(ne, false);
+            string str = fastJSON.JSON.Instance.ToJSON(ne);
             string strr = fastJSON.JSON.Instance.Beautify(str);
             object dic = fastJSON.JSON.Instance.Parse(str);
-            object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);//<NoExt>(str);
+            object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);
 
             NoExt nee = new NoExt();
             fastJSON.JSON.Instance.FillObject(nee, strr);
