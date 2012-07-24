@@ -18,9 +18,9 @@ namespace fastJSON
         readonly int _MAX_DEPTH = 10;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
-        private JSONParamters _params;
+        private JSONParameters _params;
 
-        internal JSONSerializer(JSONParamters param)
+        internal JSONSerializer(JSONParameters param)
         {
             _params = param;
         }
@@ -60,7 +60,7 @@ namespace fastJSON
                 _output.Append("null");
 
             else if (obj is string || obj is char)
-                WriteString((string)obj);
+                WriteString(obj.ToString());
 
             else if (obj is Guid)
                 WriteGuid((Guid)obj);
@@ -301,11 +301,11 @@ namespace fastJSON
             if (_params.UseExtensions)
             {
                 if (_params.UsingGlobalTypes == false)
-                    WritePairFast("$type", JSON.Instance.GetTypeAssemblyName(t));
+                    WritePairFast("$type", Reflection.Instance.GetTypeAssemblyName(t));
                 else
                 {
                     int dt = 0;
-                    string ct = JSON.Instance.GetTypeAssemblyName(t);
+                    string ct = Reflection.Instance.GetTypeAssemblyName(t);
                     if (_globalTypes.TryGetValue(ct, out dt) == false)
                     {
                         dt = _globalTypes.Count + 1;
@@ -316,7 +316,7 @@ namespace fastJSON
                 append = true;
             }
 
-            List<Getters> g = JSON.Instance.GetGetters(t);
+            List<Getters> g = Reflection.Instance.GetGetters(t);
             foreach (var p in g)
             {
                 if (append)

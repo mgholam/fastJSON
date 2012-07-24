@@ -8,7 +8,10 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace consoletest
 {
-    public class Return 
+    public 
+        //class 
+        struct
+        Return
     {
         public object ReturnEntity { get; set; }
         public string Name { get; set; }
@@ -27,14 +30,15 @@ namespace consoletest
 
     public class NoExt
     {
-    	[System.Xml.Serialization.XmlIgnore()]
-    	public string Name { get; set; }
-    	public string Address { get; set;}
-    	public int Age { get; set;}
-    	public baseclass[] objs { get; set;}
+        [System.Xml.Serialization.XmlIgnore()]
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public int Age { get; set; }
+        public baseclass[] objs { get; set; }
         public Dictionary<string, class1> dic { get; set; }
     }
-    
+
+
     class Program
     {
         static int count = 1000;
@@ -44,11 +48,10 @@ namespace consoletest
         static bool dsser = false;
 
 
-
         public static void Main(string[] args)
         {
             var q = new { Name = "asassa", Address = "asadasd", Age = 12 };
-            string sq = fastJSON.JSON.Instance.ToJSON(q, new fastJSON.JSONParamters { EnableAnonymousTypes = true });
+            string sq = fastJSON.JSON.Instance.ToJSON(q, new fastJSON.JSONParameters { EnableAnonymousTypes = true });
 
             Return r = new Return();
             r.Name = "hello";
@@ -56,16 +59,17 @@ namespace consoletest
             r.Field2 = 2312;
             r.date = DateTime.Now;
             r.ds = CreateDataset().Tables[0];
-
+            string rs = fastJSON.JSON.Instance.ToJSON(r);
+            object rr = fastJSON.JSON.Instance.ToObject(rs);
             NoExt ne = new NoExt();
             ne.Name = "hello";
             ne.Address = "here";
-            ne.Age= 10;
+            ne.Age = 10;
             ne.dic = new Dictionary<string, class1>();
-            ne.dic.Add("hello", new class1("asda","asdas",Guid.NewGuid()));
-            ne.objs = new baseclass[] { new class1("a","1",Guid.NewGuid()), new class2("b","2","desc") };
+            ne.dic.Add("hello", new class1("asda", "asdas", Guid.NewGuid()));
+            ne.objs = new baseclass[] { new class1("a", "1", Guid.NewGuid()), new class2("b", "2", "desc") };
 
-            string str = fastJSON.JSON.Instance.ToJSON(ne);
+            string str = fastJSON.JSON.Instance.ToJSON(ne, new fastJSON.JSONParameters { UseExtensions = false, UsingGlobalTypes = false });
             string strr = fastJSON.JSON.Instance.Beautify(str);
             object dic = fastJSON.JSON.Instance.Parse(str);
             object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);
@@ -114,7 +118,7 @@ namespace consoletest
 
         private static string pser(object data)
         {
-            System.Drawing.Point p = (System.Drawing.Point) data;
+            System.Drawing.Point p = (System.Drawing.Point)data;
             return p.X.ToString() + "," + p.Y.ToString();
         }
 

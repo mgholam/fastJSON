@@ -82,6 +82,7 @@
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="JSON.cs" />
     <Compile Include="JsonParser.cs" />
+    <Compile Include="Reflection.cs" />
     <Compile Include="SafeDictionary.cs" />
   </ItemGroup>
   <ItemGroup>

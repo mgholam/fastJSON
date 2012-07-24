@@ -101,3 +101,12 @@
 - refactored code to JSONParameters and removed the JSON overloads
 - added support to serialize anonymous types (deserialize is not possible at the moment)
 - bug fix $types output with non object root
+
+1.9.8.1
+- spelling mistake on JSONParameters
+- bug fix Parameter initialization
+
+1.9.9
+- bug fix char and string ToString
+- refactored reflection code into Reflection class
+- added support for top level struct object serialize/deserialize
