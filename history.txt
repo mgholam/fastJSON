@@ -110,3 +110,6 @@
 - bug fix char and string ToString
 - refactored reflection code into Reflection class
 - added support for top level struct object serialize/deserialize
+
+1.9.9.1
+- bug fix reflection code 

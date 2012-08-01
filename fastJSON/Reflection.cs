@@ -70,23 +70,26 @@ namespace fastJSON
                 }
                 else
                 {
-                    DynamicMethod dynMethod = new DynamicMethod("_",
-                        MethodAttributes.Public | MethodAttributes.Static,
-                        CallingConventions.Standard,
-                        typeof(object),
-                        null,
-                        objtype, false);
-                    ILGenerator ilGen = dynMethod.GetILGenerator();
+
 
                     if (objtype.IsClass) 
                     {
+                        DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
                         ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
                         ilGen.Emit(OpCodes.Ret);
                         c = (CreateObject)dynMethod.CreateDelegate(typeof(CreateObject));
                         _constrcache.Add(objtype, c);
                     }
                     else // structs
-                    {
+                    {     
+                        DynamicMethod dynMethod = new DynamicMethod("_",
+                            MethodAttributes.Public | MethodAttributes.Static,
+                            CallingConventions.Standard,
+                            typeof(object),
+                            null,
+                            objtype, false);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
                         var lv = ilGen.DeclareLocal(objtype);
                         ilGen.Emit(OpCodes.Ldloca_S, lv);
                         ilGen.Emit(OpCodes.Initobj, objtype);
