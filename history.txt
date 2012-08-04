@@ -113,3 +113,13 @@
 
 1.9.9.1
 - bug fix reflection code 
+
+2.0.0
+- added unit tests 
+- deserialize root level arrays (int[] etc.)
+- deserialize root level value types (int,long,decimal,string)
+- deserialize ToObject< Dictionary<T,V> >  
+- deserialize ToObject< List<T> >
+- * breaking change in Parse , numbers are returned as decimals and longs not strings
+
+

@@ -272,27 +272,52 @@ namespace fastJSON
             return p1 + p2 + p3 + p4;
         }
 
-        private string ParseNumber()
+        private long CreateLong(string s)
+        {
+            long num = 0;
+            bool neg = false;
+            foreach (char cc in s)
+            {
+                if (cc == '-')
+                    neg = true;
+                else if (cc == '+')
+                    neg = false;
+                else
+                {
+                    num *= 10;
+                    num += (int)(cc - '0');
+                }
+            }
+
+            return neg ? -num : num;
+        }
+
+        private object ParseNumber()
         {
             ConsumeToken();
 
             // Need to start back one place because the first digit is also a token and would have been consumed
             var startIndex = index - 1;
-
+            bool dec = false;
             do
             {
                 var c = json[index];
 
                 if ((c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')
                 {
-                    if (++index == json.Length) throw new Exception("Unexpected end of string whilst parsing number");
+                    if (c == '.' || c == 'e' || c == 'E')
+                        dec = true;
+                    if (++index == json.Length)
+                        break;                        //throw new Exception("Unexpected end of string whilst parsing number");
                     continue;
                 }
-
                 break;
             } while (true);
 
-            return new string(json, startIndex, index - startIndex);
+            string s = new string(json, startIndex, index - startIndex);
+            if(dec)
+                return decimal.Parse(s);
+            return CreateLong(s);
         }
 
         private Token LookAhead()

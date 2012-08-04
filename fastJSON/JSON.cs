@@ -44,7 +44,7 @@ namespace fastJSON
         /// </summary>
         public bool UsingGlobalTypes = true;
         /// <summary>
-        /// 
+        /// ** work in progress
         /// </summary>
         public bool IgnoreCaseOnDeserialize = false;
         /// <summary>
@@ -81,8 +81,15 @@ namespace fastJSON
         {
             _params = param;
             Reflection.Instance.ShowReadOnlyProperties = _params.ShowReadOnlyProperties;
+            Type t = null;
+            if (obj.GetType().IsGenericType)
+                t = obj.GetType().GetGenericTypeDefinition();
+            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
+                _params.UsingGlobalTypes = false;
+
             // FEATURE : enable extensions when you can deserialize anon types
-            if (_params.EnableAnonymousTypes) { _params.UseExtensions = false; _params.UsingGlobalTypes = false; }
+            if (_params.EnableAnonymousTypes) { _params.UseExtensions = false; _params.UsingGlobalTypes = false; Reflection.Instance.ShowReadOnlyProperties = true; }
+            _usingglobals = _params.UsingGlobalTypes;
             return new JSONSerializer(param).ConvertToJSON(obj);
         }
 
@@ -106,9 +113,81 @@ namespace fastJSON
         {
             _params = Parameters;
             Reflection.Instance.ShowReadOnlyProperties = _params.ShowReadOnlyProperties;
-            Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
-            if (ht == null) return null;
-            return ParseDictionary(ht, null, type, null);
+            Type t = null;
+            if (type != null && type.IsGenericType)
+                t = type.GetGenericTypeDefinition();
+            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
+                _params.UsingGlobalTypes = false;
+            _usingglobals = _params.UsingGlobalTypes;
+
+            object o = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
+
+            if (o is IDictionary)
+            {
+                if (type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // deserialize a dictionary
+                    return RootDictionary(o, type);
+                else // deserialize an object
+                    return ParseDictionary(o as Dictionary<string, object>, null, type, null);
+            }
+
+            if (o is ArrayList)
+            {
+                if (type != null && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // kv format
+                {
+                    return RootDictionary(o, type);
+                }
+                if (type != null && type.GetGenericTypeDefinition() == typeof(List<>)) // deserialize to generic list
+                    return RootList(o, type);
+                else
+                    return (o as ArrayList).ToArray();
+            }
+            return o;
+        }
+
+        private object RootList(object parse, Type type)
+        {
+            Type[] gtypes = type.GetGenericArguments();
+            IList o = (IList)Reflection.Instance.FastCreateInstance(type);
+            foreach (var k in (IList)parse)
+            {
+                _usingglobals = false;
+                object v = k;
+                if (k is Dictionary<string, object>)
+                    v = ParseDictionary(k as Dictionary<string, object>, null, gtypes[0], null);
+                else
+                    v = ChangeType(k, gtypes[0]);
+
+                o.Add(v);
+            }
+            return o;
+        }
+
+        private object RootDictionary(object parse, Type type)
+        {
+            Type[] gtypes = type.GetGenericArguments();
+            if (parse is Dictionary<string, object>)
+            {
+                IDictionary o = (IDictionary)Reflection.Instance.FastCreateInstance(type);
+
+                foreach (var kv in (Dictionary<string, object>)parse)
+                {
+                    object v;
+                    object k = ChangeType(kv.Key, gtypes[0]);
+                    if (kv.Value is Dictionary<string, object>)
+                        v = ParseDictionary(kv.Value as Dictionary<string, object>, null, gtypes[1], null);
+                    else if (kv.Value is ArrayList)
+                        v = CreateArray(kv.Value as ArrayList, typeof(object), typeof(object), null);
+                    else
+                        v = ChangeType(kv.Value, gtypes[1]);
+                    o.Add(k, v);
+                }
+
+                return o;
+            }
+            if (parse is ArrayList)
+                return CreateDictionary(parse as ArrayList, type, gtypes, null);
+
+            return null;
         }
 
         public string Beautify(string input)
@@ -275,10 +354,10 @@ namespace fastJSON
         private object ChangeType(object value, Type conversionType)
         {
             if (conversionType == typeof(int))
-                return (int)CreateLong((string)value);
+                return (int)((long)value);
 
             else if (conversionType == typeof(long))
-                return CreateLong((string)value);
+                return (long)value;
 
             else if (conversionType == typeof(string))
                 return (string)value;
@@ -294,14 +373,14 @@ namespace fastJSON
         #endregion
 
         #region [   p r i v a t e   m e t h o d s   ]
-        bool usingglobals = false;
+        bool _usingglobals = false;
         private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type, object input)
         {
             object tn = "";
 
             if (d.TryGetValue("$types", out tn))
             {
-                usingglobals = true;
+                _usingglobals = true;
                 globaltypes = new Dictionary<string, object>();
                 foreach (var kv in (Dictionary<string, object>)tn)
                 {
@@ -318,7 +397,7 @@ namespace fastJSON
 #endif
             if (found)
             {
-                if (usingglobals)
+                if (_usingglobals)
                 {
                     object tname = "";
                     if (globaltypes.TryGetValue((string)tn, out tname))
@@ -334,6 +413,7 @@ namespace fastJSON
             object o = input;
             if (o == null)
                 o = Reflection.Instance.FastCreateInstance(type);
+
             SafeDictionary<string, myPropInfo> props = Getproperties(type, typename);
             foreach (string n in d.Keys)
             {
@@ -356,13 +436,13 @@ namespace fastJSON
                         object oset = null;
 
                         if (pi.isInt)
-                            oset = (int)CreateLong((string)v);
+                            oset = (int)((long)v);
 #if CUSTOMTYPE
                         else if (pi.isCustomType)
                             oset = CreateCustom((string)v, pi.pt);
 #endif
                         else if (pi.isLong)
-                            oset = CreateLong((string)v);
+                            oset = (long)v;
 
                         else if (pi.isString)
                             oset = (string)v;
