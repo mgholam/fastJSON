@@ -44,7 +44,6 @@ namespace consoletest
 		Female
 	}
 
-	[Serializable()]
 	public class colclass
 	{
 		public colclass()

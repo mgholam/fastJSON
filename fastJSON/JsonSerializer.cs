@@ -14,7 +14,8 @@ namespace fastJSON
 {
     internal class JSONSerializer
     {
-        private readonly StringBuilder _output = new StringBuilder();
+        private StringBuilder _output = new StringBuilder();
+        private StringBuilder _before = new StringBuilder();
         readonly int _MAX_DEPTH = 10;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
@@ -33,6 +34,7 @@ namespace fastJSON
             if (_params.UsingGlobalTypes)
             {
                 StringBuilder sb = new StringBuilder();
+                sb.Append(_before.ToString());
                 sb.Append("\"$types\":{");
                 bool pendingSeparator = false;
                 foreach (var kv in _globalTypes)
@@ -46,7 +48,8 @@ namespace fastJSON
                     sb.Append("\"");
                 }
                 sb.Append("},");
-                str = _output.Replace("$types$", sb.ToString()).ToString();
+                sb.Append(_output.ToString());
+                str = sb.ToString();
             }
             else
                 str = _output.ToString();
@@ -166,6 +169,7 @@ namespace fastJSON
 
             _output.Append("\"");
         }
+
 #if !SILVERLIGHT
         private DatasetSchema GetSchema(DataTable ds)
         {
@@ -277,6 +281,7 @@ namespace fastJSON
             this._output.Append('}');
         }
 #endif
+
         bool _TypesWritten = false;
         private void WriteObject(object obj)
         {
@@ -284,8 +289,12 @@ namespace fastJSON
                 _output.Append('{');
             else
             {
-                if (_TypesWritten== false)
-                    _output.Append("{$types$");
+                if (_TypesWritten == false)
+                {
+                    _output.Append("{");
+                    _before = _output;
+                    _output = new StringBuilder();
+                }
                 else
                     _output.Append("{");
             }

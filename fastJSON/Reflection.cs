@@ -70,8 +70,6 @@ namespace fastJSON
                 }
                 else
                 {
-
-
                     if (objtype.IsClass) 
                     {
                         DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);

@@ -3,12 +3,117 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using System.Data;
+using System.Collections;
 
 namespace UnitTests
 {
     public class Tests
     {
         #region [  helpers  ]
+        static int count = 1000;
+        static int tcount = 5;
+        static DataSet ds = new DataSet();
+        static bool exotic = false;
+        static bool dsser = false;
+
+        public enum Gender
+        {
+            Male,
+            Female
+        }
+
+        public class colclass
+        {
+            public colclass()
+            {
+                items = new List<baseclass>();
+                date = DateTime.Now;
+                multilineString = @"
+            AJKLjaskljLA
+       ahjksjkAHJKS سلام فارسی
+       AJKHSKJhaksjhAHSJKa
+       AJKSHajkhsjkHKSJKash
+       ASJKhasjkKASJKahsjk
+            ";
+                isNew = true;
+                booleanValue = true;
+                ordinaryDouble = 0.001;
+                gender = Gender.Female;
+                intarray = new int[5] { 1, 2, 3, 4, 5 };
+            }
+            public bool booleanValue { get; set; }
+            public DateTime date { get; set; }
+            public string multilineString { get; set; }
+            public List<baseclass> items { get; set; }
+            public decimal ordinaryDecimal { get; set; }
+            public double ordinaryDouble { get; set; }
+            public bool isNew { get; set; }
+            public string laststring { get; set; }
+            public Gender gender { get; set; }
+
+            public DataSet dataset { get; set; }
+            public Dictionary<string, baseclass> stringDictionary { get; set; }
+            public Dictionary<baseclass, baseclass> objectDictionary { get; set; }
+            public Dictionary<int, baseclass> intDictionary { get; set; }
+            public Guid? nullableGuid { get; set; }
+            public decimal? nullableDecimal { get; set; }
+            public double? nullableDouble { get; set; }
+            public Hashtable hash { get; set; }
+            public baseclass[] arrayType { get; set; }
+            public byte[] bytes { get; set; }
+            public int[] intarray { get; set; }
+
+        }
+
+        public static colclass CreateObject()
+        {
+            var c = new colclass();
+
+            c.booleanValue = true;
+            c.ordinaryDecimal = 3;
+
+            if (exotic)
+            {
+                c.nullableGuid = Guid.NewGuid();
+                c.hash = new Hashtable();
+                c.bytes = new byte[1024];
+                c.stringDictionary = new Dictionary<string, baseclass>();
+                c.objectDictionary = new Dictionary<baseclass, baseclass>();
+                c.intDictionary = new Dictionary<int, baseclass>();
+                c.nullableDouble = 100.003;
+
+                if (dsser)
+                    c.dataset = ds;
+                c.nullableDecimal = 3.14M;
+
+                c.hash.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
+                c.hash.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+
+                c.stringDictionary.Add("name1", new class2("1", "code", "desc"));
+                c.stringDictionary.Add("name2", new class1("1", "code", Guid.NewGuid()));
+
+                c.intDictionary.Add(1, new class2("1", "code", "desc"));
+                c.intDictionary.Add(2, new class1("1", "code", Guid.NewGuid()));
+
+                c.objectDictionary.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
+                c.objectDictionary.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+
+                c.arrayType = new baseclass[2];
+                c.arrayType[0] = new class1();
+                c.arrayType[1] = new class2();
+            }
+
+
+            c.items.Add(new class1("1", "1", Guid.NewGuid()));
+            c.items.Add(new class2("2", "2", "desc1"));
+            c.items.Add(new class1("3", "3", Guid.NewGuid()));
+            c.items.Add(new class2("4", "4", "desc2"));
+
+            c.laststring = "" + DateTime.Now;
+
+            return c;
+        }
+
         public class baseclass
         {
             public string Name { get; set; }
@@ -47,6 +152,7 @@ namespace UnitTests
             public int Age { get; set; }
             public baseclass[] objs { get; set; }
             public Dictionary<string, class1> dic { get; set; }
+            public NoExt intern { get; set; }
         }
 
         public class Retclass
@@ -135,9 +241,9 @@ namespace UnitTests
             r.date = DateTime.Now;
             r.ds = CreateDataset().Tables[0];
 
-            var b = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(b);
-            var o = fastJSON.JSON.Instance.ToObject(b);
+            var s = fastJSON.JSON.Instance.ToJSON(r);
+            Console.WriteLine(s);
+            var o = fastJSON.JSON.Instance.ToObject(s);
 
             Assert.AreEqual(2312, (o as Retclass).Field2);
         }
@@ -153,9 +259,9 @@ namespace UnitTests
             r.date = DateTime.Now;
             r.ds = CreateDataset().Tables[0];
 
-            var b = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(b);
-            var o = fastJSON.JSON.Instance.ToObject(b);
+            var s = fastJSON.JSON.Instance.ToJSON(r);
+            Console.WriteLine(s);
+            var o = fastJSON.JSON.Instance.ToObject(s);
 
             Assert.AreEqual(2312, ((Retstruct)o).Field2);
         }
@@ -205,6 +311,20 @@ namespace UnitTests
         }
 
         [Test]
+        public static void List_int()
+        {
+            List<int> ls = new List<int>();
+            ls.AddRange(new int[] { 1, 2, 3, 4, 5, 10 });
+
+            var s = fastJSON.JSON.Instance.ToJSON(ls);
+            Console.WriteLine(s);
+            var p = fastJSON.JSON.Instance.Parse(s);
+            var o = fastJSON.JSON.Instance.ToObject<List<int>>(s);
+
+            Assert.IsNotNull(o);
+        }
+
+        [Test]
         public static void Variables()
         {
             var s = fastJSON.JSON.Instance.ToJSON(42);
@@ -227,7 +347,7 @@ namespace UnitTests
             r.Add("11", new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add("12", new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<string, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -239,7 +359,7 @@ namespace UnitTests
             r.Add("11", new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add("12", new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r, new fastJSON.JSONParameters { UseExtensions = false });
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<string, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -251,7 +371,7 @@ namespace UnitTests
             r.Add(11, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(12, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<int, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -263,7 +383,7 @@ namespace UnitTests
             r.Add(11, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(12, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r, new fastJSON.JSONParameters { UseExtensions = false });
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<int, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -275,7 +395,7 @@ namespace UnitTests
             r.Add(new Retstruct { Field1 = "111", Field2 = 1, date = DateTime.Now }, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(new Retstruct { Field1 = "222", Field2 = 2, date = DateTime.Now }, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<Retstruct, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -287,7 +407,7 @@ namespace UnitTests
             r.Add(new Retstruct { Field1 = "111", Field2 = 1, date = DateTime.Now }, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(new Retstruct { Field1 = "222", Field2 = 2, date = DateTime.Now }, new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r, new fastJSON.JSONParameters { UseExtensions = false });
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<Dictionary<Retstruct, Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -299,7 +419,7 @@ namespace UnitTests
             r.Add(new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(new Retclass { Field1 = "222", Field2 = 3, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<List<Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -311,7 +431,7 @@ namespace UnitTests
             r.Add(new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now });
             r.Add(new Retclass { Field1 = "222", Field2 = 3, date = DateTime.Now });
             var s = fastJSON.JSON.Instance.ToJSON(r, new fastJSON.JSONParameters { UseExtensions = false });
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject<List<Retclass>>(s);
             Assert.AreEqual(2, o.Count);
         }
@@ -368,6 +488,7 @@ namespace UnitTests
             object oo = fastJSON.JSON.Instance.ToObject<NoExt>(str);
 
             NoExt nee = new NoExt();
+            nee.intern = new NoExt { Name = "aaa" };
             fastJSON.JSON.Instance.FillObject(nee, strr);
         }
 
@@ -377,6 +498,49 @@ namespace UnitTests
             var q = new { Name = "asassa", Address = "asadasd", Age = 12 };
             string sq = fastJSON.JSON.Instance.ToJSON(q, new fastJSON.JSONParameters { EnableAnonymousTypes = true });
             Console.WriteLine(sq);
+        }
+
+        [Test]
+        public static void Speed_Test_Deserialize()
+        {
+            Console.Write("fastjson deserialize");
+            colclass c = CreateObject();
+            double t = 0;
+            for (int pp = 0; pp < tcount; pp++)
+            {
+                DateTime st = DateTime.Now;
+                colclass deserializedStore;
+                string jsonText = fastJSON.JSON.Instance.ToJSON(c);
+                //Console.WriteLine(" size = " + jsonText.Length);
+                for (int i = 0; i < count; i++)
+                {
+                    deserializedStore = (colclass)fastJSON.JSON.Instance.ToObject(jsonText);
+                }
+                t += DateTime.Now.Subtract(st).TotalMilliseconds;
+                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+            }
+            Console.WriteLine("\tAVG = " + t / tcount);
+        }
+
+        [Test]
+        public static void Speed_Test_Serialize()
+        {
+            Console.Write("fastjson serialize");
+            //fastJSON.JSON.Instance.Parameters.UsingGlobalTypes = false;
+            colclass c = CreateObject();
+            double t = 0;
+            for (int pp = 0; pp < tcount; pp++)
+            {
+                DateTime st = DateTime.Now;
+                string jsonText = null;
+                for (int i = 0; i < count; i++)
+                {
+                    jsonText = fastJSON.JSON.Instance.ToJSON(c);
+                }
+                t += DateTime.Now.Subtract(st).TotalMilliseconds;
+                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+            }
+            Console.WriteLine("\tAVG = " + t / tcount);
         }
 
         //[Test]

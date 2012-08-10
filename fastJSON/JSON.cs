@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-#if SILVERLIGHT
-
-#else
+#if !SILVERLIGHT
 using System.Data;
 #endif
 using System.Globalization;
@@ -130,16 +128,15 @@ namespace fastJSON
                     return ParseDictionary(o as Dictionary<string, object>, null, type, null);
             }
 
-            if (o is ArrayList)
+            if (o is List<object>)
             {
                 if (type != null && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // kv format
-                {
                     return RootDictionary(o, type);
-                }
+                
                 if (type != null && type.GetGenericTypeDefinition() == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
                 else
-                    return (o as ArrayList).ToArray();
+                    return (o as List<object>).ToArray();
             }
             return o;
         }
@@ -175,8 +172,8 @@ namespace fastJSON
                     object k = ChangeType(kv.Key, gtypes[0]);
                     if (kv.Value is Dictionary<string, object>)
                         v = ParseDictionary(kv.Value as Dictionary<string, object>, null, gtypes[1], null);
-                    else if (kv.Value is ArrayList)
-                        v = CreateArray(kv.Value as ArrayList, typeof(object), typeof(object), null);
+                    else if (kv.Value is List<object>)
+                        v = CreateArray(kv.Value as List<object>, typeof(object), typeof(object), null);
                     else
                         v = ChangeType(kv.Value, gtypes[1]);
                     o.Add(k, v);
@@ -184,8 +181,8 @@ namespace fastJSON
 
                 return o;
             }
-            if (parse is ArrayList)
-                return CreateDictionary(parse as ArrayList, type, gtypes, null);
+            if (parse is List<object>)
+                return CreateDictionary(parse as List<object>, type, gtypes, null);
 
             return null;
         }
@@ -451,20 +448,14 @@ namespace fastJSON
                             oset = (bool)v;
 
                         else if (pi.isGenericType && pi.isValueType == false && pi.isDictionary == false)
-#if SILVERLIGHT
                             oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
-#else
-                            oset = CreateGenericList((ArrayList)v, pi.pt, pi.bt, globaltypes);
-#endif
+
                         else if (pi.isByteArray)
                             oset = Convert.FromBase64String((string)v);
 
                         else if (pi.isArray && pi.isValueType == false)
-#if SILVERLIGHT
                             oset = CreateArray((List<object>)v, pi.pt, pi.bt, globaltypes);
-#else
-                            oset = CreateArray((ArrayList)v, pi.pt, pi.bt, globaltypes);
-#endif
+
                         else if (pi.isGuid)
                             oset = CreateGuid((string)v);
 #if !SILVERLIGHT
@@ -478,13 +469,8 @@ namespace fastJSON
                         else if (pi.isStringDictionary)
                             oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes);
 
-#if !SILVERLIGHT
                         else if (pi.isDictionary || pi.isHashtable)
-                            oset = CreateDictionary((ArrayList)v, pi.pt, pi.GenericTypes, globaltypes);
-#else 
-                        else if (pi.isDictionary)
                             oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes);
-#endif
 
                         else if (pi.isEnum)
                             oset = CreateEnum(pi.pt, (string)v);
@@ -493,18 +479,14 @@ namespace fastJSON
                             oset = CreateDateTime((string)v);
 
                         else if (pi.isClass && v is Dictionary<string, object>)
-                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, null);
+                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(input));
 
                         else if (pi.isValueType)
                             oset = ChangeType(v, pi.changeType);
 
-#if SILVERLIGHT
                         else if (v is List<object>)
                             oset = CreateArray((List<object>)v, pi.pt, typeof(object), globaltypes);
-#else
-                        else if (v is ArrayList)
-                            oset = CreateArray((ArrayList)v, pi.pt, typeof(object), globaltypes);
-#endif
+
                         else
                             oset = v;
 
@@ -596,7 +578,6 @@ namespace fastJSON
                 return new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc).ToLocalTime();
         }
 
-#if SILVERLIGHT
         private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
         {
             Array col = Array.CreateInstance(bt, data.Count);
@@ -605,35 +586,16 @@ namespace fastJSON
             {
                 object ob = data[i];
                 if (ob is IDictionary)
-                    col.SetValue(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt), i);
+                    col.SetValue(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null), i);
                 else
                     col.SetValue(ChangeType(ob, bt), i);
             }
 
             return col;
         }
-#else
-        private object CreateArray(ArrayList data, Type pt, Type bt, Dictionary<string, object> globalTypes)
-        {
-            ArrayList col = new ArrayList();
-            // create an array of objects
-            foreach (object ob in data)
-            {
-                if (ob is IDictionary)
-                    col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
-                else
-                    col.Add(ChangeType(ob, bt));
-            }
-            return col.ToArray(bt);
-        }
-#endif
 
 
-#if SILVERLIGHT
         private object CreateGenericList(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
-#else
-        private object CreateGenericList(ArrayList data, Type pt, Type bt, Dictionary<string, object> globalTypes)
-#endif
         {
             IList col = (IList)Reflection.Instance.FastCreateInstance(pt);
             // create an array of objects
@@ -641,13 +603,10 @@ namespace fastJSON
             {
                 if (ob is IDictionary)
                     col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
-#if SILVERLIGHT
+
                 else if (ob is List<object>)
                     col.Add(((List<object>)ob).ToArray());
-#else
-                else if (ob is ArrayList)
-                    col.Add(((ArrayList)ob).ToArray());
-#endif
+
                 else
                     col.Add(ChangeType(ob, bt));
             }
@@ -679,11 +638,7 @@ namespace fastJSON
             return col;
         }
 
-#if SILVERLIGHT
         private object CreateDictionary(List<object> reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
-#else
-        private object CreateDictionary(ArrayList reader, Type pt, Type[] types, Dictionary<string, object> globalTypes)
-#endif
         {
             IDictionary col = (IDictionary)Reflection.Instance.FastCreateInstance(pt);
             Type t1 = null;
@@ -736,7 +691,7 @@ namespace fastJSON
             {
                 if (pair.Key == "$type" || pair.Key == "$schema") continue;
 
-                ArrayList rows = (ArrayList)pair.Value;
+                List<object> rows = (List<object>)pair.Value;
                 if (rows == null) continue;
 
                 DataTable dt = ds.Tables[pair.Key];
@@ -770,7 +725,7 @@ namespace fastJSON
             }
         }
 
-        private void ReadDataTable(ArrayList rows, DataTable dt)
+        private void ReadDataTable(List<object> rows, DataTable dt)
         {
             dt.BeginInit();
             dt.BeginLoadData();
@@ -785,7 +740,7 @@ namespace fastJSON
                     datecol.Add(c.Ordinal);
             }
 
-            foreach (ArrayList row in rows)
+            foreach (List<object> row in rows)
             {
                 object[] v = new object[row.Count];
                 row.CopyTo(v, 0);
@@ -838,7 +793,7 @@ namespace fastJSON
                 if (pair.Key == "$type" || pair.Key == "$schema")
                     continue;
 
-                var rows = (ArrayList)pair.Value;
+                var rows = (List<object>)pair.Value;
                 if (rows == null)
                     continue;
 

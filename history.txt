@@ -122,4 +122,8 @@
 - deserialize ToObject< List<T> >
 - * breaking change in Parse , numbers are returned as decimals and longs not strings
 
-
+2.0.1
+- bug fix preserve internal objects when FillObject called
+- changed ArrayList to List<object> and consolidated silverlight code
+- added more tests
+- speed increase when using global types ($types)

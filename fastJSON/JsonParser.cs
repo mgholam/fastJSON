@@ -9,9 +9,6 @@ namespace fastJSON
     /// <summary>
     /// This class encodes and decodes JSON strings.
     /// Spec. details, see http://www.json.org/
-    /// 
-    /// JSON uses Arrays and Objects. These correspond here to the datatypes ArrayList and Hashtable.
-    /// All numbers are parsed to doubles.
     /// </summary>
     internal class JsonParser
     {
@@ -92,15 +89,9 @@ namespace fastJSON
             }
         }
 
-#if SILVERLIGHT
         private List<object> ParseArray()
         {
             List<object> array = new List<object>();
-#else
-        private ArrayList ParseArray()
-        {
-            ArrayList array = new ArrayList();
-#endif
             ConsumeToken(); // [
 
             while (true)
@@ -117,9 +108,7 @@ namespace fastJSON
                         return array;
 
                     default:
-                        {
-                            array.Add(ParseValue());
-                        }
+                        array.Add(ParseValue());
                         break;
                 }
             }
@@ -315,7 +304,7 @@ namespace fastJSON
             } while (true);
 
             string s = new string(json, startIndex, index - startIndex);
-            if(dec)
+            if (dec)
                 return decimal.Parse(s);
             return CreateLong(s);
         }
@@ -387,9 +376,19 @@ namespace fastJSON
                 case '"':
                     return Token.String;
 
-				case '0': case '1': case '2': case '3': case '4':
-				case '5': case '6': case '7': case '8': case '9':
-                case '-': case '+': case '.':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
                     return Token.Number;
 
                 case ':':
