@@ -31,10 +31,9 @@ namespace fastJSON
             WriteValue(obj);
 
             string str = "";
-            if (_params.UsingGlobalTypes)
+            if (_params.UsingGlobalTypes && _globalTypes != null && _globalTypes.Count > 0)
             {
-                StringBuilder sb = new StringBuilder();
-                sb.Append(_before.ToString());
+                StringBuilder sb = _before;
                 sb.Append("\"$types\":{");
                 bool pendingSeparator = false;
                 foreach (var kv in _globalTypes)

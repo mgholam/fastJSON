@@ -127,3 +127,6 @@
 - changed ArrayList to List<object> and consolidated silverlight code
 - added more tests
 - speed increase when using global types ($types)
+
+2.0.2
+- bug fix $types and arrays

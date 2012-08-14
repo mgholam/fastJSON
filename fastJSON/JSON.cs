@@ -67,7 +67,7 @@ namespace fastJSON
         /// </summary>
         public JSONParameters Parameters = new JSONParameters();
         private JSONParameters _params;
-        // FIX : extensions off should not output $types 
+        
         public string ToJSON(object obj)
         {
             _params = Parameters;
@@ -88,7 +88,7 @@ namespace fastJSON
             // FEATURE : enable extensions when you can deserialize anon types
             if (_params.EnableAnonymousTypes) { _params.UseExtensions = false; _params.UsingGlobalTypes = false; Reflection.Instance.ShowReadOnlyProperties = true; }
             _usingglobals = _params.UsingGlobalTypes;
-            return new JSONSerializer(param).ConvertToJSON(obj);
+            return new JSONSerializer(_params).ConvertToJSON(obj);
         }
 
         public object Parse(string json)

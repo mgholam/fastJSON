@@ -232,6 +232,14 @@ namespace UnitTests
         #endregion
 
         [Test]
+        public static void objectarray()
+        {
+            var o = new object[] { 1, "sdaffs", DateTime.Now };
+            var s = fastJSON.JSON.Instance.ToJSON(o);
+            var p = fastJSON.JSON.Instance.ToObject(s);
+        }
+
+        [Test]
         public static void ClassTest()
         {
             Retclass r = new Retclass();
