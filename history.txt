@@ -130,3 +130,8 @@
 
 2.0.2
 - bug fix $types and arrays
+
+2.0.3
+- readonly property checking on deserialize (thanks to Slava Pocheptsov)
+- bug fix deserialize nested types with unit test (thanks to Slava Pocheptsov)
+- fix the silverlight4 project build (silverlight5 is not supported)

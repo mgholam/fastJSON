@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-#if SILVERLIGHT
-
-#else
+#if !SILVERLIGHT
 using System.Data;
 #endif
 using System.Globalization;

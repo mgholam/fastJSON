@@ -4,7 +4,6 @@ using System.Text;
 using System.Reflection.Emit;
 using System.Reflection;
 using System.Collections;
-using System.Data;
 
 namespace fastJSON
 {
@@ -154,7 +153,7 @@ namespace fastJSON
             Type[] arguments = new Type[2];
             arguments[0] = arguments[1] = typeof(object);
 
-            DynamicMethod setter = new DynamicMethod("_", typeof(object), arguments, type);
+            DynamicMethod setter = new DynamicMethod("_", typeof(object), arguments);
             ILGenerator il = setter.GetILGenerator();
 
             if (!type.IsClass) // structs
@@ -268,7 +267,7 @@ namespace fastJSON
             foreach (PropertyInfo p in props)
             {
                 if (!p.CanWrite && ShowReadOnlyProperties == false) continue;
-
+                
                 object[] att = p.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
                 if (att != null && att.Length > 0)
                     continue;
