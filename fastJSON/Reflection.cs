@@ -7,14 +7,14 @@ using System.Collections;
 
 namespace fastJSON
 {
-    internal class Getters
+    internal struct Getters
     {
         public string Name;
         public Reflection.GenericGetter Getter;
         public Type propertyType;
     }
 
-    internal class Reflection
+    internal sealed class Reflection
     {
         public readonly static Reflection Instance = new Reflection();
         private Reflection()

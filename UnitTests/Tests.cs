@@ -161,6 +161,7 @@ namespace UnitTests
             public string Name { get; set; }
             public string Field1;
             public int Field2;
+            public object obj;
             public string ppp { get { return "sdfas df "; } }
             public DateTime date { get; set; }
             public DataTable ds { get; set; }
@@ -561,7 +562,7 @@ namespace UnitTests
         public static void List_NestedRetClass()
         {
             List<RetNestedclass> r = new List<RetNestedclass>();
-            r.Add(new RetNestedclass{Nested = new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now }});
+            r.Add(new RetNestedclass { Nested = new Retclass { Field1 = "111", Field2 = 2, date = DateTime.Now } });
             r.Add(new RetNestedclass { Nested = new Retclass { Field1 = "222", Field2 = 3, date = DateTime.Now } });
             var s = fastJSON.JSON.Instance.ToJSON(r);
             Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
@@ -569,6 +570,37 @@ namespace UnitTests
             Assert.AreEqual(2, o.Count);
         }
 
+        [Test]
+        public static void NullTest()
+        {
+            var s = fastJSON.JSON.Instance.ToJSON(null);
+            Assert.AreEqual("null", s);
+            var o = fastJSON.JSON.Instance.ToObject(s);
+            Assert.AreEqual(null, o);
+        }
+
+        [Test]
+        public static void DisableExtensions()
+        {
+            var p = new fastJSON.JSONParameters { UseExtensions = false, SerializeNullValues = false };
+            var s = fastJSON.JSON.Instance.ToJSON(new Retclass { date = DateTime.Now, Name = "aaaaaaa" }, p);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
+            var o = fastJSON.JSON.Instance.ToObject<Retclass>(s);
+            Assert.AreEqual("aaaaaaa", o.Name);
+        }
+
+        //[Test]
+        //public static void LinkedList()
+        //{
+        //    LinkedList<Retclass> l = new LinkedList<Retclass>();
+        //    var n = l.AddFirst(new Retclass { date = DateTime.Now, Name = "aaa" });
+        //    l.AddAfter(n, new Retclass { Name = "bbbb", date = DateTime.Now });
+
+        //    var s = fastJSON.JSON.Instance.ToJSON(l);
+        //    var o = fastJSON.JSON.Instance.ToObject<LinkedList<Retclass>>(s);
+
+
+        //}
         //[Test]
         //public static void SubClasses()
         //{

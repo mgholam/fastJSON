@@ -10,7 +10,7 @@ namespace fastJSON
     /// This class encodes and decodes JSON strings.
     /// Spec. details, see http://www.json.org/
     /// </summary>
-    internal class JsonParser
+    internal sealed class JsonParser
     {
         enum Token
         {

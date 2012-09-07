@@ -10,7 +10,7 @@ using System.Text;
 
 namespace fastJSON
 {
-    internal class JSONSerializer
+    internal sealed class JSONSerializer
     {
         private StringBuilder _output = new StringBuilder();
         private StringBuilder _before = new StringBuilder();
@@ -323,15 +323,19 @@ namespace fastJSON
             }
 
             List<Getters> g = Reflection.Instance.GetGetters(t);
+            int i = g.Count;
             foreach (var p in g)
             {
-                if (append)
+                i--;
+                if (append && i>0) 
                     _output.Append(',');
                 object o = p.Getter(obj);
                 if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
                     append = false;
                 else
                 {
+                    if (i == 0) // last non null
+                        _output.Append(",");
                     WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)
                     {
@@ -350,7 +354,6 @@ namespace fastJSON
             _current_depth--;
             _output.Append('}');
             _current_depth--;
-
         }
 
         private void WritePairFast(string name, string value)
