@@ -145,4 +145,4 @@
 
 2.0.5
 - fixed number parsing for invariant format 
-- added a test for German locale number testing
+- added a test for German locale number testing (,. problems)
