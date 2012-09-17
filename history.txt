@@ -142,3 +142,7 @@
 - bug fix SerializeNullValues=false and an extra comma at the end
 - UseExtensions=false will disable global types also
 - fixed parameters setting for Parse()
+
+2.0.5
+- fixed number parsing for invariant format 
+- added a test for German locale number testing
