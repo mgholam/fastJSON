@@ -146,3 +146,8 @@
 2.0.5
 - fixed number parsing for invariant format 
 - added a test for German locale number testing (,. problems)
+
+2.0.6
+- singleton uses [ThreadStatic] for concurrency (thanks to Philip Jander) 
+- bug fix extra comma in the output when only 1 property in the object (thanks to Philip Jander) 
+

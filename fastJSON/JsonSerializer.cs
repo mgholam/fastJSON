@@ -323,7 +323,8 @@ namespace fastJSON
             }
 
             List<Getters> g = Reflection.Instance.GetGetters(t);
-            int i = g.Count;
+            int c = g.Count;
+            int i = c;
             foreach (var p in g)
             {
                 i--;
@@ -334,7 +335,7 @@ namespace fastJSON
                     append = false;
                 else
                 {
-                    if (i == 0) // last non null
+                    if (i == 0 && c>1) // last non null
                         _output.Append(",");
                     WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)

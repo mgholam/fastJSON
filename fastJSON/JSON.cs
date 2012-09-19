@@ -57,14 +57,21 @@ namespace fastJSON
         {
             if (UseExtensions == false) // disable conflicting params
             {
-                UsingGlobalTypes = false; 
+                UsingGlobalTypes = false;
             }
         }
     }
 
     public sealed class JSON
     {
-        public readonly static JSON Instance = new JSON();
+        //public readonly static JSON Instance = new JSON();
+        [ThreadStatic]
+        private static JSON _instance;
+
+        public static JSON Instance
+        {
+            get { return _instance ?? (_instance = new JSON()); }
+        }
 
         private JSON()
         {
@@ -74,7 +81,7 @@ namespace fastJSON
         /// </summary>
         public JSONParameters Parameters = new JSONParameters();
         private JSONParameters _params;
-        
+
         public string ToJSON(object obj)
         {
             _params = Parameters;
@@ -147,7 +154,7 @@ namespace fastJSON
             {
                 if (type != null && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // kv format
                     return RootDictionary(o, type);
-                
+
                 if (type != null && type.GetGenericTypeDefinition() == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
                 else
@@ -450,62 +457,62 @@ namespace fastJSON
                         object oset = null;
 
                         if (pi.isInt)
-                            oset = (int) ((long) v);
+                            oset = (int)((long)v);
 #if CUSTOMTYPE
                         else if (pi.isCustomType)
                             oset = CreateCustom((string)v, pi.pt);
 #endif
                         else if (pi.isLong)
-                            oset = (long) v;
+                            oset = (long)v;
 
                         else if (pi.isString)
-                            oset = (string) v;
+                            oset = (string)v;
 
                         else if (pi.isBool)
-                            oset = (bool) v;
+                            oset = (bool)v;
 
                         else if (pi.isGenericType && pi.isValueType == false && pi.isDictionary == false)
-                            oset = CreateGenericList((List<object>) v, pi.pt, pi.bt, globaltypes);
+                            oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 
                         else if (pi.isByteArray)
-                            oset = Convert.FromBase64String((string) v);
+                            oset = Convert.FromBase64String((string)v);
 
                         else if (pi.isArray && pi.isValueType == false)
-                            oset = CreateArray((List<object>) v, pi.pt, pi.bt, globaltypes);
+                            oset = CreateArray((List<object>)v, pi.pt, pi.bt, globaltypes);
 
                         else if (pi.isGuid)
-                            oset = CreateGuid((string) v);
+                            oset = CreateGuid((string)v);
 #if !SILVERLIGHT
                         else if (pi.isDataSet)
-                            oset = CreateDataset((Dictionary<string, object>) v, globaltypes);
+                            oset = CreateDataset((Dictionary<string, object>)v, globaltypes);
 
                         else if (pi.isDataTable)
-                            oset = this.CreateDataTable((Dictionary<string, object>) v, globaltypes);
+                            oset = this.CreateDataTable((Dictionary<string, object>)v, globaltypes);
 #endif
 
                         else if (pi.isStringDictionary)
-                            oset = CreateStringKeyDictionary((Dictionary<string, object>) v, pi.pt, pi.GenericTypes, globaltypes);
+                            oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes);
 #if !SILVERLIGHT
                         else if (pi.isDictionary || pi.isHashtable)
 #else
                         else if (pi.isDictionary)
 #endif
-                            oset = CreateDictionary((List<object>) v, pi.pt, pi.GenericTypes, globaltypes);
+                            oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes);
 
                         else if (pi.isEnum)
-                            oset = CreateEnum(pi.pt, (string) v);
+                            oset = CreateEnum(pi.pt, (string)v);
 
                         else if (pi.isDateTime)
-                            oset = CreateDateTime((string) v);
+                            oset = CreateDateTime((string)v);
 
                         else if (pi.isClass && v is Dictionary<string, object>)
-                            oset = ParseDictionary((Dictionary<string, object>) v, globaltypes, pi.pt, pi.getter(o));
+                            oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(o));
 
                         else if (pi.isValueType)
                             oset = ChangeType(v, pi.changeType);
 
                         else if (v is List<object>)
-                            oset = CreateArray((List<object>) v, pi.pt, typeof (object), globaltypes);
+                            oset = CreateArray((List<object>)v, pi.pt, typeof(object), globaltypes);
 
                         else
                             oset = v;
