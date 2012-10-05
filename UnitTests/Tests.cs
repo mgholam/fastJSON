@@ -752,6 +752,18 @@ namespace UnitTests
                 Console.WriteLine("ctor PayLoadB.");
             }
         }
+
+        public class commaclass
+        {
+            public string Name = "aaa";
+        }
+
+        [Test]
+        public static void CommaTests()
+        {
+            var s = fastJSON.JSON.Instance.ToJSON(new commaclass());
+            Assert.True(s.Contains("\"$type\":\"1\","));
+        }
         //[Test]
         //public static void LinkedList()
         //{

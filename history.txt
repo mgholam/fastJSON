@@ -151,3 +151,5 @@
 - singleton uses [ThreadStatic] for concurrency (thanks to Philip Jander) 
 - bug fix extra comma in the output when only 1 property in the object (thanks to Philip Jander) 
 
+2.0.7
+- bug fix missing comma with single property and extension enabled
