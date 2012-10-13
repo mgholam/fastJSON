@@ -153,3 +153,8 @@
 
 2.0.7
 - bug fix missing comma with single property and extension enabled
+
+2.0.8
+- bug fix big number conversions 
+- * breaking change Parse will return longs and doubles instead of longs and decimals
+- ToObject on value types will auto convert the data (e.g ToObject<deciaml>() )

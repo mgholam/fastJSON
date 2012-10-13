@@ -600,6 +600,14 @@ namespace UnitTests
             Assert.AreEqual(0, a.Length);
         }
 
+        [Test]
+        public static void BigNumber()
+        {
+            double d = 4.16366160299608e18;
+            var s = fastJSON.JSON.Instance.ToJSON(d);
+            var o = fastJSON.JSON.Instance.ToObject<double>(s);
+            Assert.AreEqual(d, o);
+        }
 
         [Test]
         public static void GermanNumbers()
@@ -607,8 +615,8 @@ namespace UnitTests
             Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("de");
             decimal d = 3.141592654M;
             var s = fastJSON.JSON.Instance.ToJSON(d);
-            var o = fastJSON.JSON.Instance.ToObject(s);
-            Assert.AreEqual(d, (decimal)o);
+            var o = fastJSON.JSON.Instance.ToObject<decimal>(s);
+            Assert.AreEqual(d, o);
 
             Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en");
         }
@@ -763,6 +771,21 @@ namespace UnitTests
         {
             var s = fastJSON.JSON.Instance.ToJSON(new commaclass());
             Assert.True(s.Contains("\"$type\":\"1\","));
+        }
+
+        public class arrayclass
+        {
+            public int[] ints { get; set; }
+            public string[] strs;
+        }
+        [Test]
+        public static void ArrayTest()
+        {
+            arrayclass a = new arrayclass();
+            a.ints = new int[] { 3, 1, 4 };
+            a.strs = new string[] {"a","b","c"};
+            var s = fastJSON.JSON.Instance.ToJSON(a);
+            var o = fastJSON.JSON.Instance.ToObject(s);
         }
         //[Test]
         //public static void LinkedList()
