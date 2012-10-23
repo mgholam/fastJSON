@@ -817,10 +817,25 @@ namespace UnitTests
 
         //}
 
-        //[Test]
-        //public static void Datasets()
-        //{
+        [Test]
+        public static void Datasets()
+        {
+            var ds = CreateDataset();
 
-        //}
+            var s = fastJSON.JSON.Instance.ToJSON(ds);
+
+            var o = fastJSON.JSON.Instance.ToObject<DataSet>(s);
+
+            Assert.AreEqual(typeof(DataSet), o.GetType());
+            Assert.IsNotNull(o);
+            Assert.AreEqual(2, o.Tables.Count);
+
+
+            s = fastJSON.JSON.Instance.ToJSON(ds.Tables[0]);
+            var oo = fastJSON.JSON.Instance.ToObject<DataTable>(s);
+            Assert.IsNotNull(oo);
+            Assert.AreEqual(typeof(DataTable), oo.GetType());
+            Assert.AreEqual(100, oo.Rows.Count);
+        }
     }
 }
