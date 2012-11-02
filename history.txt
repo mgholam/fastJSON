@@ -162,3 +162,6 @@
 2.0.9
 - added support for root level DataSet and DataTable deserialize (you have to do ToObject<DataSet>(...) )
 - added dataset tests
+
+2.0.10
+- added MonoDroid project
