@@ -580,6 +580,8 @@ namespace UnitTests
             Assert.AreEqual("null", s);
             var o = fastJSON.JSON.Instance.ToObject(s);
             Assert.AreEqual(null, o);
+            o = fastJSON.JSON.Instance.ToObject<class1>(s);
+            Assert.AreEqual(null, o);
         }
 
         [Test]

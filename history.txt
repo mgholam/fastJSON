@@ -169,4 +169,4 @@
 2.0.11
 - bug fix single char number json
 - added UseEscapedUnicode parameter for controlling string output in \uxxxx for unicode/utf8 format
--
+- bug fix null and generic ToObject<T>()

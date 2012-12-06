@@ -145,6 +145,9 @@ namespace fastJSON
             _usingglobals = _params.UsingGlobalTypes;
 
             object o = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
+            if (o == null)
+                return null;
+
 #if !SILVERLIGHT
             if (type != null && type == typeof(DataSet))
                 return CreateDataset(o as Dictionary<string, object>, null);
