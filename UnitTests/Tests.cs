@@ -784,7 +784,7 @@ namespace UnitTests
         {
             arrayclass a = new arrayclass();
             a.ints = new int[] { 3, 1, 4 };
-            a.strs = new string[] {"a","b","c"};
+            a.strs = new string[] { "a", "b", "c" };
             var s = fastJSON.JSON.Instance.ToJSON(a);
             var o = fastJSON.JSON.Instance.ToObject(s);
         }
@@ -813,10 +813,53 @@ namespace UnitTests
         //}
 
         //[Test]
-        //public static void IgnoreCase()
+        //public static void SimpleTests()
         //{
+        //    #region ulong
+        //    var s = JSON.Instance.ToJSON(long.MaxValue);
+        //    var o = JSON.Instance.ToObject(s);
+        //    Assert.That(long.MaxValue, Is.EqualTo(o));
+        //    #endregion
 
+        //    #region float
+        //    s = JSON.Instance.ToJSON(float.MinValue);
+        //    o = JSON.Instance.ToObject<float>(s);
+        //    Assert.That(float.MinValue, Is.EqualTo(o));
+
+        //    s = JSON.Instance.ToJSON(float.MaxValue);
+        //    o = JSON.Instance.ToObject<float>(s);
+        //    Assert.That(float.MaxValue, Is.EqualTo(o));
+        //    #endregion
+
+        //    #region double
+        //    s = JSON.Instance.ToJSON(double.MinValue);
+        //    o = JSON.Instance.ToObject<double>(s);
+        //    Assert.That(double.MinValue, Is.EqualTo(o));
+
+        //    s = JSON.Instance.ToJSON(double.MaxValue);
+        //    o = JSON.Instance.ToObject<double>(s);
+        //    Assert.That(double.MaxValue, Is.EqualTo(o));
+        //    #endregion
+
+        //    #region decimal
+        //    s = JSON.Instance.ToJSON(decimal.MinValue);
+        //    o = JSON.Instance.ToObject(s);
+        //    Assert.That(decimal.MinValue, Is.EqualTo(o));
+
+        //    s = JSON.Instance.ToJSON(decimal.MaxValue);
+        //    o = JSON.Instance.ToObject(s);
+        //    Assert.That(decimal.MaxValue, Is.EqualTo(o));
+        //    #endregion
         //}
+
+        [Test]
+        public static void SingleCharNumber()
+        {
+            sbyte zero = 0;
+            var s = JSON.Instance.ToJSON(zero);
+            var o = JSON.Instance.ToObject(s);
+            Assert.That(zero, Is.EqualTo(o));
+        }
 
         [Test]
         public static void Datasets()
@@ -838,5 +881,25 @@ namespace UnitTests
             Assert.AreEqual(typeof(DataTable), oo.GetType());
             Assert.AreEqual(100, oo.Rows.Count);
         }
+
+        //public class arrclass
+        //{
+        //    public string name { get; set; }
+        //    public int age { get; set; }
+        //}
+
+        //[Test]
+        //public static void ClassArray()
+        //{
+        //    arrclass[] a = new arrclass[3];
+
+        //    a[0] = new arrclass { age = 1, name = "a" };
+        //    a[1] = new arrclass { name = "b", age = 2 };
+        //    a[2] = new arrclass { name = "c", age = 3 };
+
+        //    var s = fastJSON.JSON.Instance.ToJSON(a, new JSONParameters { UseExtensions = false });
+        //    var o = fastJSON.JSON.Instance.ToObject<List<arrclass>>(s);
+
+        //}
     }
 }

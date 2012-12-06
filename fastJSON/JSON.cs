@@ -17,7 +17,7 @@ namespace fastJSON
     public sealed class JSONParameters
     {
         /// <summary>
-        /// Use the optimized fast Dataset Schema format (dfault = True)
+        /// Use the optimized fast Dataset Schema format (default = True)
         /// </summary>
         public bool UseOptimizedDatasetSchema = true;
         /// <summary>
@@ -52,6 +52,10 @@ namespace fastJSON
         /// Enable fastJSON extensions $types, $type, $map (default = True)
         /// </summary>
         public bool UseExtensions = true;
+        /// <summary>
+        /// Use escaped unicode i.e. \uXXXX format for non ASCII characters (default = True)
+        /// </summary>
+        public bool UseEscapedUnicode = true;
 
         public void FixValues()
         {
@@ -158,10 +162,10 @@ namespace fastJSON
 
             if (o is List<object>)
             {
-                if (type != null && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // kv format
+                if (type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) // kv format
                     return RootDictionary(o, type);
 
-                if (type != null && type.GetGenericTypeDefinition() == typeof(List<>)) // deserialize to generic list
+                if (type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
                 else
                     return (o as List<object>).ToArray();

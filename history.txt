@@ -165,3 +165,8 @@
 
 2.0.10
 - added MonoDroid project
+
+2.0.11
+- bug fix single char number json
+- added UseEscapedUnicode parameter for controlling string output in \uxxxx for unicode/utf8 format
+-
