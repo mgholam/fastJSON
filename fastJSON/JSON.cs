@@ -358,6 +358,10 @@ namespace fastJSON
 
             else if (conversionType.IsEnum)
                 return CreateEnum(conversionType, (string)value);
+#if CUSTOMTYPE
+            else if (IsTypeRegistered(conversionType))
+                return CreateCustom((string)value, conversionType);
+#endif
 
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
         }
