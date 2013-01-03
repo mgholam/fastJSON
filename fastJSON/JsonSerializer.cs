@@ -341,7 +341,7 @@ namespace fastJSON
                 object o = p.Getter(obj);
                 if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
                 {
-                    append = false;
+                    //append = false;
                 }
                 else
                 {
