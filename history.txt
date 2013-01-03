@@ -171,3 +171,7 @@
 - added UseEscapedUnicode parameter for controlling string output in \uxxxx for unicode/utf8 format
 - bug fix null and generic ToObject<>()
 - bug fix List<> of custom types 
+
+2.0.12
+- bug fix nested generic types (thanks to Zambiorix)
+- bug fix comma edge cases with nulls

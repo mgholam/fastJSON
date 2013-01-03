@@ -327,20 +327,24 @@ namespace fastJSON
             List<Getters> g = Reflection.Instance.GetGetters(t);
             int c = g.Count;
             int i = c;
-            if (_params.UseExtensions) // count $type as a property
+            if (_params.UseExtensions || _params.EnableAnonymousTypes) // count $type as a property
                 i++;
             foreach (var p in g)
             {
                 i--;
                 if (append && i > 0)
+                {
                     _output.Append(',');
+                    append = false;
+                }
+                
                 object o = p.Getter(obj);
                 if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
+                {
                     append = false;
+                }
                 else
                 {
-                    if (i == 0 && c > 1) // last non null
-                        _output.Append(",");
                     WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)
                     {
@@ -503,7 +507,7 @@ namespace fastJSON
 
             if (runIndex != -1)
                 _output.Append(s, runIndex, s.Length - runIndex);
-            
+
 
             _output.Append('\"');
         }

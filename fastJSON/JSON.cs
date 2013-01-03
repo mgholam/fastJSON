@@ -492,7 +492,7 @@ namespace fastJSON
                         else if (pi.isBool)
                             oset = (bool)v;
 
-                        else if (pi.isGenericType && pi.isValueType == false && pi.isDictionary == false)
+                        else if (pi.isGenericType && pi.isValueType == false && pi.isDictionary == false && v is List<object>)
                             oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 
                         else if (pi.isByteArray)

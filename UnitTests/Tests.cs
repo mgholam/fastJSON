@@ -516,6 +516,7 @@ namespace UnitTests
             var q = new { Name = "asassa", Address = "asadasd", Age = 12 };
             string sq = fastJSON.JSON.Instance.ToJSON(q, new fastJSON.JSONParameters { EnableAnonymousTypes = true });
             Console.WriteLine(sq);
+            Assert.AreEqual("{\"Name\":\"asassa\",\"Address\":\"asadasd\",\"Age\":12}", sq);
         }
 
         [Test]
@@ -769,13 +770,6 @@ namespace UnitTests
             public string Name = "aaa";
         }
 
-        [Test]
-        public static void CommaTests()
-        {
-            var s = fastJSON.JSON.Instance.ToJSON(new commaclass());
-            Assert.True(s.Contains("\"$type\":\"1\","));
-        }
-
         public class arrayclass
         {
             public int[] ints { get; set; }
@@ -882,6 +876,57 @@ namespace UnitTests
             Assert.IsNotNull(oo);
             Assert.AreEqual(typeof(DataTable), oo.GetType());
             Assert.AreEqual(100, oo.Rows.Count);
+        }
+
+        [Test]
+        public static void CommaTests()
+        {
+            var jsonInstance = JSON.Instance;
+            var s = jsonInstance.ToJSON(new commaclass(), new JSONParameters());
+            Console.WriteLine(jsonInstance.Beautify(s));
+            Assert.True(s.Contains("\"$type\":\"1\","));
+
+            var objTest = new
+            {
+                A = "foo",
+                B = (object)null,
+                C = (object)null,
+                D = "bar"
+            };
+            
+            var p = new JSONParameters
+            {
+                EnableAnonymousTypes = false,
+                IgnoreCaseOnDeserialize = false,
+                SerializeNullValues = false,
+                ShowReadOnlyProperties = true,
+                UseExtensions = false,
+                UseFastGuid = true,
+                UseOptimizedDatasetSchema = true,
+                UseUTCDateTime = false,
+                UsingGlobalTypes = false,
+                UseEscapedUnicode = false
+            };
+
+            var json = jsonInstance.ToJSON(objTest,p);
+            Console.WriteLine(jsonInstance.Beautify(json));
+            Assert.AreEqual("{\"A\":\"foo\",\"D\":\"bar\"}",json);
+
+            var o2 = new { A = "foo", B = "bar", C = (object)null };
+            json = jsonInstance.ToJSON(o2,p);
+            Console.WriteLine(jsonInstance.Beautify(json));
+            Assert.AreEqual("{\"A\":\"foo\",\"B\":\"bar\"}", json);
+
+            var o3 = new { A = (object)null };
+            json = jsonInstance.ToJSON(o3,p);
+            Console.WriteLine(jsonInstance.Beautify(json));
+            Assert.AreEqual("{}", json);
+
+            var o4 = new { A = (object)null, B = "foo" };
+            json = jsonInstance.ToJSON(o4, p);
+            Console.WriteLine(jsonInstance.Beautify(json));
+            Assert.AreEqual("{\"B\":\"foo\"}", json);
+
         }
 
         //public class arrclass
