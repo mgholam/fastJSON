@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+#if !SILVERLIGHT
 using NUnit.Framework;
 using System.Data;
+#endif
 using System.Collections;
 using System.Threading;
 using fastJSON;
@@ -10,12 +12,42 @@ using System.Dynamic;
 
 namespace UnitTests
 {
+#if SILVERLIGHT
+    public class TestAttribute : Attribute
+    {
+    }
+
+    public static class Assert
+    {
+        public static void IsNull(object o, string msg)
+        {
+            System.Diagnostics.Debug.Assert(o == null, msg);
+        }
+
+        public static void IsNotNull(object o)
+        {
+            System.Diagnostics.Debug.Assert(o != null);
+        }
+
+        public static void AreEqual(object e, object a)
+        {
+            System.Diagnostics.Debug.Assert(e.Equals(a));
+        }
+
+        public static void IsInstanceOf<T>(object o)
+        {
+            System.Diagnostics.Debug.Assert(typeof(T) == o.GetType());
+        }
+    }
+#endif
     public class Tests
     {
         #region [  helpers  ]
         static int count = 1000;
         static int tcount = 5;
+#if !SILVERLIGHT
         static DataSet ds = new DataSet();
+#endif
         static bool exotic = false;
         static bool dsser = false;
 
@@ -53,15 +85,17 @@ namespace UnitTests
             public bool isNew { get; set; }
             public string laststring { get; set; }
             public Gender gender { get; set; }
-
+#if !SILVERLIGHT
             public DataSet dataset { get; set; }
+            public Hashtable hash { get; set; }
+#endif
             public Dictionary<string, baseclass> stringDictionary { get; set; }
             public Dictionary<baseclass, baseclass> objectDictionary { get; set; }
             public Dictionary<int, baseclass> intDictionary { get; set; }
             public Guid? nullableGuid { get; set; }
             public decimal? nullableDecimal { get; set; }
             public double? nullableDouble { get; set; }
-            public Hashtable hash { get; set; }
+
             public baseclass[] arrayType { get; set; }
             public byte[] bytes { get; set; }
             public int[] intarray { get; set; }
@@ -78,19 +112,23 @@ namespace UnitTests
             if (exotic)
             {
                 c.nullableGuid = Guid.NewGuid();
+#if !SILVERLIGHT
                 c.hash = new Hashtable();
+                c.hash.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
+                c.hash.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+                if (dsser)
+                    c.dataset = ds;
+#endif
                 c.bytes = new byte[1024];
                 c.stringDictionary = new Dictionary<string, baseclass>();
                 c.objectDictionary = new Dictionary<baseclass, baseclass>();
                 c.intDictionary = new Dictionary<int, baseclass>();
                 c.nullableDouble = 100.003;
 
-                if (dsser)
-                    c.dataset = ds;
+
                 c.nullableDecimal = 3.14M;
 
-                c.hash.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
-                c.hash.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+
 
                 c.stringDictionary.Add("name1", new class2("1", "code", "desc"));
                 c.stringDictionary.Add("name2", new class1("1", "code", Guid.NewGuid()));
@@ -167,7 +205,9 @@ namespace UnitTests
             public object obj;
             public string ppp { get { return "sdfas df "; } }
             public DateTime date { get; set; }
+#if !SILVERLIGHT
             public DataTable ds { get; set; }
+#endif
         }
 
         public struct Retstruct
@@ -178,7 +218,9 @@ namespace UnitTests
             public int Field2;
             public string ppp { get { return "sdfas df "; } }
             public DateTime date { get; set; }
+#if !SILVERLIGHT
             public DataTable ds { get; set; }
+#endif
         }
 
         private static long CreateLong(string s)
@@ -201,6 +243,7 @@ namespace UnitTests
             return neg ? -num : num;
         }
 
+#if !SILVERLIGHT
         private static DataSet CreateDataset()
         {
             DataSet ds = new DataSet();
@@ -233,6 +276,7 @@ namespace UnitTests
             }
             return ds;
         }
+#endif
 
         public class RetNestedclass
         {
@@ -257,7 +301,9 @@ namespace UnitTests
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
             r.date = DateTime.Now;
+#if !SILVERLIGHT
             r.ds = CreateDataset().Tables[0];
+#endif
 
             var s = fastJSON.JSON.Instance.ToJSON(r);
             Console.WriteLine(s);
@@ -275,7 +321,9 @@ namespace UnitTests
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
             r.date = DateTime.Now;
+#if !SILVERLIGHT
             r.ds = CreateDataset().Tables[0];
+#endif
 
             var s = fastJSON.JSON.Instance.ToJSON(r);
             Console.WriteLine(s);
@@ -292,7 +340,9 @@ namespace UnitTests
             r.Field1 = "dsasdF";
             r.Field2 = 2312;
             r.date = DateTime.Now;
+#if !SILVERLIGHT
             r.ds = CreateDataset().Tables[0];
+#endif
 
             var s = fastJSON.JSON.Instance.ToJSON(r);
             Console.WriteLine(s);
@@ -667,7 +717,7 @@ namespace UnitTests
             var c = new ConcurrentClassA();
             var s = fastJSON.JSON.Instance.ToJSON(c, new JSONParameters { UseExtensions = false });
             Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
-            Assert.False(s.Contains(",")); // should not have a comma
+            Assert.AreEqual(false, s.Contains(",")); // should not have a comma
         }
 
         [Test]
@@ -848,6 +898,9 @@ namespace UnitTests
         //    #endregion
         //}
 
+
+
+#if !SILVERLIGHT
         [Test]
         public static void SingleCharNumber()
         {
@@ -856,6 +909,8 @@ namespace UnitTests
             var o = JSON.Instance.ToObject(s);
             Assert.That(zero, Is.EqualTo(o));
         }
+
+
 
         [Test]
         public static void Datasets()
@@ -877,6 +932,7 @@ namespace UnitTests
             Assert.AreEqual(typeof(DataTable), oo.GetType());
             Assert.AreEqual(100, oo.Rows.Count);
         }
+#endif
 
         [Test]
         public static void CommaTests()
@@ -884,16 +940,18 @@ namespace UnitTests
             var jsonInstance = JSON.Instance;
             var s = jsonInstance.ToJSON(new commaclass(), new JSONParameters());
             Console.WriteLine(jsonInstance.Beautify(s));
-            Assert.True(s.Contains("\"$type\":\"1\","));
+            Assert.AreEqual(true, s.Contains("\"$type\":\"1\","));
 
             var objTest = new
             {
                 A = "foo",
                 B = (object)null,
                 C = (object)null,
-                D = "bar"
+                D = "bar",
+                E = 12,
+                F = (object)null
             };
-            
+
             var p = new JSONParameters
             {
                 EnableAnonymousTypes = false,
@@ -908,17 +966,17 @@ namespace UnitTests
                 UseEscapedUnicode = false
             };
 
-            var json = jsonInstance.ToJSON(objTest,p);
+            var json = jsonInstance.ToJSON(objTest, p);
             Console.WriteLine(jsonInstance.Beautify(json));
-            Assert.AreEqual("{\"A\":\"foo\",\"D\":\"bar\"}",json);
+            Assert.AreEqual("{\"A\":\"foo\",\"D\":\"bar\",\"E\":12}", json);
 
             var o2 = new { A = "foo", B = "bar", C = (object)null };
-            json = jsonInstance.ToJSON(o2,p);
+            json = jsonInstance.ToJSON(o2, p);
             Console.WriteLine(jsonInstance.Beautify(json));
             Assert.AreEqual("{\"A\":\"foo\",\"B\":\"bar\"}", json);
 
             var o3 = new { A = (object)null };
-            json = jsonInstance.ToJSON(o3,p);
+            json = jsonInstance.ToJSON(o3, p);
             Console.WriteLine(jsonInstance.Beautify(json));
             Assert.AreEqual("{}", json);
 

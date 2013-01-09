@@ -175,3 +175,8 @@
 2.0.12
 - bug fix nested generic types (thanks to Zambiorix)
 - bug fix comma edge cases with nulls
+
+2.0.13
+- bug fix comma edge cases with nulls
+- unified DynamicMethod calls with SilverLight4 code
+- test cases for silverlight

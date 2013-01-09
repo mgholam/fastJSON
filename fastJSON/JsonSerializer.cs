@@ -325,19 +325,9 @@ namespace fastJSON
             }
 
             List<Getters> g = Reflection.Instance.GetGetters(t);
-            int c = g.Count;
-            int i = c;
-            if (_params.UseExtensions || _params.EnableAnonymousTypes) // count $type as a property
-                i++;
+
             foreach (var p in g)
             {
-                i--;
-                if (append && i > 0)
-                {
-                    _output.Append(',');
-                    append = false;
-                }
-                
                 object o = p.Getter(obj);
                 if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
                 {
@@ -345,6 +335,11 @@ namespace fastJSON
                 }
                 else
                 {
+                    if (append)
+                    {
+                        _output.Append(',');
+                        //append = false;
+                    }
                     WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)
                     {
