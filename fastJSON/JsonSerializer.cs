@@ -336,10 +336,8 @@ namespace fastJSON
                 else
                 {
                     if (append)
-                    {
                         _output.Append(',');
-                        //append = false;
-                    }
+
                     WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)
                     {
