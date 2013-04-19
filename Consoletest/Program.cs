@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -40,6 +41,7 @@ namespace consoletest
             //bin_deserialize();
             fastjson_deserialize();
 
+            Console.WriteLine();
             #region [ other tests]
 
             //			litjson_serialize();
@@ -171,19 +173,21 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("fastjson deserialize");
             colclass c = CreateObject();
+			var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
-                DateTime st = DateTime.Now;
                 colclass deserializedStore;
                 string jsonText = null;
 
+				stopwatch.Restart();
                 jsonText = fastJSON.JSON.Instance.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
                 for (int i = 0; i < count; i++)
                 {
                     deserializedStore = (colclass)fastJSON.JSON.Instance.ToObject(jsonText);
                 }
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+				stopwatch.Stop();
+				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -192,15 +196,17 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("fastjson serialize");
             colclass c = CreateObject();
+			var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
-                DateTime st = DateTime.Now;
                 string jsonText = null;
+				stopwatch.Restart();
                 for (int i = 0; i < count; i++)
                 {
                     jsonText = fastJSON.JSON.Instance.ToJSON(c);
                 }
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+				stopwatch.Stop();
+				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -209,20 +215,24 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("bin deserialize");
             colclass c = CreateObject();
+			var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
-                DateTime st = DateTime.Now;
                 BinaryFormatter bf = new BinaryFormatter();
                 MemoryStream ms = new MemoryStream();
+				colclass deserializedStore = null;
+				stopwatch.Restart();
                 bf.Serialize(ms, c);
-                colclass deserializedStore = null;
                 //Console.WriteLine(" size = " +ms.Length);
                 for (int i = 0; i < count; i++)
                 {
+					stopwatch.Stop(); // we stop then resume the stopwatch here so we don't factor in Seek()'s execution
                     ms.Seek(0L, SeekOrigin.Begin);
+					stopwatch.Start();
                     deserializedStore = (colclass)bf.Deserialize(ms);
                 }
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+				stopwatch.Stop();
+				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -230,17 +240,21 @@ namespace consoletest
         {
             Console.Write("\r\nbin serialize");
             colclass c = CreateObject();
+			var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
-                DateTime st = DateTime.Now;
                 BinaryFormatter bf = new BinaryFormatter();
                 MemoryStream ms = new MemoryStream();
+				stopwatch.Restart();
                 for (int i = 0; i < count; i++)
                 {
+					stopwatch.Stop(); // we stop then resume the stop watch here so we don't factor in the MemoryStream()'s execution
                     ms = new MemoryStream();
+					stopwatch.Start();
                     bf.Serialize(ms, c);
                 }
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+				stopwatch.Stop();
+				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 

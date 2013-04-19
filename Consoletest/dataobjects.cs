@@ -8,12 +8,14 @@ namespace consoletest
 
 	#region [   data objects   ]
 
+	[Serializable]
 	public class baseclass
 	{
 		public string Name { get; set; }
 		public string Code { get; set; }
 	}
 
+	[Serializable]
 	public class class1 : baseclass
 	{
 		public class1() { }
@@ -26,6 +28,7 @@ namespace consoletest
 		public Guid guid { get; set; }
 	}
 
+	[Serializable]
 	public class class2 : baseclass
 	{
 		public class2() { }
@@ -44,6 +47,7 @@ namespace consoletest
 		Female
 	}
 
+	[Serializable]
 	public class colclass
 	{
 		public colclass()

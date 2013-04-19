@@ -987,6 +987,28 @@ namespace UnitTests
 
         }
 
+        //[Test]
+        //public static void tt()
+        //{
+        //    string jsonText = "[[{\"language\":\"es\",\"isReliable\":false,\"confidence\":0.4517133956386293},{\"language\":\"pt\",\"isReliable\":false,\"confidence\":0.08356545961002786}],[{\"language\":\"en\",\"isReliable\":false,\"confidence\":0.17017828200972449},{\"language\":\"vi\",\"isReliable\":false,\"confidence\":0.13673655423883319}]]}}";
+
+        //    List<SubFolder> oo = new List<SubFolder>();
+        //    oo.Add(new SubFolder());
+        //    oo.Add(new SubFolder());
+        //    string s = fastJSON.JSON.Instance.ToJSON(oo, new JSONParameters{ UseExtensions = false});
+        //    // to deserialize a string to an object
+        //    var newobj = fastJSON.JSON.Instance.ToObject<List<SubFolder>>(jsonText);
+
+        //}
+
+        //public class SubFolder
+        //{
+
+        //    public string language { get; set; }
+        //    public string isReliable { get; set; }
+        //    public string confidence { get; set; }
+
+        //}
         //public class arrclass
         //{
         //    public string name { get; set; }

@@ -40,11 +40,11 @@ namespace fastJSON
                 {
                     if (pendingSeparator) sb.Append(',');
                     pendingSeparator = true;
-                    sb.Append("\"");
+                    sb.Append('\"');
                     sb.Append(kv.Key);
                     sb.Append("\":\"");
                     sb.Append(kv.Value);
-                    sb.Append("\"");
+                    sb.Append('\"');
                 }
                 sb.Append("},");
                 sb.Append(_output.ToString());
@@ -150,23 +150,23 @@ namespace fastJSON
             if (_params.UseUTCDateTime)
                 dt = dateTime.ToUniversalTime();
 
-            _output.Append("\"");
+            _output.Append('\"');
             _output.Append(dt.Year.ToString("0000", NumberFormatInfo.InvariantInfo));
-            _output.Append("-");
+            _output.Append('-');
             _output.Append(dt.Month.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append("-");
+            _output.Append('-');
             _output.Append(dt.Day.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append(" ");
+            _output.Append(' ');
             _output.Append(dt.Hour.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append(":");
+            _output.Append(':');
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append(":");
+            _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
 
             if (_params.UseUTCDateTime)
-                _output.Append("Z");
+                _output.Append('Z');
 
-            _output.Append("\"");
+            _output.Append('\"');
         }
 
 #if !SILVERLIGHT
@@ -231,7 +231,7 @@ namespace fastJSON
             bool tablesep = false;
             foreach (DataTable table in ds.Tables)
             {
-                if (tablesep) _output.Append(",");
+                if (tablesep) _output.Append(',');
                 tablesep = true;
                 WriteDataTableData(table);
             }
@@ -248,7 +248,7 @@ namespace fastJSON
             bool rowseparator = false;
             foreach (DataRow row in table.Rows)
             {
-                if (rowseparator) _output.Append(",");
+                if (rowseparator) _output.Append(',');
                 rowseparator = true;
                 _output.Append('[');
 
@@ -290,12 +290,12 @@ namespace fastJSON
             {
                 if (_TypesWritten == false)
                 {
-                    _output.Append("{");
+                    _output.Append('{');
                     _before = _output;
                     _output = new StringBuilder();
                 }
                 else
-                    _output.Append("{");
+                    _output.Append('{');
             }
             _TypesWritten = true;
             _current_depth++;

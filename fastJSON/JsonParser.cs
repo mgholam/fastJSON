@@ -305,10 +305,13 @@ namespace fastJSON
                 break;
             } while (true);
 
-            string s = new string(json, startIndex, index - startIndex);
-            if (dec)
-                return double.Parse(s,NumberFormatInfo.InvariantInfo);
-            return CreateLong(s);
+			if (dec)
+			{
+				string s = new string(json, startIndex, index - startIndex);
+				return double.Parse(s, NumberFormatInfo.InvariantInfo);
+			}
+			long num;
+			return JSON.CreateLong(out num, json, startIndex, index - startIndex);
         }
 
         private Token LookAhead()

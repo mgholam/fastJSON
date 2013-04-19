@@ -180,3 +180,11 @@
 - bug fix comma edge cases with nulls
 - unified DynamicMethod calls with SilverLight4 code
 - test cases for silverlight
+
+2.0.14
+- Optimizations done by Sean Cooper
+   - using Stopwatch instead of DateTime for timings
+   - myPropInfo using enum instead of boolean
+   - using switch instead of linked if statements
+   - parsing DateTime optimized
+   - StringBuilder using single char output instead of strings for \" chars etc
