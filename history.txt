@@ -188,3 +188,9 @@
    - using switch instead of linked if statements
    - parsing DateTime optimized
    - StringBuilder using single char output instead of strings for \" chars etc
+   
+2.0.15
+- removed CUSTOMTYPE directives from code
+- fix for writing enumerable object 
+
+

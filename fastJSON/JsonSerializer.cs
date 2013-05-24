@@ -97,28 +97,25 @@ namespace fastJSON
             else if (obj is byte[])
                 WriteBytes((byte[])obj);
 
-            else if (obj is Array || obj is IList || obj is ICollection)
+            else if (obj is IEnumerable)// Array || obj is IList || obj is ICollection)
                 WriteArray((IEnumerable)obj);
 
             else if (obj is Enum)
                 WriteEnum((Enum)obj);
 
-#if CUSTOMTYPE
             else if (JSON.Instance.IsTypeRegistered(obj.GetType()))
                 WriteCustom(obj);
-#endif
+
             else
                 WriteObject(obj);
         }
 
-#if CUSTOMTYPE
         private void WriteCustom(object obj)
         {
             Serialize s;
             JSON.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
             WriteStringFast(s(obj));
         }
-#endif
 
         private void WriteEnum(Enum e)
         {

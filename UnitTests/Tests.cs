@@ -987,6 +987,12 @@ namespace UnitTests
 
         }
 
+        [Test]
+        public static void embedded_list()
+        {
+            string s = JSON.Instance.ToJSON(new { list = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, }} );//.Where(i => i % 2 == 0) });
+        }
+
         //[Test]
         //public static void tt()
         //{

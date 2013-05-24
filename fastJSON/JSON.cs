@@ -205,7 +205,6 @@ namespace fastJSON
             return ToObject<T>(ToJSON(obj));
         }
 
-#if CUSTOMTYPE
         internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
         internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
 
@@ -222,10 +221,11 @@ namespace fastJSON
 
         internal bool IsTypeRegistered(Type t)
         {
+            if (_customSerializer.Count == 0)
+                return false;
             Serialize s;
             return _customSerializer.TryGetValue(t, out s);
         }
-#endif
 
         #region [   JSON specific reflection   ]
 
@@ -248,10 +248,7 @@ namespace fastJSON
             DataSet,
             DataTable,
 #endif
-#if CUSTOMTYPE
 			Custom,
-#endif
-
             Unknown,
         }
 
@@ -347,9 +344,9 @@ namespace fastJSON
             else if (t == typeof(DataSet)) d_type = myPropInfoType.DataSet;
             else if (t == typeof(DataTable)) d_type = myPropInfoType.DataTable;
 #endif
-#if CUSTOMTYPE
-            else if (IsTypeRegistered(t))								d_type = myPropInfoType.Custom;
-#endif
+
+            else if (IsTypeRegistered(t))								
+                d_type = myPropInfoType.Custom;
 
             d.IsClass = t.IsClass;
             d.IsValueType = t.IsValueType;
@@ -384,10 +381,9 @@ namespace fastJSON
 
             else if (conversionType.IsEnum)
                 return CreateEnum(conversionType, (string)value);
-#if CUSTOMTYPE
+
             else if (IsTypeRegistered(conversionType))
                 return CreateCustom((string)value, conversionType);
-#endif
 
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
         }
@@ -526,9 +522,8 @@ namespace fastJSON
 #endif
                             case myPropInfoType.Dictionary: oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
                             case myPropInfoType.StringDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
-#if CUSTOMTYPE
+
 							case myPropInfoType.Custom: oset = CreateCustom((string)v, pi.pt); break;
-#endif
                             default:
                                 {
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
@@ -556,14 +551,12 @@ namespace fastJSON
             return o;
         }
 
-#if CUSTOMTYPE
         private object CreateCustom(string v, Type type)
         {
             Deserialize d;
             _customDeserializer.TryGetValue(type, out d);
             return d(v);
         }
-#endif
 
         private void ProcessMap(object obj, SafeDictionary<string, JSON.myPropInfo> props, Dictionary<string, object> dic)
         {
