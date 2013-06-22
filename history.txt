@@ -193,4 +193,6 @@
 - removed CUSTOMTYPE directives from code
 - fix for writing enumerable object 
 
-
+2.0.16
+- bug fix formatter 
+- added test for formatter

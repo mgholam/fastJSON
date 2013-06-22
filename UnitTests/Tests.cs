@@ -993,6 +993,23 @@ namespace UnitTests
             string s = JSON.Instance.ToJSON(new { list = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, }} );//.Where(i => i % 2 == 0) });
         }
 
+        [Test]
+        public static void Formatter()
+        {
+            string s = "[{\"foo\":\"'[0]\\\"{}\\u1234\\r\\n\",\"bar\":12222,\"coo\":\"some string\",\"dir\":\"C:\\\\folder\"}]";
+            string o = fastJSON.JSON.Instance.Beautify(s);
+            Console.WriteLine(o);
+            string x = @"[
+   {
+      ""foo"" : ""'[0]\""{}\u1234\r\n"",
+      ""bar"" : 12222,
+      ""coo"" : ""some string"",
+      ""dir"" : ""C:\\folder""
+   }
+]";
+            Assert.AreEqual(x, o);
+        }
+
         //[Test]
         //public static void tt()
         //{

@@ -5,7 +5,7 @@ namespace fastJSON
 {
     internal static class Formatter
     {
-        public static string Indent = "    ";
+        public static string Indent = "   ";
 
         public static void AppendIndent(StringBuilder sb, int count)
         {
@@ -29,6 +29,26 @@ namespace fastJSON
             {
                 char ch = input[i];
 
+                if (ch == '\"') // found string span
+                {
+                    bool str = true;
+                    while (str)
+                    {
+                        output.Append(ch);
+                        ch = input[++i];
+                        if (ch == '\\')
+                        {
+                            if (input[i + 1] == '\"')
+                            {
+                                output.Append(ch);
+                                ch = input[++i];
+                            }
+                        }
+                        else if (ch == '\"')
+                            str = false;
+                    }
+                }
+
                 switch (ch)
                 {
                     case '{':
@@ -51,16 +71,6 @@ namespace fastJSON
                             output.Append(ch);
                         }
                         break;
-                    case '"':
-                    case '\'':
-                        output.Append(ch);
-                        if (quote.HasValue)
-                        {
-                            if (!IsEscaped(output, i))
-                                quote = null;
-                        }
-                        else quote = ch;
-                        break;
                     case ',':
                         output.Append(ch);
                         if (!quote.HasValue)
@@ -78,6 +88,7 @@ namespace fastJSON
                             output.Append(ch);
                         break;
                 }
+
             }
 
             return output.ToString();
