@@ -920,6 +920,7 @@ namespace UnitTests
             var s = fastJSON.JSON.Instance.ToJSON(ds);
 
             var o = fastJSON.JSON.Instance.ToObject<DataSet>(s);
+            var p = fastJSON.JSON.Instance.ToObject(s, typeof(DataSet));
 
             Assert.AreEqual(typeof(DataSet), o.GetType());
             Assert.IsNotNull(o);
@@ -933,6 +934,22 @@ namespace UnitTests
             Assert.AreEqual(100, oo.Rows.Count);
         }
 #endif
+
+        [Test]
+        public static void DynamicTest()
+        {
+            string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30}}";
+            dynamic d = fastJSON.JSON.Instance.ToDynamic(s);
+            var ss = d.Name;
+            var oo = d.Age;
+            var dob = d.dob;
+            var inp = d.inner.prop;
+
+            Assert.AreEqual("aaaaaa", ss);
+            Assert.AreEqual(10, oo);
+            Assert.AreEqual(30, inp);
+            Assert.AreEqual("2000-01-01 00:00:00Z", dob);
+        }
 
         [Test]
         public static void CommaTests()

@@ -196,3 +196,8 @@
 2.0.16
 - bug fix formatter 
 - added test for formatter
+
+2.0.17 
+- added serialization of static fields and properties
+- added dynamic object support and test
+
