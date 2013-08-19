@@ -21,7 +21,6 @@ namespace fastJSON
         {
         }
 
-        public bool ShowReadOnlyProperties = false;
         internal delegate object GenericSetter(object target, object value);
         internal delegate object GenericGetter(object obj);
         private delegate object CreateObject();
@@ -53,6 +52,12 @@ namespace fastJSON
             else
             {
                 Type t = Type.GetType(typename);
+                //if (t == null) // RaptorDB : loading runtime assemblies
+                //{
+                //    t = Type.GetType(typename, (name) => {
+                //        return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
+                //    }, null, true);
+                //}
                 _typecache.Add(typename, t);
                 return t;
             }
@@ -96,7 +101,7 @@ namespace fastJSON
             }
             catch (Exception exc)
             {
-                throw new Exception(string.Format("Failed to fast create instance for type '{0}' from assemebly '{1}'",
+                throw new Exception(string.Format("Failed to fast create instance for type '{0}' from assembly '{1}'",
                     objtype.FullName, objtype.AssemblyQualifiedName), exc);
             }
         }
@@ -251,7 +256,7 @@ namespace fastJSON
             return (GenericGetter)getter.CreateDelegate(typeof(GenericGetter));
         }
 
-        internal List<Getters> GetGetters(Type type)
+        internal List<Getters> GetGetters(Type type, bool showreadonly)
         {
             List<Getters> val = null;
             if (_getterscache.TryGetValue(type, out val))
@@ -261,7 +266,7 @@ namespace fastJSON
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
-                if (!p.CanWrite && ShowReadOnlyProperties == false) continue;
+                if (!p.CanWrite && showreadonly == false) continue;
 
                 object[] att = p.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
                 if (att != null && att.Length > 0)

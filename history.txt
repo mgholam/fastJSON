@@ -201,3 +201,7 @@
 - added serialization of static fields and properties
 - added dynamic object support and test
 
+2.0.18
+- edge case empty array deserialize "[]" -> T[]
+- code cleanup
+- fixed serialize readonly properties

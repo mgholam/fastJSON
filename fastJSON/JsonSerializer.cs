@@ -321,7 +321,7 @@ namespace fastJSON
                 append = true;
             }
 
-            List<Getters> g = Reflection.Instance.GetGetters(t);
+            List<Getters> g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
 
             foreach (var p in g)
             {
@@ -443,8 +443,8 @@ namespace fastJSON
             _output.Append('\"');
 
             int runIndex = -1;
-
-            for (var index = 0; index < s.Length; ++index)
+            int l = s.Length;
+            for (var index = 0; index < l; ++index)
             {
                 var c = s[index];
 

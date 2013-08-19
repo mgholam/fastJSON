@@ -1027,6 +1027,16 @@ namespace UnitTests
             Assert.AreEqual(x, o);
         }
 
+        [Test]
+        public static void EmptyArray()
+        {
+            string str = "[]";
+            var o = fastJSON.JSON.Instance.ToObject<List<class1>>(str);
+            Assert.AreEqual(typeof(List<class1>), o.GetType());
+            var d = fastJSON.JSON.Instance.ToObject<class1[]>(str);
+            Assert.AreEqual(typeof(class1[]), d.GetType());
+        }
+
         //[Test]
         //public static void tt()
         //{
