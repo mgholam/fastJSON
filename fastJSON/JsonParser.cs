@@ -358,9 +358,6 @@ namespace fastJSON
 
             index++;
 
-            //if (c >= '0' && c <= '9')
-            //    return Token.Number;
-
             switch (c)
             {
                 case '{':

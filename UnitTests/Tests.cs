@@ -949,6 +949,16 @@ namespace UnitTests
             Assert.AreEqual(10, oo);
             Assert.AreEqual(30, inp);
             Assert.AreEqual("2000-01-01 00:00:00Z", dob);
+
+            s = "{\"ints\":[1,2,3,4,5]}";
+
+            d = fastJSON.JSON.Instance.ToDynamic(s);
+            var o = d.ints[0];
+            Assert.AreEqual(1, o);
+
+            //s = "[1,2,3,4,5]";
+            //d = fastJSON.JSON.Instance.ToDynamic(s);
+            //o = d[0];
         }
 
         [Test]
@@ -1007,7 +1017,7 @@ namespace UnitTests
         [Test]
         public static void embedded_list()
         {
-            string s = JSON.Instance.ToJSON(new { list = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, }} );//.Where(i => i % 2 == 0) });
+            string s = JSON.Instance.ToJSON(new { list = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, } });//.Where(i => i % 2 == 0) });
         }
 
         [Test]
@@ -1035,6 +1045,29 @@ namespace UnitTests
             Assert.AreEqual(typeof(List<class1>), o.GetType());
             var d = fastJSON.JSON.Instance.ToObject<class1[]>(str);
             Assert.AreEqual(typeof(class1[]), d.GetType());
+        }
+
+        public class diclist
+        {
+            public Dictionary<string, List<string>> d;
+        }
+
+        [Test]
+        public static void DictionaryWithListValue()
+        {
+            diclist dd = new diclist();
+            dd.d = new Dictionary<string, List<string>>();
+            dd.d.Add("a", new List<string> { "1", "2", "3" });
+            dd.d.Add("b", new List<string> { "4", "5", "7" });
+            string s = fastJSON.JSON.Instance.ToJSON(dd, new JSONParameters { UseExtensions = false });
+            var o = fastJSON.JSON.Instance.ToObject<diclist>(s);
+            Assert.AreEqual(3, o.d["a"].Count);
+
+            s = fastJSON.JSON.Instance.ToJSON(dd.d, new JSONParameters { UseExtensions = false });
+            var oo = fastJSON.JSON.Instance.ToObject<Dictionary<string, List<string>>>(s);
+            Assert.AreEqual(3, oo["a"].Count);
+            var ooo = fastJSON.JSON.Instance.ToObject<Dictionary<string, string[]>>(s);
+            Assert.AreEqual(3, ooo["b"].Length);
         }
 
         //[Test]

@@ -433,6 +433,13 @@ namespace fastJSON
         private object RootDictionary(object parse, Type type)
         {
             Type[] gtypes = type.GetGenericArguments();
+            Type t1 = null;
+            Type t2 = null;
+            if (gtypes != null)
+            {
+                t1 = gtypes[0];
+                t2 = gtypes[1];
+            }
             if (parse is Dictionary<string, object>)
             {
                 IDictionary o = (IDictionary)Reflection.Instance.FastCreateInstance(type);
@@ -441,12 +448,19 @@ namespace fastJSON
                 {
                     object v;
                     object k = ChangeType(kv.Key, gtypes[0]);
+
                     if (kv.Value is Dictionary<string, object>)
                         v = ParseDictionary(kv.Value as Dictionary<string, object>, null, gtypes[1], null);
-                    else if (kv.Value is List<object>)
-                        v = CreateArray(kv.Value as List<object>, typeof(object), typeof(object), null);
+
+                    else if (gtypes != null && t2.IsArray)
+                        v = CreateArray((List<object>)kv.Value, t2, t2.GetElementType(), null);
+                    
+                    else if (kv.Value is IList)
+                        v = CreateGenericList((List<object>)kv.Value, t2, t1, null);
+                    
                     else
                         v = ChangeType(kv.Value, gtypes[1]);
+                    
                     o.Add(k, v);
                 }
 
@@ -660,12 +674,12 @@ namespace fastJSON
             bool utc = false;
             //                   0123456789012345678
             // datetime format = yyyy-MM-dd HH:mm:ss
-            int year;// = (int)CreateLong(value.Substring(0, 4));
-            int month;// = (int)CreateLong(value.Substring(5, 2));
-            int day;// = (int)CreateLong(value.Substring(8, 2));
-            int hour;// = (int)CreateLong(value.Substring(11, 2));
-            int min;// = (int)CreateLong(value.Substring(14, 2));
-            int sec;// = (int)CreateLong(value.Substring(17, 2));
+            int year;
+            int month;
+            int day;
+            int hour;
+            int min;
+            int sec;
             CreateInteger(out year, value, 0, 4);
             CreateInteger(out month, value, 5, 2);
             CreateInteger(out day, value, 8, 2);
@@ -731,12 +745,21 @@ namespace fastJSON
 
             foreach (KeyValuePair<string, object> values in reader)
             {
-                var key = values.Key;//ChangeType(values.Key, t1);
+                var key = values.Key;
                 object val = null;
+
                 if (values.Value is Dictionary<string, object>)
                     val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2, null);
+                
+                else if (types != null && t2.IsArray)
+                    val = CreateArray((List<object>)values.Value, t2, t2.GetElementType(), globalTypes);
+                
+                else if (values.Value is IList)
+                    val = CreateGenericList((List<object>)values.Value, t2, t1, globalTypes);
+                
                 else
                     val = ChangeType(values.Value, t2);
+                
                 col.Add(key, val);
             }
 
