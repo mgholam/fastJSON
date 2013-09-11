@@ -192,6 +192,9 @@ namespace fastJSON
 
                 if (type != null && t == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
+
+                if (type == typeof(Hashtable))
+                    return RootHashTable((List<object>)o);
                 else
                     return (o as List<object>).ToArray();
             }
@@ -200,6 +203,26 @@ namespace fastJSON
                 return ChangeType(o, type);
 
             return o;
+        }
+
+        private object RootHashTable(List<object> o)
+        {
+            Hashtable h = new Hashtable();
+
+            foreach (Dictionary<string, object> values in o)
+            {
+                object key = values["k"];
+                object val = values["v"];
+                if (key is Dictionary<string, object>)
+                    key = ParseDictionary((Dictionary<string, object>)key, null, typeof(object), null);
+
+                if (val is Dictionary<string, object>)
+                    val = ParseDictionary((Dictionary<string, object>)val, null, typeof(object), null);
+
+                h.Add(key, val);
+            }
+
+            return h;
         }
 
         public string Beautify(string input)

@@ -321,10 +321,11 @@ namespace fastJSON
                 append = true;
             }
 
-            List<Getters> g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
-
-            foreach (var p in g)
+            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
+            int c = g.Length;
+            for(int ii=0; ii<c; ii++)//foreach (var p in g)
             {
+                var p = g[ii];
                 object o = p.Getter(obj);
                 if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
                 {

@@ -210,3 +210,10 @@
 - fix dynamic objects and lists
 - fix deserialize Dictionary<T, List<V>> and Dictionary<T, V[]>
 - added tests for dictionary with lists
+
+2.0.20
+- fixed hastable deserialize
+- added test for hashtable
+- added abstract class test
+- changed list of getters to array ~3% performance gain
+- removed unused code

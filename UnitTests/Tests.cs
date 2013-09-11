@@ -1070,6 +1070,66 @@ namespace UnitTests
             Assert.AreEqual(3, ooo["b"].Length);
         }
 
+        [Test]
+        public static void HashtableTest()
+        {
+            Hashtable h = new Hashtable();
+            h.Add(1, "dsjfhksa");
+            h.Add("dsds", new class1());
+
+            string s = fastJSON.JSON.Instance.ToNiceJSON(h, new JSONParameters());
+
+            var o = fastJSON.JSON.Instance.ToObject<Hashtable>(s);
+            Assert.AreEqual(typeof(Hashtable), o.GetType());
+            Assert.AreEqual(typeof(class1), o["dsds"].GetType());
+        }
+
+
+        public abstract class abstractClass
+        {
+            public string myConcreteType { get; set; }
+            public abstractClass()
+            {
+
+            }
+
+            public abstractClass(string type) // : base(type)
+            {
+
+                this.myConcreteType = type;
+
+            }
+        }
+
+        public abstract class abstractClass<T> : abstractClass
+        {
+            public T Value { get; set; }
+            public abstractClass() { }
+            public abstractClass(T value, string type) : base(type) { this.Value = value; }
+        }
+        public class OneConcreteClass : abstractClass<int>
+        {
+            public OneConcreteClass() { }
+            public OneConcreteClass(int value) : base(value, "INT") { }
+        }
+        public class OneOtherConcreteClass : abstractClass<string>
+        {
+            public OneOtherConcreteClass() { }
+            public OneOtherConcreteClass(string value) : base(value, "STRING") { }
+        }
+
+        [Test]
+        public static void AbstractTest()
+        {
+            var intField = new OneConcreteClass(1);
+            var stringField = new OneOtherConcreteClass("lol");
+            var list = new List<abstractClass>() { intField, stringField };
+
+            var json = fastJSON.JSON.Instance.ToJSON(list);
+            var objects = fastJSON.JSON.Instance.ToObject<List<abstractClass>>(json);
+        }
+
+
         //[Test]
         //public static void tt()
         //{
