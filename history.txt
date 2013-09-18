@@ -217,3 +217,7 @@
 - added abstract class test
 - changed list of getters to array ~3% performance gain
 - removed unused code
+
+2.0.21
+- fixed edge case tailing '\' in formatter
+- code cleanup formatter

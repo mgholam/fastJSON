@@ -1023,7 +1023,7 @@ namespace UnitTests
         [Test]
         public static void Formatter()
         {
-            string s = "[{\"foo\":\"'[0]\\\"{}\\u1234\\r\\n\",\"bar\":12222,\"coo\":\"some string\",\"dir\":\"C:\\\\folder\"}]";
+            string s = "[{\"foo\":\"'[0]\\\"{}\\u1234\\r\\n\",\"bar\":12222,\"coo\":\"some string\",\"dir\":\"C:\\\\folder\\\\\"}]";
             string o = fastJSON.JSON.Instance.Beautify(s);
             Console.WriteLine(o);
             string x = @"[
@@ -1031,7 +1031,7 @@ namespace UnitTests
       ""foo"" : ""'[0]\""{}\u1234\r\n"",
       ""bar"" : 12222,
       ""coo"" : ""some string"",
-      ""dir"" : ""C:\\folder""
+      ""dir"" : ""C:\\folder\\""
    }
 ]";
             Assert.AreEqual(x, o);

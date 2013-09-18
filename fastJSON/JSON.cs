@@ -83,7 +83,12 @@ namespace fastJSON
         /// You can set these paramters globally for all calls
         /// </summary>
         public JSONParameters Parameters = new JSONParameters();
+
         private JSONParameters _params;
+        internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
+        internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
+        SafeDictionary<string, SafeDictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
+        bool _usingglobals = false;
 
         public string ToNiceJSON(object obj, JSONParameters param)
         {
@@ -94,8 +99,6 @@ namespace fastJSON
 
         public string ToJSON(object obj)
         {
-            _params = Parameters;
-            _params.FixValues();
             return ToJSON(obj, Parameters);
         }
 
@@ -121,8 +124,8 @@ namespace fastJSON
 
         public object Parse(string json)
         {
-            _params = Parameters;
-            return new JsonParser(json, _params.IgnoreCaseOnDeserialize).Decode();
+            //_params = Parameters;
+            return new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
         }
 
         public dynamic ToDynamic(string json)
@@ -232,8 +235,8 @@ namespace fastJSON
 
         public object FillObject(object input, string json)
         {
-            _params = Parameters;
-            _params.FixValues();
+            //_params = Parameters;
+            //_params.FixValues();
             Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return ParseDictionary(ht, null, input.GetType(), input);
@@ -248,9 +251,6 @@ namespace fastJSON
         {
             return ToObject<T>(ToJSON(obj));
         }
-
-        internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
-        internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
 
         public void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
         {
@@ -320,7 +320,6 @@ namespace fastJSON
             public bool IsGenericType;
         }
 
-        SafeDictionary<string, SafeDictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
         private SafeDictionary<string, myPropInfo> Getproperties(Type type, string typename)
         {
             SafeDictionary<string, myPropInfo> sd = null;
@@ -495,7 +494,6 @@ namespace fastJSON
             return null;
         }
 
-        bool _usingglobals = false;
         private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type, object input)
         {
             object tn = "";

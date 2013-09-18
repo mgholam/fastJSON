@@ -61,31 +61,31 @@ namespace consoletest
             #endregion
         }
 
-        private static string pser(object data)
-        {
-            System.Drawing.Point p = (System.Drawing.Point)data;
-            return p.X.ToString() + "," + p.Y.ToString();
-        }
+        //private static string pser(object data)
+        //{
+        //    System.Drawing.Point p = (System.Drawing.Point)data;
+        //    return p.X.ToString() + "," + p.Y.ToString();
+        //}
 
-        private static object pdes(string data)
-        {
-            string[] ss = data.Split(',');
+        //private static object pdes(string data)
+        //{
+        //    string[] ss = data.Split(',');
 
-            return new System.Drawing.Point(
-                int.Parse(ss[0]),
-                int.Parse(ss[1])
-                );
-        }
+        //    return new System.Drawing.Point(
+        //        int.Parse(ss[0]),
+        //        int.Parse(ss[1])
+        //        );
+        //}
 
-        private static string tsser(object data)
-        {
-            return ((TimeSpan)data).Ticks.ToString();
-        }
+        //private static string tsser(object data)
+        //{
+        //    return ((TimeSpan)data).Ticks.ToString();
+        //}
 
-        private static object tsdes(string data)
-        {
-            return new TimeSpan(long.Parse(data));
-        }
+        //private static object tsdes(string data)
+        //{
+        //    return new TimeSpan(long.Parse(data));
+        //}
 
         public static colclass CreateObject()
         {
