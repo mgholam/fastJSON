@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "consoletest", "consoletest\consoletest.csproj", "{6BADD8B3-618E-412A-BBCA-8420EFD5B62E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON", "fastJSON\fastJSON.csproj", "{207E91B1-C9F8-4913-88E1-3549EF5F3273}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F4BFF0D2-45F6-413B-B1E7-BC4A0D6596FC}"
 EndProject
-
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON net35", "fastJSON\fastJSON net35.csproj", "{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +39,11 @@ Global
 		{F4BFF0D2-45F6-413B-B1E7-BC4A0D6596FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4BFF0D2-45F6-413B-B1E7-BC4A0D6596FC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F4BFF0D2-45F6-413B-B1E7-BC4A0D6596FC}.Release|x86.ActiveCfg = Release|Any CPU
+		{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

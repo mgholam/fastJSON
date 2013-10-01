@@ -127,12 +127,12 @@ namespace fastJSON
             //_params = Parameters;
             return new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
         }
-
+#if net4
         public dynamic ToDynamic(string json)
         {
             return new DynamicJson(json);
         }
-
+#endif
         public T ToObject<T>(string json)
         {
             Type t = typeof(T);
@@ -512,7 +512,7 @@ namespace fastJSON
 #if !SILVERLIGHT
             if (found == false && type == typeof(System.Object))
             {
-                return CreateDataset(d, globaltypes);
+                return d;   // CreateDataset(d, globaltypes);
             }
 #endif
             if (found)
