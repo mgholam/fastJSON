@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 #if !SILVERLIGHT
 using System.Data;
 #endif
@@ -16,6 +17,12 @@ namespace fastJSON
 
     public sealed class JSONParameters
     {
+        public static readonly string[] AllowedSecondFractionFormats =
+        {
+            "", "f", "ff", "fff", "ffff", "fffff", "ffffff", "fffffff",
+            "F", "FF", "FFF", "FFFF", "FFFFF", "FFFFFF", "FFFFFFF"
+        };
+
         /// <summary>
         /// Use the optimized fast Dataset Schema format (default = True)
         /// </summary>
@@ -56,6 +63,23 @@ namespace fastJSON
         /// Use escaped unicode i.e. \uXXXX format for non ASCII characters (default = True)
         /// </summary>
         public bool UseEscapedUnicode = true;
+
+        private string _secondFractionFormat;
+
+        /// <summary>
+        /// Format for DateTime's fractions of second (default = "")
+        /// </summary>
+        public string SecondFractionFormat
+        {
+            get { return _secondFractionFormat; }
+            set
+            {
+                if (!AllowedSecondFractionFormats.Contains(value))
+                    value = "";
+
+                _secondFractionFormat = value;
+            }
+        }
 
         public void FixValues()
         {
