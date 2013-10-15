@@ -159,6 +159,12 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
+            
+            if (_params.SecondFractionFormat != "")
+            {
+                _output.Append('.');
+                _output.Append(dt.ToString(_params.SecondFractionFormat));
+            }
 
             if (_params.UseUTCDateTime)
                 _output.Append('Z');
