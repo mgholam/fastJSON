@@ -229,3 +229,8 @@
 - version numbers will stay at 2.0.0.0 for drop in compatibility
 - file version will reflect the build number
 - bug fix deserializing to dictionaries instead of dataset when type is not defined
+
+2.0.23
+- JSONParameters.IgnoreCaseOnDeserialize now works 
+- added ignore case test 
+

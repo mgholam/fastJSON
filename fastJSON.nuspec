@@ -2,13 +2,13 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>fastJSON</id>
-        <version>2.0.22</version>
-        <title />
+        <version>2.0.23</version>
+        <title>fastJSON</title>
         <authors>mgholam</authors>
         <owners />
         <projectUrl>http://fastjson.codeplex.com/</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>fastJSON</description>
+        <description>smallest, fastest polymorphic JSON serializer</description>
     </metadata>
     <files>
         <file src="output\net35\fastjson.dll" target="lib\net20\fastjson.dll" />
