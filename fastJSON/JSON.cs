@@ -56,6 +56,10 @@ namespace fastJSON
         /// Use escaped unicode i.e. \uXXXX format for non ASCII characters (default = True)
         /// </summary>
         public bool UseEscapedUnicode = true;
+        /// <summary>
+        /// Output string key dictionaries as "k"/"v" format (default = False) 
+        /// </summary>
+        public bool KVStyleStringDictionary = false;
 
         public void FixValues()
         {

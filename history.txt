@@ -234,3 +234,7 @@
 - JSONParameters.IgnoreCaseOnDeserialize now works 
 - added ignore case test 
 
+2.0.24
+- access inner property in arrays in dynamic types e.g. d.arr[1].a (Thanks to Greg Ryjikh)
+- add JSONParameters.KVStyleStringDictionary to control string key dictionary output
+

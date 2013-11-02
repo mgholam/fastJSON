@@ -14,6 +14,7 @@ namespace fastJSON
         public DynamicJson(string json)
         {
             var dictionary = fastJSON.JSON.Instance.Parse(json);
+
             if (dictionary is IDictionary<string, object>)
                 this.Dictionary = (IDictionary<string, object>)dictionary;
         }
@@ -31,13 +32,21 @@ namespace fastJSON
                     return false;// throw new Exception("property not found " + binder.Name);
 
             if (result is IDictionary<string, object>)
+            {
                 result = new DynamicJson(result as IDictionary<string, object>);
-
-            else if (result is List<object> && (result as List<object>).First() is IDictionary<string, object>)
-                result = new List<DynamicJson>((result as List<object>).Select(x => new DynamicJson(x as IDictionary<string, object>)));
-
+            }
             else if (result is List<object>)
-                result = result as List<object>;
+            {
+                List<object> list = new List<object>();
+                foreach (object item in (List<object>)result)
+                {
+                    if (item is IDictionary<string, object>)
+                        list.Add(new DynamicJson(item as IDictionary<string, object>));
+                    else
+                        list.Add(item);
+                }
+                result = list;
+            }
 
             return this.Dictionary.ContainsKey(binder.Name);
         }

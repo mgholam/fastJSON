@@ -941,12 +941,13 @@ namespace UnitTests
         [Test]
         public static void DynamicTest()
         {
-            string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30}}";
+            string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30},\"arr\":[1,{\"a\":2},3,4,5,6]}";
             dynamic d = fastJSON.JSON.Instance.ToDynamic(s);
             var ss = d.Name;
             var oo = d.Age;
             var dob = d.dob;
             var inp = d.inner.prop;
+            var i = d.arr[1].a;
 
             Assert.AreEqual("aaaaaa", ss);
             Assert.AreEqual(10, oo);

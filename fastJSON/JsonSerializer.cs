@@ -82,7 +82,7 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
-            else if (obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+            else if (_params.KVStyleStringDictionary==false && obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
                 WriteStringDictionary((IDictionary)obj);
 
             else if (obj is IDictionary)
