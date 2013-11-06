@@ -63,6 +63,11 @@ namespace fastJSON
         /// Use escaped unicode i.e. \uXXXX format for non ASCII characters (default = True)
         /// </summary>
         public bool UseEscapedUnicode = true;
+        
+        /// <summary>
+        /// Enable enum serialization to int instead of string
+        /// </summary>
+        public bool SerializeEnumAsInt = false;
 
         private string _secondFractionFormat;
 
