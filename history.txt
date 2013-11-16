@@ -238,3 +238,5 @@
 - access inner property in arrays in dynamic types e.g. d.arr[1].a (Thanks to Greg Ryjikh)
 - add JSONParameters.KVStyleStringDictionary to control string key dictionary output
 
+2.0.25
+- bug fix dynamic json and root arrays e.g. [1,2,3,4]

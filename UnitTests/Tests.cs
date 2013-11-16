@@ -960,9 +960,10 @@ namespace UnitTests
             var o = d.ints[0];
             Assert.AreEqual(1, o);
 
-            //s = "[1,2,3,4,5]";
-            //d = fastJSON.JSON.Instance.ToDynamic(s);
-            //o = d[0];
+            s = "[1,2,3,4,5]";
+            d = fastJSON.JSON.Instance.ToDynamic(s);
+            o = d[2];
+            Assert.AreEqual(3, o);
         }
 
         [Test]
