@@ -240,3 +240,7 @@
 
 2.0.25
 - bug fix dynamic json and root arrays e.g. [1,2,3,4]
+
+2.0.26
+- bug fix objects in array dynamic types e.g. [1,2,{"prop":90}]
+- added support for special collections : StringDictionary, NameValueCollection

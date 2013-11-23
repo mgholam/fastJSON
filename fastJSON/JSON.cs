@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Collections.Specialized;
 
 namespace fastJSON
 {
@@ -290,6 +291,8 @@ namespace fastJSON
             Array,
             ByteArray,
             Dictionary,
+            StringKeyDictionary,
+            NameValue,
             StringDictionary,
 #if !SILVERLIGHT
             Hashtable,
@@ -376,6 +379,8 @@ namespace fastJSON
             else if (t == typeof(DateTime) || t == typeof(DateTime?)) d_type = myPropInfoType.DateTime;
             else if (t.IsEnum) d_type = myPropInfoType.Enum;
             else if (t == typeof(Guid) || t == typeof(Guid?)) d_type = myPropInfoType.Guid;
+            else if (t == typeof(StringDictionary)) d_type = myPropInfoType.StringDictionary;
+            else if (t == typeof(NameValueCollection)) d_type = myPropInfoType.NameValue;
             else if (t.IsArray)
             {
                 d.bt = t.GetElementType();
@@ -388,7 +393,7 @@ namespace fastJSON
             {
                 d.GenericTypes = t.GetGenericArguments();
                 if (d.GenericTypes.Length > 0 && d.GenericTypes[0] == typeof(string))
-                    d_type = myPropInfoType.StringDictionary;
+                    d_type = myPropInfoType.StringKeyDictionary;
                 else
                     d_type = myPropInfoType.Dictionary;
             }
@@ -486,13 +491,13 @@ namespace fastJSON
 
                     else if (gtypes != null && t2.IsArray)
                         v = CreateArray((List<object>)kv.Value, t2, t2.GetElementType(), null);
-                    
+
                     else if (kv.Value is IList)
                         v = CreateGenericList((List<object>)kv.Value, t2, t1, null);
-                    
+
                     else
                         v = ChangeType(kv.Value, gtypes[1]);
-                    
+
                     o.Add(k, v);
                 }
 
@@ -507,6 +512,10 @@ namespace fastJSON
         private object ParseDictionary(Dictionary<string, object> d, Dictionary<string, object> globaltypes, Type type, object input)
         {
             object tn = "";
+            if (type == typeof(NameValueCollection))
+                return CreateNV(d);
+            if (type == typeof(StringDictionary))
+                return CreateSD(d);
 
             if (d.TryGetValue("$types", out tn))
             {
@@ -587,8 +596,9 @@ namespace fastJSON
                             case myPropInfoType.Hashtable: // same case as Dictionary
 #endif
                             case myPropInfoType.Dictionary: oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
-                            case myPropInfoType.StringDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
-
+                            case myPropInfoType.StringKeyDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
+                            case myPropInfoType.NameValue: oset = CreateNV((Dictionary<string, object>)v); break;
+                            case myPropInfoType.StringDictionary: oset = CreateSD((Dictionary<string, object>)v); break;
                             case myPropInfoType.Custom: oset = CreateCustom((string)v, pi.pt); break;
                             default:
                                 {
@@ -615,6 +625,26 @@ namespace fastJSON
                 }
             }
             return o;
+        }
+
+        private StringDictionary CreateSD(Dictionary<string, object> d)
+        {
+            StringDictionary nv = new StringDictionary();
+
+            foreach (var o in d)
+                nv.Add(o.Key, (string)o.Value);
+
+            return nv;
+        }
+
+        private NameValueCollection CreateNV(Dictionary<string, object> d)
+        {
+            NameValueCollection nv = new NameValueCollection();
+
+            foreach (var o in d)
+                nv.Add(o.Key, (string)o.Value);
+
+            return nv;
         }
 
         private object CreateCustom(string v, Type type)
@@ -781,16 +811,16 @@ namespace fastJSON
 
                 if (values.Value is Dictionary<string, object>)
                     val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2, null);
-                
+
                 else if (types != null && t2.IsArray)
                     val = CreateArray((List<object>)values.Value, t2, t2.GetElementType(), globalTypes);
-                
+
                 else if (values.Value is IList)
                     val = CreateGenericList((List<object>)values.Value, t2, t1, globalTypes);
-                
+
                 else
                     val = ChangeType(values.Value, t2);
-                
+
                 col.Add(key, val);
             }
 

@@ -19,7 +19,7 @@ namespace fastJSON
             if (parse is IDictionary<string, object>)
                 _dictionary = (IDictionary<string, object>)parse;
             else
-                _list = (List<object>)parse; 
+                _list = (List<object>)parse;
         }
 
         private DynamicJson(object dictionary)
@@ -27,11 +27,13 @@ namespace fastJSON
             if (dictionary is IDictionary<string, object>)
                 _dictionary = (IDictionary<string, object>)dictionary;
         }
-        
+
         public override bool TryGetIndex(GetIndexBinder binder, Object[] indexes, out Object result)
         {
             int index = (int)indexes[0];
-            result=_list[index];
+            result = _list[index];
+            if (result is IDictionary<string, object>)
+                result = new DynamicJson(result as IDictionary<string, object>);
             return true;
         }
 

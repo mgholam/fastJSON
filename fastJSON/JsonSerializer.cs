@@ -7,6 +7,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Collections.Specialized;
 
 namespace fastJSON
 {
@@ -82,7 +83,7 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
-            else if (_params.KVStyleStringDictionary==false && obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+            else if (_params.KVStyleStringDictionary == false && obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
                 WriteStringDictionary((IDictionary)obj);
 
             else if (obj is IDictionary)
@@ -97,6 +98,12 @@ namespace fastJSON
             else if (obj is byte[])
                 WriteBytes((byte[])obj);
 
+            else if (obj is StringDictionary)
+                WriteSD((StringDictionary)obj);
+
+            else if (obj is NameValueCollection)
+                WriteNV((NameValueCollection)obj);
+
             else if (obj is IEnumerable)
                 WriteArray((IEnumerable)obj);
 
@@ -108,6 +115,40 @@ namespace fastJSON
 
             else
                 WriteObject(obj);
+        }
+
+        private void WriteNV(NameValueCollection nameValueCollection)
+        {
+            _output.Append('{');
+
+            bool pendingSeparator = false;
+
+            foreach (string key in nameValueCollection)
+            {
+                if (pendingSeparator) _output.Append(',');
+
+                WritePair(key, nameValueCollection[key]);
+
+                pendingSeparator = true;
+            }
+            _output.Append('}');
+        }
+
+        private void WriteSD(StringDictionary stringDictionary)
+        {
+            _output.Append('{');
+
+            bool pendingSeparator = false;
+
+            foreach (DictionaryEntry entry in stringDictionary)
+            {
+                if (pendingSeparator) _output.Append(',');
+
+                WritePair((string)entry.Key, entry.Value);
+
+                pendingSeparator = true;
+            }
+            _output.Append('}');
         }
 
         private void WriteCustom(object obj)

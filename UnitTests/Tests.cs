@@ -9,6 +9,7 @@ using System.Collections;
 using System.Threading;
 using fastJSON;
 using System.Dynamic;
+using System.Collections.Specialized;
 
 namespace UnitTests
 {
@@ -960,10 +961,12 @@ namespace UnitTests
             var o = d.ints[0];
             Assert.AreEqual(1, o);
 
-            s = "[1,2,3,4,5]";
+            s = "[1,2,3,4,5,{\"key\":90}]";
             d = fastJSON.JSON.Instance.ToDynamic(s);
             o = d[2];
             Assert.AreEqual(3, o);
+            var p = d[5].key;
+            Assert.AreEqual(90, p);
         }
 
         [Test]
@@ -1169,6 +1172,39 @@ namespace UnitTests
             Assert.AreEqual("aaaa", o.Name);
             var oo = fastJSON.JSON.Instance.ToObject<ignorecase2>(json.ToUpper());
             Assert.AreEqual("AAAA", oo.name);
+        }
+
+        public class coltest
+        {
+            public string name;
+            public NameValueCollection nv;
+            public StringDictionary sd;
+        }
+
+        [Test]
+        public static void SpecialCollections()
+        {
+            var nv = new NameValueCollection();
+            nv.Add("1", "a");
+            nv.Add("2", "b");
+            var s = fastJSON.JSON.Instance.ToJSON(nv);
+            var oo = fastJSON.JSON.Instance.ToObject<NameValueCollection>(s);
+            Assert.AreEqual("a", oo["1"]);
+            var sd = new StringDictionary();
+            sd.Add("1", "a");
+            sd.Add("2", "b");
+            s = fastJSON.JSON.Instance.ToJSON(sd);
+            var o = fastJSON.JSON.Instance.ToObject<StringDictionary>(s);
+            Assert.AreEqual("b", o["2"]);
+
+            coltest c = new coltest();
+            c.name = "aaa";
+            c.nv = nv;
+            c.sd = sd;
+            s = fastJSON.JSON.Instance.ToJSON(c);
+            var ooo = fastJSON.JSON.Instance.ToObject(s);
+            Assert.AreEqual("a", (ooo as coltest).nv["1"]);
+            Assert.AreEqual("b", (ooo as coltest).sd["2"]);
         }
 
         //[Test]
