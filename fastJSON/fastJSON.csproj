@@ -119,6 +119,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\fastJSON.nuspec">
+      <Link>fastJSON.nuspec</Link>
+    </None>
     <None Include="fastJSON.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

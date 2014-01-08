@@ -61,6 +61,10 @@ namespace fastJSON
         /// Output string key dictionaries as "k"/"v" format (default = False) 
         /// </summary>
         public bool KVStyleStringDictionary = false;
+        /// <summary>
+        /// Output Enum values instead of names (default = False)
+        /// </summary>
+        public bool UseValuesOfEnums = false;
 
         public void FixValues()
         {
@@ -337,7 +341,7 @@ namespace fastJSON
             else
             {
                 sd = new SafeDictionary<string, myPropInfo>();
-                PropertyInfo[] pr = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                PropertyInfo[] pr = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );//| BindingFlags.Static);
                 foreach (PropertyInfo p in pr)
                 {
                     myPropInfo d = CreateMyProp(p.PropertyType, p.Name);
@@ -349,7 +353,7 @@ namespace fastJSON
                     else
                         sd.Add(p.Name, d);
                 }
-                FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance );//| BindingFlags.Static);
                 foreach (FieldInfo f in fi)
                 {
                     myPropInfo d = CreateMyProp(f.FieldType, f.Name);
@@ -581,7 +585,7 @@ namespace fastJSON
                             case myPropInfoType.String: oset = (string)v; break;
                             case myPropInfoType.Bool: oset = (bool)v; break;
                             case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
-                            case myPropInfoType.Enum: oset = CreateEnum(pi.pt, (string)v); break;
+                            case myPropInfoType.Enum: oset = CreateEnum(pi.pt, v); break;
                             case myPropInfoType.Guid: oset = CreateGuid((string)v); break;
 
                             case myPropInfoType.Array:
@@ -712,11 +716,11 @@ namespace fastJSON
             return num;
         }
 
-        private object CreateEnum(Type pt, string v)
+        private object CreateEnum(Type pt, object v)
         {
             // TODO : optimize create enum
 #if !SILVERLIGHT
-            return Enum.Parse(pt, v);
+            return Enum.Parse(pt, v.ToString());
 #else
             return Enum.Parse(pt, v, true);
 #endif

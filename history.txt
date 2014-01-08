@@ -1,32 +1,211 @@
-1.1 
-- 26% performance boost on dataset
+2.0.27
+- added UseValuesOfEnums parameter to control enum output
+- fixed working with const properties and fields (i.e ignored)
 
-1.2
-- culture info 
-- system.dbnull -> null
-- skips readonly properties
+2.0.26
+- bug fix objects in array dynamic types e.g. [1,2,{"prop":90}]
+- added support for special collections : StringDictionary, NameValueCollection
 
-1.3
-- removed unused code 786 lines now
-- property comma fix
+2.0.25
+- bug fix dynamic json and root arrays e.g. [1,2,3,4]
 
-1.4
-- ~3% speed boost to serializer
-- 50% speed boost to deserializer
-- 46% speed boost to dataset serializer
-- 26% speed boost to dataset deserializer
+2.0.24
+- access inner property in arrays in dynamic types e.g. d.arr[1].a (Thanks to Greg Ryjikh)
+- add JSONParameters.KVStyleStringDictionary to control string key dictionary output
 
-1.5
-- 53% speed boost deserializer without dataset
-- 21% speed boost deserializer with dataset
-- Enum parse fix
+2.0.23
+- JSONParameters.IgnoreCaseOnDeserialize now works 
+- added ignore case test 
 
-1.6 
-- guid 2x faster
-- dataset 40% smaller
-- dataset deserialize 35% faster
-- dataset serialize 11% faster
-- single dimension valuetype arrays supported 
+2.0.22
+- added .net 3.5 project
+- now compiling to 'output' directory
+- added signed assembly 
+- version numbers will stay at 2.0.0.0 for drop in compatibility
+- file version will reflect the build number
+- bug fix deserializing to dictionaries instead of dataset when type is not defined
+
+2.0.21
+- fixed edge case tailing '\' in formatter
+- code cleanup formatter
+
+2.0.20
+- fixed hastable deserialize
+- added test for hashtable
+- added abstract class test
+- changed list of getters to array ~3% performance gain
+- removed unused code
+
+2.0.19
+- fix dynamic objects and lists
+- fix deserialize Dictionary<T, List<V>> and Dictionary<T, V[]>
+- added tests for dictionary with lists
+
+2.0.18
+- edge case empty array deserialize "[]" -> T[]
+- code cleanup
+- fixed serialize readonly properties
+
+2.0.17 
+- added serialization of static fields and properties
+- added dynamic object support and test
+
+2.0.16
+- bug fix formatter 
+- added test for formatter
+
+2.0.15
+- removed CUSTOMTYPE directives from code
+- fix for writing enumerable object 
+
+2.0.14
+- Optimizations done by Sean Cooper
+   - using Stopwatch instead of DateTime for timings
+   - myPropInfo using enum instead of boolean
+   - using switch instead of linked if statements
+   - parsing DateTime optimized
+   - StringBuilder using single char output instead of strings for \" chars etc
+
+2.0.13
+- bug fix comma edge cases with nulls
+- unified DynamicMethod calls with SilverLight4 code
+- test cases for silverlight
+
+2.0.12
+- bug fix nested generic types (thanks to Zambiorix)
+- bug fix comma edge cases with nulls
+
+2.0.11
+- bug fix single char number json
+- added UseEscapedUnicode parameter for controlling string output in \uxxxx for unicode/utf8 format
+- bug fix null and generic ToObject<>()
+- bug fix List<> of custom types 
+
+2.0.10
+- added MonoDroid project
+
+2.0.9
+- added support for root level DataSet and DataTable deserialize (you have to do ToObject<DataSet>(...) )
+- added dataset tests
+
+2.0.8
+- bug fix big number conversions 
+- * breaking change Parse will return longs and doubles instead of longs and decimals
+- ToObject on value types will auto convert the data (e.g ToObject<deciaml>() )
+
+2.0.7
+- bug fix missing comma with single property and extension enabled
+
+2.0.6
+- singleton uses [ThreadStatic] for concurrency (thanks to Philip Jander) 
+- bug fix extra comma in the output when only 1 property in the object (thanks to Philip Jander) 
+
+2.0.5
+- fixed number parsing for invariant format 
+- added a test for German locale number testing (,. problems)
+
+2.0.4
+- fixed null objects -> returns "null" 
+- added sealed keyword to classes
+- bug fix SerializeNullValues=false and an extra comma at the end
+- UseExtensions=false will disable global types also
+- fixed parameters setting for Parse()
+
+2.0.3
+- readonly property checking on deserialize (thanks to Slava Pocheptsov)
+- bug fix deserialize nested types with unit test (thanks to Slava Pocheptsov)
+- fix the silverlight4 project build (silverlight5 is not supported)
+
+2.0.2
+- bug fix $types and arrays
+
+2.0.1
+- bug fix preserve internal objects when FillObject called
+- changed ArrayList to List<object> and consolidated silverlight code
+- added more tests
+- speed increase when using global types ($types)
+
+2.0.0
+- added unit tests 
+- deserialize root level arrays (int[] etc.)
+- deserialize root level value types (int,long,decimal,string)
+- deserialize ToObject< Dictionary<T,V> >  
+- deserialize ToObject< List<T> >
+- * breaking change in Parse , numbers are returned as decimals and longs not strings
+
+1.9.9.1
+- bug fix reflection code 
+
+1.9.9
+- bug fix char and string ToString
+- refactored reflection code into Reflection class
+- added support for top level struct object serialize/deserialize
+
+1.9.8.1
+- spelling mistake on JSONParameters
+- bug fix Parameter initialization
+
+1.9.8
+- added DeepCopy(obj) and DeepCopy<T>(obj)
+- refactored code to JSONParameters and removed the JSON overloads
+- added support to serialize anonymous types (deserialize is not possible at the moment)
+- bug fix $types output with non object root
+
+1.9.7 
+- removed indent logic from serializer
+- added Beautify(json) method to JSON
+- added locks on SafeDictionary
+- added FillObject(obj,json) for filling an existing object
+
+1.9.6.1
+- bug fix SilverLight version to support GlobalTypes 
+
+1.9.6
+- added a $types extension for global type definitions which reduce the size of the output json
+- added UsingGlobalTypes config for controling the above (default = true)
+- bug fix datatable commas between arrays and table definitions (less lint complaining)
+- string key dictionaries are serialized optimally now (not K V format)
+
+1.9.5
+- bug fix datatable schema serialize & deserialize
+
+1.9.4
+- ShowReadOnlyProperties added for exporting readonly properties (default = false)
+- if datetime value ends in "Z" then automatic UTC time calculated 
+- if using UTC datetime the output end in a "Z" (standards compliant) 
+
+1.9.3
+- UTC datetime handling via UseUTCDateTime = true property 
+- added support for enum as key in dictionary
+
+1.9.2
+- fixed to fullname instaed of name when searching for types in property cache (namespace1.myclass , namespace2.myclass are now different)
+
+1.9.1
+- fixed SerializeNullValues = false bug 
+
+1.9
+- added support for public field serialize and deserialize
+
+1.8 
+- SilverLight4 support merged into source
+- RegisterCustomType() for custom serializer
+
+1.7.7 
+- datatable support 
+- indented output
+- bug fix 
+
+1.7.6
+- xmlignore on properties handled
+- date output fix -> 0000 format
+- special case optimized dictionary<string,string> output {"prop":"value",...} insteadof [{"k":"prop","v":"value"},...]
+- override serialize nulls to output
+
+1.7.5
+- serialize without extensions
+- added overloaded methods
+- deserialize without extensions
 
 1.7 
 - bug fix dictionary deserialize
@@ -40,207 +219,32 @@
 - handles object ReturnEntity = new object[] { object1, object2 }
 - handles object ReturnEntity = Guid, Dataset, valuetype
 
-1.7.5
-- serialize without extensions
-- added overloaded methods
-- deserialize without extensions
+1.6 
+- guid 2x faster
+- dataset 40% smaller
+- dataset deserialize 35% faster
+- dataset serialize 11% faster
+- single dimension valuetype arrays supported 
 
-1.7.6
-- xmlignore on properties handled
-- date output fix -> 0000 format
-- special case optimized dictionary<string,string> output {"prop":"value",...} insteadof [{"k":"prop","v":"value"},...]
-- override serialize nulls to output
+1.5
+- 53% speed boost deserializer without dataset
+- 21% speed boost deserializer with dataset
+- Enum parse fix
 
-1.7.7
-- datatable support 
-- indented output
-- bug fix 
+1.4
+- ~3% speed boost to serializer
+- 50% speed boost to deserializer
+- 46% speed boost to dataset serializer
+- 26% speed boost to dataset deserializer
 
-1.8
-- SilverLight4 support merged into source
-- RegisterCustomType() for custom serializer
+1.3
+- removed unused code 786 lines now
+- property comma fix
 
-1.9
-- added support for public field serialize and deserialize
+1.2
+- culture info 
+- system.dbnull -> null
+- skips readonly properties
 
-1.9.1
-- fixed SerializeNullValues = false bug 
-
-1.9.2
-- fixed to fullname instaed of name when searching for types in property cache (namespace1.myclass , namespace2.myclass are now different)
-
-1.9.3
-- UTC datetime handling via UseUTCDateTime = true property 
-- added support for enum as key in dictionary
-
-1.9.4
-- ShowReadOnlyProperties added for exporting readonly properties (default = false)
-- if datetime value ends in "Z" then automatic UTC time calculated 
-- if using UTC datetime the output end in a "Z" (standards compliant) 
-
-1.9.5
-- bug fix datatable schema serialize & deserialize
-
-1.9.6
-- added a $types extension for global type definitions which reduce the size of the output json
-- added UsingGlobalTypes config for controling the above (default = true)
-- bug fix datatable commas between arrays and table definitions (less lint complaining)
-- string key dictionaries are serialized optimally now (not K V format)
-
-1.9.6.1
-- bug fix SilverLight version to support GlobalTypes 
-
-1.9.7 
-- removed indent logic from serializer
-- added Beautify(json) method to JSON
-- added locks on SafeDictionary
-- added FillObject(obj,json) for filling an existing object
-
-1.9.8
-- added DeepCopy(obj) and DeepCopy<T>(obj)
-- refactored code to JSONParameters and removed the JSON overloads
-- added support to serialize anonymous types (deserialize is not possible at the moment)
-- bug fix $types output with non object root
-
-1.9.8.1
-- spelling mistake on JSONParameters
-- bug fix Parameter initialization
-
-1.9.9
-- bug fix char and string ToString
-- refactored reflection code into Reflection class
-- added support for top level struct object serialize/deserialize
-
-1.9.9.1
-- bug fix reflection code 
-
-2.0.0
-- added unit tests 
-- deserialize root level arrays (int[] etc.)
-- deserialize root level value types (int,long,decimal,string)
-- deserialize ToObject< Dictionary<T,V> >  
-- deserialize ToObject< List<T> >
-- * breaking change in Parse , numbers are returned as decimals and longs not strings
-
-2.0.1
-- bug fix preserve internal objects when FillObject called
-- changed ArrayList to List<object> and consolidated silverlight code
-- added more tests
-- speed increase when using global types ($types)
-
-2.0.2
-- bug fix $types and arrays
-
-2.0.3
-- readonly property checking on deserialize (thanks to Slava Pocheptsov)
-- bug fix deserialize nested types with unit test (thanks to Slava Pocheptsov)
-- fix the silverlight4 project build (silverlight5 is not supported)
-
-2.0.4
-- fixed null objects -> returns "null" 
-- added sealed keyword to classes
-- bug fix SerializeNullValues=false and an extra comma at the end
-- UseExtensions=false will disable global types also
-- fixed parameters setting for Parse()
-
-2.0.5
-- fixed number parsing for invariant format 
-- added a test for German locale number testing (,. problems)
-
-2.0.6
-- singleton uses [ThreadStatic] for concurrency (thanks to Philip Jander) 
-- bug fix extra comma in the output when only 1 property in the object (thanks to Philip Jander) 
-
-2.0.7
-- bug fix missing comma with single property and extension enabled
-
-2.0.8
-- bug fix big number conversions 
-- * breaking change Parse will return longs and doubles instead of longs and decimals
-- ToObject on value types will auto convert the data (e.g ToObject<deciaml>() )
-
-2.0.9
-- added support for root level DataSet and DataTable deserialize (you have to do ToObject<DataSet>(...) )
-- added dataset tests
-
-2.0.10
-- added MonoDroid project
-
-2.0.11
-- bug fix single char number json
-- added UseEscapedUnicode parameter for controlling string output in \uxxxx for unicode/utf8 format
-- bug fix null and generic ToObject<>()
-- bug fix List<> of custom types 
-
-2.0.12
-- bug fix nested generic types (thanks to Zambiorix)
-- bug fix comma edge cases with nulls
-
-2.0.13
-- bug fix comma edge cases with nulls
-- unified DynamicMethod calls with SilverLight4 code
-- test cases for silverlight
-
-2.0.14
-- Optimizations done by Sean Cooper
-   - using Stopwatch instead of DateTime for timings
-   - myPropInfo using enum instead of boolean
-   - using switch instead of linked if statements
-   - parsing DateTime optimized
-   - StringBuilder using single char output instead of strings for \" chars etc
-   
-2.0.15
-- removed CUSTOMTYPE directives from code
-- fix for writing enumerable object 
-
-2.0.16
-- bug fix formatter 
-- added test for formatter
-
-2.0.17 
-- added serialization of static fields and properties
-- added dynamic object support and test
-
-2.0.18
-- edge case empty array deserialize "[]" -> T[]
-- code cleanup
-- fixed serialize readonly properties
-
-2.0.19
-- fix dynamic objects and lists
-- fix deserialize Dictionary<T, List<V>> and Dictionary<T, V[]>
-- added tests for dictionary with lists
-
-2.0.20
-- fixed hastable deserialize
-- added test for hashtable
-- added abstract class test
-- changed list of getters to array ~3% performance gain
-- removed unused code
-
-2.0.21
-- fixed edge case tailing '\' in formatter
-- code cleanup formatter
-
-2.0.22
-- added .net 3.5 project
-- now compiling to 'output' directory
-- added signed assembly 
-- version numbers will stay at 2.0.0.0 for drop in compatibility
-- file version will reflect the build number
-- bug fix deserializing to dictionaries instead of dataset when type is not defined
-
-2.0.23
-- JSONParameters.IgnoreCaseOnDeserialize now works 
-- added ignore case test 
-
-2.0.24
-- access inner property in arrays in dynamic types e.g. d.arr[1].a (Thanks to Greg Ryjikh)
-- add JSONParameters.KVStyleStringDictionary to control string key dictionary output
-
-2.0.25
-- bug fix dynamic json and root arrays e.g. [1,2,3,4]
-
-2.0.26
-- bug fix objects in array dynamic types e.g. [1,2,{"prop":90}]
-- added support for special collections : StringDictionary, NameValueCollection
+1.1 
+- 26% performance boost on dataset

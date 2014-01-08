@@ -161,7 +161,10 @@ namespace fastJSON
         private void WriteEnum(Enum e)
         {
             // TODO : optimize enum write
-            WriteStringFast(e.ToString());
+            if (_params.UseValuesOfEnums)
+                WriteValue(Convert.ToInt32(e));
+            else
+                WriteStringFast(e.ToString());
         }
 
         private void WriteGuid(Guid g)
@@ -364,7 +367,7 @@ namespace fastJSON
 
             Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
             int c = g.Length;
-            for(int ii=0; ii<c; ii++)//foreach (var p in g)
+            for (int ii = 0; ii < c; ii++)
             {
                 var p = g[ii];
                 object o = p.Getter(obj);

@@ -1207,6 +1207,65 @@ namespace UnitTests
             Assert.AreEqual("b", (ooo as coltest).sd["2"]);
         }
 
+        public class constch
+        {
+            public enumt e = enumt.B;
+            public string Name = "aa";
+            public const int age = 11;
+        }
+
+        [Test]
+        public static void consttest()
+        {
+            string s = fastJSON.JSON.Instance.ToJSON(new constch());
+            var o = fastJSON.JSON.Instance.ToObject(s);
+        }
+
+
+        public enum enumt
+        {
+            A=65,
+            B=90,
+            C=100
+        }
+
+        [Test]
+        public static void enumtest()
+        {
+            string s = fastJSON.JSON.Instance.ToJSON(new constch(), new JSONParameters { UseValuesOfEnums = true });
+            Console.WriteLine(s);
+            var o = fastJSON.JSON.Instance.ToObject(s);
+        }
+
+        //public class PriceLevel
+        //{
+        //    public double price { get; set; }
+        //    public double amount { get; set; }
+        //}
+
+        //public class L2Result
+        //{
+        //    public List<PriceLevel> bid { get; set; }
+        //    public List<PriceLevel> ask { get; set; }
+        //}
+
+        //public class L2MarketDepth
+        //{
+        //    public L2Result market_depth { get; set; }
+        //}
+
+        //public class GetMarketDepth2Reply
+        //{
+        //    public L2MarketDepth result { get; set; }
+        //    public string id { get; set; }
+        //}
+
+        //[Test]
+        //public static void pp()
+        //{
+        //    string jsonStr = "{\"result\":{\"market_depth\":{\"bid\":[{\"price\":5293,\"amount\":4.751},{\"price\":5292.83,\"amount\":0.051}],\"ask\":[{\"price\":5295.87,\"amount\":0.884},{\"price\":5299,\"amount\":1}]}},\"id\":\"1\"}";
+        //    var obj2 = fastJSON.JSON.Instance.ToObject<GetMarketDepth2Reply>(jsonStr);
+        //}
         //[Test]
         //public static void tt()
         //{

@@ -262,7 +262,7 @@ namespace fastJSON
             if (_getterscache.TryGetValue(type, out val))
                 return val;
 
-            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );//| BindingFlags.Static);
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
@@ -283,7 +283,7 @@ namespace fastJSON
                 }
             }
 
-            FieldInfo[] fi = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
+            FieldInfo[] fi = type.GetFields(BindingFlags.Instance | BindingFlags.Public );//| BindingFlags.Static);
             foreach (var f in fi)
             {
                 object[] att = f.GetCustomAttributes(typeof(System.Xml.Serialization.XmlIgnoreAttribute), false);
