@@ -1,3 +1,12 @@
+2.0.28
+- removed ToCharArray in the parser for less memory usage (Thanks to Simon Hewitt)
+- fixed create enum from value and string
+- replaced safedictionary with dictionary for some of the internals so no locks on read
+- added custom ignore attributes (Thanks to Jared Thirsk)
+- using IsDefined instead of GetCustomAttributes (Thanks to Andrew Rissing)
+- moved all the reflection code out of JSON.cs
+- now you can deserialize non default constructor classes (Thanks to Anton Afanasyev)
+
 2.0.27
 - added UseValuesOfEnums parameter to control enum output
 - fixed working with const properties and fields (i.e ignored)

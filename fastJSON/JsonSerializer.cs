@@ -83,7 +83,9 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
-            else if (_params.KVStyleStringDictionary == false && obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+            else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
+                obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+
                 WriteStringDictionary((IDictionary)obj);
 
             else if (obj is IDictionary)
@@ -365,7 +367,7 @@ namespace fastJSON
                 append = true;
             }
 
-            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
+            Getters[] g = Reflection.Instance.GetGetters(t, _params);
             int c = g.Length;
             for (int ii = 0; ii < c; ii++)
             {

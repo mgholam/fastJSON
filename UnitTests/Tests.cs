@@ -307,7 +307,7 @@ namespace UnitTests
 #endif
 
             var s = fastJSON.JSON.Instance.ToJSON(r);
-            Console.WriteLine(s);
+            Console.WriteLine(fastJSON.JSON.Instance.Beautify(s));
             var o = fastJSON.JSON.Instance.ToObject(s);
 
             Assert.AreEqual(2312, (o as Retclass).Field2);
@@ -329,7 +329,7 @@ namespace UnitTests
             var s = fastJSON.JSON.Instance.ToJSON(r);
             Console.WriteLine(s);
             var o = fastJSON.JSON.Instance.ToObject(s);
-
+            Assert.NotNull(o);
             Assert.AreEqual(2312, ((Retstruct)o).Field2);
         }
 
@@ -1031,14 +1031,14 @@ namespace UnitTests
         [Test]
         public static void Formatter()
         {
-            string s = "[{\"foo\":\"'[0]\\\"{}\\u1234\\r\\n\",\"bar\":12222,\"coo\":\"some string\",\"dir\":\"C:\\\\folder\\\\\"}]";
+            string s = "[{\"foo\":\"'[0]\\\"{}\\u1234\\r\\n\",\"bar\":12222,\"coo\":\"some' string\",\"dir\":\"C:\\\\folder\\\\\"}]";
             string o = fastJSON.JSON.Instance.Beautify(s);
             Console.WriteLine(o);
             string x = @"[
    {
       ""foo"" : ""'[0]\""{}\u1234\r\n"",
       ""bar"" : 12222,
-      ""coo"" : ""some string"",
+      ""coo"" : ""some' string"",
       ""dir"" : ""C:\\folder\\""
    }
 ]";
@@ -1224,9 +1224,9 @@ namespace UnitTests
 
         public enum enumt
         {
-            A=65,
-            B=90,
-            C=100
+            A = 65,
+            B = 90,
+            C = 100
         }
 
         [Test]
@@ -1237,105 +1237,98 @@ namespace UnitTests
             var o = fastJSON.JSON.Instance.ToObject(s);
         }
 
-        //public class PriceLevel
-        //{
-        //    public double price { get; set; }
-        //    public double amount { get; set; }
-        //}
+        public class ignoreatt : Attribute
+        {
+        }
 
-        //public class L2Result
-        //{
-        //    public List<PriceLevel> bid { get; set; }
-        //    public List<PriceLevel> ask { get; set; }
-        //}
+        public class ignore
+        {
+            public string Name { get; set; }
+            [System.Xml.Serialization.XmlIgnore]
+            public int Age1 { get; set; }
+            [ignoreatt]
+            public int Age2;
+        }
+        public class ignore1 : ignore
+        {
+        }
 
-        //public class L2MarketDepth
-        //{
-        //    public L2Result market_depth { get; set; }
-        //}
+        [Test]
+        public static void IgnoreAttributes()
+        {
+            var i = new ignore { Age1 = 10, Age2 = 20, Name = "aa" };
+            string s = fastJSON.JSON.Instance.ToJSON(i);
+            Console.WriteLine(s);
+            Assert.IsFalse(s.Contains("Age1"));
+            i = new ignore1 { Age1 = 10, Age2 = 20, Name = "bb" };
+            var j = new JSONParameters();
+            j.IgnoreAttributes.Add(typeof(ignoreatt));
+            s = fastJSON.JSON.Instance.ToJSON(i, j);
+            Console.WriteLine(s);
+            Assert.IsFalse(s.Contains("Age1"));
+            Assert.IsFalse(s.Contains("Age2"));
+        }
 
-        //public class GetMarketDepth2Reply
-        //{
-        //    public L2MarketDepth result { get; set; }
-        //    public string id { get; set; }
-        //}
+        public class nondefaultctor
+        {
+            public nondefaultctor(int a)
+            { age = a; }
+            public int age;
+        }
 
-        //[Test]
-        //public static void pp()
-        //{
-        //    string jsonStr = "{\"result\":{\"market_depth\":{\"bid\":[{\"price\":5293,\"amount\":4.751},{\"price\":5292.83,\"amount\":0.051}],\"ask\":[{\"price\":5295.87,\"amount\":0.884},{\"price\":5299,\"amount\":1}]}},\"id\":\"1\"}";
-        //    var obj2 = fastJSON.JSON.Instance.ToObject<GetMarketDepth2Reply>(jsonStr);
-        //}
-        //[Test]
-        //public static void tt()
-        //{
-        //    Dictionary<string, object> dic = new Dictionary<string, object>();
-        //    dic.Add("name", "luxiaoxun");
-        //    dic.Add("number", 123);
-        //    dic.Add("success", true);
-
-        //    List<Dictionary<string, object>> list = new List<Dictionary<string, object>>();
-        //    list.Add(dic);
-
-        //    Dictionary<string, List<Dictionary<string, object>>> dicList = new Dictionary<string, List<Dictionary<string, object>>>();
-        //    dicList.Add("mykey", list);
-
-        //    string json = fastJSON.JSON.Instance.ToJSON(dic); //ok
-        //    Console.WriteLine(json);
-
-        //    string json1 = fastJSON.JSON.Instance.ToJSON(list); //ok
-        //    Console.WriteLine(json1);
-
-        //    string json2 = fastJSON.JSON.Instance.ToJSON(dicList);//ok
-        //    Console.WriteLine(json2);
-        //    Dictionary<string, object> mydic = fastJSON.JSON.Instance.ToObject<Dictionary<string, object>>(json); //ok
-        //    Console.WriteLine(mydic["name"]); //ok
-        //    List<Dictionary<string, object>> mylist = fastJSON.JSON.Instance.ToObject<List<Dictionary<string, object>>>(json1); //Seems ok?
-        //    Dictionary<string, object> dd = mylist[0]; //dd's count is 0
-        //    Dictionary<string, List<Dictionary<string, object>>> mydiclist = fastJSON.JSON.Instance.ToObject<Dictionary<string, List<Dictionary<string, object>>>>(json2); // throw an exception
-        //}
+        [Test]
+        public static void NonDefaultConstructor()
+        {
+            var o = new nondefaultctor(10);
+            var s = fastJSON.JSON.Instance.ToJSON(o);
+            Console.WriteLine(s);
+            var obj = fastJSON.JSON.Instance.ToObject<nondefaultctor>(s);
+            Assert.AreEqual(10, obj.age);
+            List<nondefaultctor> l = new List<nondefaultctor> { o, o, o };
+            s = fastJSON.JSON.Instance.ToJSON(l);
+            var obj2 = fastJSON.JSON.Instance.ToObject<List<nondefaultctor>>(s);
+            Assert.AreEqual(3, obj2.Count);
+            Assert.AreEqual(10, obj2[1].age);
+        }
 
 
         //[Test]
-        //public static void tt()
+        //public static void Exception()
         //{
-        //    string jsonText = "[[{\"language\":\"es\",\"isReliable\":false,\"confidence\":0.4517133956386293},{\"language\":\"pt\",\"isReliable\":false,\"confidence\":0.08356545961002786}],[{\"language\":\"en\",\"isReliable\":false,\"confidence\":0.17017828200972449},{\"language\":\"vi\",\"isReliable\":false,\"confidence\":0.13673655423883319}]]}}";
+        //    var e = new Exception("hello");
 
-        //    List<SubFolder> oo = new List<SubFolder>();
-        //    oo.Add(new SubFolder());
-        //    oo.Add(new SubFolder());
-        //    string s = fastJSON.JSON.Instance.ToJSON(oo, new JSONParameters{ UseExtensions = false});
-        //    // to deserialize a string to an object
-        //    var newobj = fastJSON.JSON.Instance.ToObject<List<SubFolder>>(jsonText);
-
+        //    var s = fastJSON.JSON.Instance.ToJSON(e);
+        //    Console.WriteLine(s);
+        //    var o = fastJSON.JSON.Instance.ToObject(s);
+        //    Assert.AreEqual("hello", (o as Exception).Message);
         //}
-
-        //public class SubFolder
+        //public class ilistclass
         //{
-
-        //    public string language { get; set; }
-        //    public string isReliable { get; set; }
-        //    public string confidence { get; set; }
-
-        //}
-        //public class arrclass
-        //{
-        //    public string name { get; set; }
-        //    public int age { get; set; }
+        //    public string name;
+        //    public IList<colclass> list { get; set; }
         //}
 
         //[Test]
-        //public static void ClassArray()
+        //public static void ilist()
         //{
-        //    arrclass[] a = new arrclass[3];
+        //    ilistclass i = new ilistclass();
+        //    i.name = "aa";
+        //    i.list = new List<colclass>();
+        //    i.list.Add(new colclass() { gender = Gender.Female, date = DateTime.Now, isNew = true });
 
-        //    a[0] = new arrclass { age = 1, name = "a" };
-        //    a[1] = new arrclass { name = "b", age = 2 };
-        //    a[2] = new arrclass { name = "c", age = 3 };
+        //    var s = fastJSON.JSON.Instance.ToJSON(i);
+        //    Console.WriteLine(s);
+        //    var o = fastJSON.JSON.Instance.ToObject(s);
+        //}
 
-        //    var s = fastJSON.JSON.Instance.ToJSON(a, new JSONParameters { UseExtensions = false });
-        //    var o = fastJSON.JSON.Instance.ToObject<List<arrclass>>(s);
 
+        //[Test]
+        //public static void listdic()
+        //{ 
+        //    string s = @"[{""1"":""a""},{""2"":""b""}]";
+        //    var o = fastJSON.JSON.Instance.ToDynamic(s);// ToObject<List<Dictionary<string, object>>>(s);
+        //    var d = o[0].Count;
+        //    Console.WriteLine(d.ToString());
         //}
     }
 }

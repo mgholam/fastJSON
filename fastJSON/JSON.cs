@@ -65,6 +65,10 @@ namespace fastJSON
         /// Output Enum values instead of names (default = False)
         /// </summary>
         public bool UseValuesOfEnums = false;
+        /// <summary>
+        /// Ignore attributes to check for (default : XmlIgnoreAttribute)
+        /// </summary>
+        public List<Type> IgnoreAttributes = new List<Type> { typeof(System.Xml.Serialization.XmlIgnoreAttribute) }; 
 
         public void FixValues()
         {
@@ -96,7 +100,6 @@ namespace fastJSON
         private JSONParameters _params;
         internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
         internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
-        SafeDictionary<string, SafeDictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
         bool _usingglobals = false;
 
         public string ToNiceJSON(object obj, JSONParameters param)
@@ -121,7 +124,7 @@ namespace fastJSON
                 return "null";
 
             if (obj.GetType().IsGenericType)
-                t = obj.GetType().GetGenericTypeDefinition();
+                t = Reflection.Instance.GetGenericTypeDefinition(obj.GetType());//obj.GetType().GetGenericTypeDefinition();
             if (t == typeof(Dictionary<,>) || t == typeof(List<>))
                 _params.UsingGlobalTypes = false;
 
@@ -173,15 +176,14 @@ namespace fastJSON
             _params.FixValues();
             Type t = null;
             if (type != null && type.IsGenericType)
-                t = type.GetGenericTypeDefinition();
+                t = Reflection.Instance.GetGenericTypeDefinition(type);// type.GetGenericTypeDefinition();
             if (t == typeof(Dictionary<,>) || t == typeof(List<>))
                 _params.UsingGlobalTypes = false;
             _usingglobals = _params.UsingGlobalTypes;
 
-            object o = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode();
+            object o = new JsonParser(json, _params.IgnoreCaseOnDeserialize).Decode();
             if (o == null)
                 return null;
-
 #if !SILVERLIGHT
             if (type != null && type == typeof(DataSet))
                 return CreateDataset(o as Dictionary<string, object>, null);
@@ -268,7 +270,7 @@ namespace fastJSON
                 _customSerializer.Add(type, serializer);
                 _customDeserializer.Add(type, deserializer);
                 // reset property cache
-                _propertycache = new SafeDictionary<string, SafeDictionary<string, myPropInfo>>();
+                Reflection.Instance.ResetPropertyCache();
             }
         }
 
@@ -280,153 +282,7 @@ namespace fastJSON
             return _customSerializer.TryGetValue(t, out s);
         }
 
-        #region [   JSON specific reflection   ]
-
-        private enum myPropInfoType
-        {
-            Int,
-            Long,
-            String,
-            Bool,
-            DateTime,
-            Enum,
-            Guid,
-
-            Array,
-            ByteArray,
-            Dictionary,
-            StringKeyDictionary,
-            NameValue,
-            StringDictionary,
-#if !SILVERLIGHT
-            Hashtable,
-            DataSet,
-            DataTable,
-#endif
-            Custom,
-            Unknown,
-        }
-
-        [Flags]
-        private enum myPropInfoFlags
-        {
-            Filled = 1 << 0,
-            CanWrite = 1 << 1
-        }
-
-        private struct myPropInfo
-        {
-            public Type pt;
-            public Type bt;
-            public Type changeType;
-            public Reflection.GenericSetter setter;
-            public Reflection.GenericGetter getter;
-            public Type[] GenericTypes;
-            public string Name;
-            public myPropInfoType Type;
-            public myPropInfoFlags Flags;
-
-            public bool IsClass;
-            public bool IsValueType;
-            public bool IsGenericType;
-        }
-
-        private SafeDictionary<string, myPropInfo> Getproperties(Type type, string typename)
-        {
-            SafeDictionary<string, myPropInfo> sd = null;
-            if (_propertycache.TryGetValue(typename, out sd))
-            {
-                return sd;
-            }
-            else
-            {
-                sd = new SafeDictionary<string, myPropInfo>();
-                PropertyInfo[] pr = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );//| BindingFlags.Static);
-                foreach (PropertyInfo p in pr)
-                {
-                    myPropInfo d = CreateMyProp(p.PropertyType, p.Name);
-                    d.Flags |= myPropInfoFlags.CanWrite;
-                    d.setter = Reflection.CreateSetMethod(type, p);
-                    d.getter = Reflection.CreateGetMethod(type, p);
-                    if (_params.IgnoreCaseOnDeserialize)
-                        sd.Add(p.Name.ToLower(), d);
-                    else
-                        sd.Add(p.Name, d);
-                }
-                FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance );//| BindingFlags.Static);
-                foreach (FieldInfo f in fi)
-                {
-                    myPropInfo d = CreateMyProp(f.FieldType, f.Name);
-                    d.setter = Reflection.CreateSetField(type, f);
-                    d.getter = Reflection.CreateGetField(type, f);
-                    if (_params.IgnoreCaseOnDeserialize)
-                        sd.Add(f.Name.ToLower(), d);
-                    else
-                        sd.Add(f.Name, d);
-                }
-
-                _propertycache.Add(typename, sd);
-                return sd;
-            }
-        }
-
-        private myPropInfo CreateMyProp(Type t, string name)
-        {
-            myPropInfo d = new myPropInfo();
-            myPropInfoType d_type = myPropInfoType.Unknown;
-            myPropInfoFlags d_flags = myPropInfoFlags.Filled | myPropInfoFlags.CanWrite;
-
-            if (t == typeof(int) || t == typeof(int?)) d_type = myPropInfoType.Int;
-            else if (t == typeof(long) || t == typeof(long?)) d_type = myPropInfoType.Long;
-            else if (t == typeof(string)) d_type = myPropInfoType.String;
-            else if (t == typeof(bool) || t == typeof(bool?)) d_type = myPropInfoType.Bool;
-            else if (t == typeof(DateTime) || t == typeof(DateTime?)) d_type = myPropInfoType.DateTime;
-            else if (t.IsEnum) d_type = myPropInfoType.Enum;
-            else if (t == typeof(Guid) || t == typeof(Guid?)) d_type = myPropInfoType.Guid;
-            else if (t == typeof(StringDictionary)) d_type = myPropInfoType.StringDictionary;
-            else if (t == typeof(NameValueCollection)) d_type = myPropInfoType.NameValue;
-            else if (t.IsArray)
-            {
-                d.bt = t.GetElementType();
-                if (t == typeof(byte[]))
-                    d_type = myPropInfoType.ByteArray;
-                else
-                    d_type = myPropInfoType.Array;
-            }
-            else if (t.Name.Contains("Dictionary"))
-            {
-                d.GenericTypes = t.GetGenericArguments();
-                if (d.GenericTypes.Length > 0 && d.GenericTypes[0] == typeof(string))
-                    d_type = myPropInfoType.StringKeyDictionary;
-                else
-                    d_type = myPropInfoType.Dictionary;
-            }
-#if !SILVERLIGHT
-            else if (t == typeof(Hashtable)) d_type = myPropInfoType.Hashtable;
-            else if (t == typeof(DataSet)) d_type = myPropInfoType.DataSet;
-            else if (t == typeof(DataTable)) d_type = myPropInfoType.DataTable;
-#endif
-
-            else if (IsTypeRegistered(t))
-                d_type = myPropInfoType.Custom;
-
-            d.IsClass = t.IsClass;
-            d.IsValueType = t.IsValueType;
-            if (t.IsGenericType)
-            {
-                d.IsGenericType = true;
-                d.bt = t.GetGenericArguments()[0];
-            }
-
-            d.pt = t;
-            d.Name = name;
-            d.changeType = GetChangeType(t);
-            d.Type = d_type;
-            d.Flags = d_flags;
-
-            return d;
-        }
-
+        #region [   p r i v a t e   m e t h o d s   ]
         private object ChangeType(object value, Type conversionType)
         {
             if (conversionType == typeof(int))
@@ -442,20 +298,17 @@ namespace fastJSON
                 return CreateGuid((string)value);
 
             else if (conversionType.IsEnum)
-                return CreateEnum(conversionType, (string)value);
+                return CreateEnum(conversionType, value);
 
             else if (IsTypeRegistered(conversionType))
                 return CreateCustom((string)value, conversionType);
 
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
         }
-        #endregion
-
-        #region [   p r i v a t e   m e t h o d s   ]
 
         private object RootList(object parse, Type type)
         {
-            Type[] gtypes = type.GetGenericArguments();
+            Type[] gtypes = Reflection.Instance.GetGenericArguments(type);// type.GetGenericArguments();
             IList o = (IList)Reflection.Instance.FastCreateInstance(type);
             foreach (var k in (IList)parse)
             {
@@ -473,7 +326,7 @@ namespace fastJSON
 
         private object RootDictionary(object parse, Type type)
         {
-            Type[] gtypes = type.GetGenericArguments();
+            Type[] gtypes = Reflection.Instance.GetGenericArguments(type);//type.GetGenericArguments();
             Type t1 = null;
             Type t2 = null;
             if (gtypes != null)
@@ -488,19 +341,19 @@ namespace fastJSON
                 foreach (var kv in (Dictionary<string, object>)parse)
                 {
                     object v;
-                    object k = ChangeType(kv.Key, gtypes[0]);
+                    object k = ChangeType(kv.Key, t1);
 
                     if (kv.Value is Dictionary<string, object>)
-                        v = ParseDictionary(kv.Value as Dictionary<string, object>, null, gtypes[1], null);
+                        v = ParseDictionary(kv.Value as Dictionary<string, object>, null, t2, null);
 
-                    else if (gtypes != null && t2.IsArray)
+                    else if (t2.IsArray)
                         v = CreateArray((List<object>)kv.Value, t2, t2.GetElementType(), null);
 
                     else if (kv.Value is IList)
                         v = CreateGenericList((List<object>)kv.Value, t2, t1, null);
 
                     else
-                        v = ChangeType(kv.Value, gtypes[1]);
+                        v = ChangeType(kv.Value, t2);
 
                     o.Add(k, v);
                 }
@@ -555,9 +408,10 @@ namespace fastJSON
             string typename = type.FullName;
             object o = input;
             if (o == null)
-                o = Reflection.Instance.FastCreateInstance(type);
+                o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
+                  //Reflection.Instance.FastCreateInstance(type);
 
-            SafeDictionary<string, myPropInfo> props = Getproperties(type, typename);
+            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, _params.IgnoreCaseOnDeserialize, IsTypeRegistered(type));
             foreach (string n in d.Keys)
             {
                 string name = n;
@@ -658,7 +512,7 @@ namespace fastJSON
             return d(v);
         }
 
-        private void ProcessMap(object obj, SafeDictionary<string, JSON.myPropInfo> props, Dictionary<string, object> dic)
+        private void ProcessMap(object obj, Dictionary<string, myPropInfo> props, Dictionary<string, object> dic)
         {
             foreach (KeyValuePair<string, object> kv in dic)
             {
@@ -693,7 +547,7 @@ namespace fastJSON
             return num;
         }
 
-        internal static long CreateLong(out long num, char[] s, int index, int count)
+        internal static long CreateLong(out long num, string s, int index, int count)
         {
             num = 0;
             bool neg = false;
@@ -863,13 +717,7 @@ namespace fastJSON
             return col;
         }
 
-        private Type GetChangeType(Type conversionType)
-        {
-            if (conversionType.IsGenericType && conversionType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
-                return conversionType.GetGenericArguments()[0];
 
-            return conversionType;
-        }
 
 #if !SILVERLIGHT
         private DataSet CreateDataset(Dictionary<string, object> reader, Dictionary<string, object> globalTypes)

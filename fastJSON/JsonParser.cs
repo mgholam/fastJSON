@@ -28,7 +28,7 @@ namespace fastJSON
             Null
         }
 
-        readonly char[] json;
+        readonly string json;
         readonly StringBuilder s = new StringBuilder();
         Token lookAheadToken = Token.None;
         int index;
@@ -37,7 +37,7 @@ namespace fastJSON
 
         internal JsonParser(string json, bool ignorecase)
         {
-            this.json = json.ToCharArray();
+            this.json = json;//.ToCharArray();
             _ignorecase = ignorecase;
         }
 
@@ -67,7 +67,6 @@ namespace fastJSON
 
                     default:
                         {
-
                             // name
                             string name = ParseString();
                             if (_ignorecase)
@@ -98,7 +97,6 @@ namespace fastJSON
             {
                 switch (LookAhead())
                 {
-
                     case Token.Comma:
                         ConsumeToken();
                         break;
@@ -163,7 +161,7 @@ namespace fastJSON
                     if (runIndex != -1)
                     {
                         if (s.Length == 0)
-                            return new string(json, runIndex, index - runIndex - 1);
+                            return json.Substring(runIndex, index - runIndex - 1);
 
                         s.Append(json, runIndex, index - runIndex - 1);
                     }
@@ -299,7 +297,7 @@ namespace fastJSON
                     if (c == '.' || c == 'e' || c == 'E')
                         dec = true;
                     if (++index == json.Length)
-                        break;                        //throw new Exception("Unexpected end of string whilst parsing number");
+                        break;//throw new Exception("Unexpected end of string whilst parsing number");
                     continue;
                 }
                 break;
@@ -307,7 +305,7 @@ namespace fastJSON
 
 			if (dec)
 			{
-				string s = new string(json, startIndex, index - startIndex);
+				string s = json.Substring(startIndex, index - startIndex);
 				return double.Parse(s, NumberFormatInfo.InvariantInfo);
 			}
 			long num;
@@ -429,9 +427,7 @@ namespace fastJSON
                         return Token.Null;
                     }
                     break;
-
             }
-
             throw new Exception("Could not find token at index " + --index);
         }
     }
