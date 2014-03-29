@@ -68,7 +68,13 @@ namespace fastJSON
         /// <summary>
         /// Ignore attributes to check for (default : XmlIgnoreAttribute)
         /// </summary>
-        public List<Type> IgnoreAttributes = new List<Type> { typeof(System.Xml.Serialization.XmlIgnoreAttribute) }; 
+        public List<Type> IgnoreAttributes = new List<Type> { typeof(System.Xml.Serialization.XmlIgnoreAttribute) };
+        /// <summary>
+        /// If you have parametric and no default constructor for you classes (default = False)
+        /// 
+        /// IMPORTANT NOTE : If True then all initial values within the class will be ignored and will be not set
+        /// </summary>
+        public bool ParametricConstructorOverride = false;
 
         public void FixValues()
         {
@@ -393,7 +399,7 @@ namespace fastJSON
 #endif
             if (found)
             {
-                if (_usingglobals)
+                if (_usingglobals )
                 {
                     object tname = "";
                     if (globaltypes.TryGetValue((string)tn, out tname))
@@ -408,8 +414,12 @@ namespace fastJSON
             string typename = type.FullName;
             object o = input;
             if (o == null)
-                o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
-                  //Reflection.Instance.FastCreateInstance(type);
+            {
+                if (_params.ParametricConstructorOverride)
+                    o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
+                else
+                    o = Reflection.Instance.FastCreateInstance(type);
+            }
 
             Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, _params.IgnoreCaseOnDeserialize, IsTypeRegistered(type));
             foreach (string n in d.Keys)
@@ -450,7 +460,7 @@ namespace fastJSON
                             case myPropInfoType.ByteArray: oset = Convert.FromBase64String((string)v); break;
 #if !SILVERLIGHT
                             case myPropInfoType.DataSet: oset = CreateDataset((Dictionary<string, object>)v, globaltypes); break;
-                            case myPropInfoType.DataTable: oset = this.CreateDataTable((Dictionary<string, object>)v, globaltypes); break;
+                            case myPropInfoType.DataTable: oset = CreateDataTable((Dictionary<string, object>)v, globaltypes); break;
                             case myPropInfoType.Hashtable: // same case as Dictionary
 #endif
                             case myPropInfoType.Dictionary: oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
@@ -717,8 +727,6 @@ namespace fastJSON
             return col;
         }
 
-
-
 #if !SILVERLIGHT
         private DataSet CreateDataset(Dictionary<string, object> reader, Dictionary<string, object> globalTypes)
         {
@@ -727,26 +735,6 @@ namespace fastJSON
             ds.BeginInit();
 
             // read dataset schema here
-            ReadSchema(reader, ds, globalTypes);
-
-            foreach (KeyValuePair<string, object> pair in reader)
-            {
-                if (pair.Key == "$type" || pair.Key == "$schema") continue;
-
-                List<object> rows = (List<object>)pair.Value;
-                if (rows == null) continue;
-
-                DataTable dt = ds.Tables[pair.Key];
-                ReadDataTable(rows, dt);
-            }
-
-            ds.EndInit();
-
-            return ds;
-        }
-
-        private void ReadSchema(Dictionary<string, object> reader, DataSet ds, Dictionary<string, object> globalTypes)
-        {
             var schema = reader["$schema"];
 
             if (schema is string)
@@ -765,6 +753,21 @@ namespace fastJSON
                     ds.Tables[ms.Info[i]].Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
                 }
             }
+
+            foreach (KeyValuePair<string, object> pair in reader)
+            {
+                if (pair.Key == "$type" || pair.Key == "$schema") continue;
+
+                List<object> rows = (List<object>)pair.Value;
+                if (rows == null) continue;
+
+                DataTable dt = ds.Tables[pair.Key];
+                ReadDataTable(rows, dt);
+            }
+
+            ds.EndInit();
+
+            return ds;
         }
 
         private void ReadDataTable(List<object> rows, DataTable dt)

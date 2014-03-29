@@ -10,6 +10,8 @@ using System.Threading;
 using fastJSON;
 using System.Dynamic;
 using System.Collections.Specialized;
+using System.Reflection.Emit;
+using System.Linq.Expressions;
 
 namespace UnitTests
 {
@@ -1172,6 +1174,7 @@ namespace UnitTests
             Assert.AreEqual("aaaa", o.Name);
             var oo = fastJSON.JSON.Instance.ToObject<ignorecase2>(json.ToUpper());
             Assert.AreEqual("AAAA", oo.name);
+            fastJSON.JSON.Instance.Parameters.IgnoreCaseOnDeserialize = false;
         }
 
         public class coltest
@@ -1279,6 +1282,7 @@ namespace UnitTests
         [Test]
         public static void NonDefaultConstructor()
         {
+            fastJSON.JSON.Instance.Parameters.ParametricConstructorOverride = true;
             var o = new nondefaultctor(10);
             var s = fastJSON.JSON.Instance.ToJSON(o);
             Console.WriteLine(s);
@@ -1289,8 +1293,105 @@ namespace UnitTests
             var obj2 = fastJSON.JSON.Instance.ToObject<List<nondefaultctor>>(s);
             Assert.AreEqual(3, obj2.Count);
             Assert.AreEqual(10, obj2[1].age);
+            fastJSON.JSON.Instance.Parameters.ParametricConstructorOverride = false;
         }
 
+        private delegate object CreateObj();
+        private static SafeDictionary<Type, CreateObj> _constrcache = new SafeDictionary<Type, CreateObj>();
+        internal static object FastCreateInstance(Type objtype)
+        {
+            try
+            {
+                CreateObj c = null;
+                if (_constrcache.TryGetValue(objtype, out c))
+                {
+                    return c();
+                }
+                else
+                {
+                    if (objtype.IsClass)
+                    {
+                        DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
+                        ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
+                        ilGen.Emit(OpCodes.Ret);
+                        c = (CreateObj)dynMethod.CreateDelegate(typeof(CreateObj));
+                        _constrcache.Add(objtype, c);
+                    }
+                    else // structs
+                    {
+                        DynamicMethod dynMethod = new DynamicMethod("_", typeof(object), null);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
+                        var lv = ilGen.DeclareLocal(objtype);
+                        ilGen.Emit(OpCodes.Ldloca_S, lv);
+                        ilGen.Emit(OpCodes.Initobj, objtype);
+                        ilGen.Emit(OpCodes.Ldloc_0);
+                        ilGen.Emit(OpCodes.Box, objtype);
+                        ilGen.Emit(OpCodes.Ret);
+                        c = (CreateObj)dynMethod.CreateDelegate(typeof(CreateObj));
+                        _constrcache.Add(objtype, c);
+                    }
+                    return c();
+                }
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(string.Format("Failed to fast create instance for type '{0}' from assembly '{1}'",
+                    objtype.FullName, objtype.AssemblyQualifiedName), exc);
+            }
+        }
+
+        private static SafeDictionary<Type, Func<object>> lamdic = new SafeDictionary<Type, Func<object>>();
+        static object lambdaCreateInstance(Type type)
+        {
+            Func<object> o = null;
+            if (lamdic.TryGetValue(type, out o))
+                return o();
+            else
+            {
+                o = Expression.Lambda<Func<object>>(
+                   Expression.Convert(Expression.New(type), typeof(object)))
+                   .Compile();
+                lamdic.Add(type, o);
+                return o();
+            }
+        }
+
+        [Test]
+        public static void CreateObjPerfTest()
+        {
+            //FastCreateInstance(typeof(colclass));
+            //lambdaCreateInstance(typeof(colclass));
+            int count = 100000;
+            Console.WriteLine("count = " + count.ToString("#,#"));
+            DateTime dt = DateTime.Now;
+            for (int i = 0; i < count; i++)
+            {
+                object o = new colclass();
+            }
+            Console.WriteLine("normal new T() time ms = " + DateTime.Now.Subtract(dt).TotalMilliseconds);
+            
+            dt = DateTime.Now;
+            for (int i = 0; i < count; i++)
+            {
+                object o = System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(colclass));
+            }
+            Console.WriteLine("FormatterServices time ms = " + DateTime.Now.Subtract(dt).TotalMilliseconds);
+
+            dt = DateTime.Now;
+            for (int i = 0; i < count; i++)
+            {
+                object o = FastCreateInstance(typeof(colclass));
+            }
+            Console.WriteLine("IL newobj time ms = " + DateTime.Now.Subtract(dt).TotalMilliseconds);
+
+            dt = DateTime.Now;
+            for (int i = 0; i < count; i++)
+            {
+                object o = lambdaCreateInstance(typeof(colclass));
+            }
+            Console.WriteLine("lambda time ms = " + DateTime.Now.Subtract(dt).TotalMilliseconds);
+        }
 
         //[Test]
         //public static void Exception()

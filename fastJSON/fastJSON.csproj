@@ -121,6 +121,7 @@
   <ItemGroup>
     <None Include="..\fastJSON.nuspec">
       <Link>fastJSON.nuspec</Link>
+      <SubType>Designer</SubType>
     </None>
     <None Include="fastJSON.snk" />
   </ItemGroup>

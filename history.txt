@@ -1,3 +1,8 @@
+2.0.28.1
+- added ParametricConstructorOverride parameter to control non default constructors
+- fixed failing StructTest when run with others
+- added create object performance test
+
 2.0.28
 - removed ToCharArray in the parser for less memory usage (Thanks to Simon Hewitt)
 - fixed create enum from value and string

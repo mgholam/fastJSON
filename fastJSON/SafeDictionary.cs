@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace fastJSON
 {
-    internal sealed class SafeDictionary<TKey, TValue>
+    public sealed class SafeDictionary<TKey, TValue>
     {
         private readonly object _Padlock = new object();
         private readonly Dictionary<TKey, TValue> _Dictionary;
