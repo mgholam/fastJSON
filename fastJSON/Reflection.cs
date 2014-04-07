@@ -66,10 +66,17 @@ namespace fastJSON
 
     internal sealed class Reflection
     {
-        public readonly static Reflection Instance = new Reflection();
+        // Sinlgeton pattern 4 from : http://csharpindepth.com/articles/general/singleton.aspx
+        private static readonly Reflection instance = new Reflection();
+        // Explicit static constructor to tell C# compiler
+        // not to mark type as beforefieldinit
+        static Reflection()
+        {
+        }
         private Reflection()
         {
         }
+        public static Reflection Instance { get { return instance; } }
 
         internal delegate object GenericSetter(object target, object value);
         internal delegate object GenericGetter(object obj);
@@ -83,6 +90,37 @@ namespace fastJSON
         private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>();
         private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>();
 
+        #region json custom types
+        // JSON custom
+        internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
+        internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
+        internal object CreateCustom(string v, Type type)
+        {
+            Deserialize d;
+            _customDeserializer.TryGetValue(type, out d);
+            return d(v);
+        }
+
+        internal void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
+        {
+            if (type != null && serializer != null && deserializer != null)
+            {
+                _customSerializer.Add(type, serializer);
+                _customDeserializer.Add(type, deserializer);
+                // reset property cache
+                Reflection.Instance.ResetPropertyCache();
+            }
+        }
+
+        internal bool IsTypeRegistered(Type t)
+        {
+            if (_customSerializer.Count == 0)
+                return false;
+            Serialize s;
+            return _customSerializer.TryGetValue(t, out s);
+        }
+        #endregion
+
         public Type GetGenericTypeDefinition(Type t)
         {
             Type tt = null;
@@ -93,7 +131,7 @@ namespace fastJSON
                 tt = t.GetGenericTypeDefinition();
                 _genericTypeDef.Add(t, tt);
                 return tt;
-            } 
+            }
         }
 
         public Type[] GetGenericArguments(Type t)

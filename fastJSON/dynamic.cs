@@ -14,7 +14,7 @@ namespace fastJSON
 
         public DynamicJson(string json)
         {
-            var parse = fastJSON.JSON.Instance.Parse(json);
+            var parse = fastJSON.JSON.Parse(json);
 
             if (parse is IDictionary<string, object>)
                 _dictionary = (IDictionary<string, object>)parse;

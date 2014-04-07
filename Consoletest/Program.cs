@@ -10,13 +10,14 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace consoletest
 {    
 
-    class Program
+    public class Program
     {
         static int count = 1000;
         static int tcount = 5;
         static DataSet ds = new DataSet();
         static bool exotic = false;
         static bool dsser = false;
+
 
         public static void Main(string[] args)
         {
@@ -180,11 +181,11 @@ namespace consoletest
                 string jsonText = null;
 
 				stopwatch.Restart();
-                jsonText = fastJSON.JSON.Instance.ToJSON(c);
+                jsonText = fastJSON.JSON.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
                 for (int i = 0; i < count; i++)
                 {
-                    deserializedStore = (colclass)fastJSON.JSON.Instance.ToObject(jsonText);
+                    deserializedStore = (colclass)fastJSON.JSON.ToObject(jsonText);
                 }
 				stopwatch.Stop();
 				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
@@ -203,7 +204,7 @@ namespace consoletest
 				stopwatch.Restart();
                 for (int i = 0; i < count; i++)
                 {
-                    jsonText = fastJSON.JSON.Instance.ToJSON(c);
+                    jsonText = fastJSON.JSON.ToJSON(c);
                 }
 				stopwatch.Stop();
 				Console.Write("\t" + stopwatch.ElapsedMilliseconds);

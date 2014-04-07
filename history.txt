@@ -1,3 +1,12 @@
+2.1.0
+- *breaking change* : removed the JSON.Instance singleton 
+- moved all the state from JSON to the Reflection singleton
+- all of the JSON interface is now static  
+- added JSONParameters overloads for ToObject()
+- support for circular referenced object structures
+- added circular test
+- fixed the .net35 project file to compile correctly
+
 2.0.28.1
 - added ParametricConstructorOverride parameter to control non default constructors
 - fixed failing StructTest when run with others
