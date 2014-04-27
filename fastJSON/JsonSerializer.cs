@@ -21,7 +21,7 @@ namespace fastJSON
         private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private JSONParameters _params;
         private bool _useEscapedUnicode = false;
-        private bool _circular = false;
+        //private bool _circular = false;
 
         internal JSONSerializer(JSONParameters param)
         {
@@ -37,8 +37,8 @@ namespace fastJSON
             if (_params.UsingGlobalTypes && _globalTypes != null && _globalTypes.Count > 0)
             {
                 StringBuilder sb = _before;
-                if (_circular)
-                    sb.Append("\"$circular\":true,");
+                //if (_circular)
+                //    sb.Append("\"$circular\":true,");
                 sb.Append("\"$types\":{");
                 bool pendingSeparator = false;
                 foreach (var kv in _globalTypes)
@@ -338,7 +338,7 @@ namespace fastJSON
             {
                 if (_current_depth > 0)
                 {
-                    _circular = true;
+                    //_circular = true;
                     _output.Append("{\"$i\":" + i + "}");
                     return;
                 }

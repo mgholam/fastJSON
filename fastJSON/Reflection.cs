@@ -541,5 +541,16 @@ namespace fastJSON
         {
             _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
         }
+
+        internal void ClearReflectionCache()
+        {            
+            _tyname = new SafeDictionary<Type,string>();
+            _typecache = new SafeDictionary<string,Type>();
+            _constrcache = new SafeDictionary<Type,CreateObject>();
+            _getterscache = new SafeDictionary<Type,Getters[]>();
+            _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
+            _genericTypes = new SafeDictionary<Type,Type[]>();
+            _genericTypeDef = new SafeDictionary<Type, Type>();
+        }
     }
 }

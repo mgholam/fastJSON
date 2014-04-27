@@ -1,3 +1,8 @@
+2.1.1
+- bug fix obj.List<List<object>> and obj.List<object[]> 
+- added code intellisense help for methods
+- added ClearReflectionCache() to reset all internal structures
+
 2.1.0
 - *breaking change* : removed the JSON.Instance singleton 
 - moved all the state from JSON to the Reflection singleton

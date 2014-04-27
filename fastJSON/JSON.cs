@@ -87,20 +87,37 @@ namespace fastJSON
 
     public static class JSON
     {
+        /// <summary>
+        /// Globally set-able parameters for controlling the serializer
+        /// </summary>
         public static JSONParameters Parameters = new JSONParameters();
-
+        /// <summary>
+        /// Create a formatted json string (beautified) from an object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         public static string ToNiceJSON(object obj, JSONParameters param)
         {
             string s = ToJSON(obj, param);
 
             return Beautify(s);
         }
-
+        /// <summary>
+        /// Create a json representation for an object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static string ToJSON(object obj)
         {
             return ToJSON(obj, JSON.Parameters);
         }
-
+        /// <summary>
+        /// Create a json representation for an object with parameter override on this call
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         public static string ToJSON(object obj, JSONParameters param)
         {
             param.FixValues();
@@ -118,67 +135,133 @@ namespace fastJSON
             if (param.EnableAnonymousTypes) { param.UseExtensions = false; param.UsingGlobalTypes = false; }
             return new JSONSerializer(param).ConvertToJSON(obj);
         }
-
+        /// <summary>
+        /// Parse a json string and generate a Dictionary&lt;string,object&gt; or List&lt;object&gt; structure
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static object Parse(string json)
         {
             return new JsonParser(json, JSON.Parameters.IgnoreCaseOnDeserialize).Decode();
         }
 #if net4
+        /// <summary>
+        /// Create a .net4 dynamic object from the json string
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static dynamic ToDynamic(string json)
         {
             return new DynamicJson(json);
         }
 #endif
+        /// <summary>
+        /// Create a typed generic object from the json
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static T ToObject<T>(string json)
         {
             return new deserializer(Parameters).ToObject<T>(json);
         }
-
+        /// <summary>
+        /// Create a typed generic object from the json with parameter override on this call
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         public static T ToObject<T>(string json, JSONParameters param)
         {
             return new deserializer(param).ToObject<T>(json);
         }
-
+        /// <summary>
+        /// Create an object from the json
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static object ToObject(string json)
         {
             return new deserializer(Parameters).ToObject(json, null);
         }
-
+        /// <summary>
+        /// Create anobject from the json with parameter override on this call
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         public static object ToObject(string json, JSONParameters param)
         {
             return new deserializer(param).ToObject(json, null);
         }
-
+        /// <summary>
+        /// Create an object of type from the json
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static object ToObject(string json, Type type)
         {
             return new deserializer(Parameters).ToObject(json, type);
         }
-
+        /// <summary>
+        /// Fill a given object with the json represenation
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static object FillObject(object input, string json)
         {
             Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return new deserializer(Parameters).ParseDictionary(ht, null, input.GetType(), input);
         }
-
+        /// <summary>
+        /// Deep copy an object i.e. clone to a new object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static object DeepCopy(object obj)
         {
             return new deserializer(Parameters).ToObject(ToJSON(obj));
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static T DeepCopy<T>(T obj)
         {
             return new deserializer(Parameters).ToObject<T>(ToJSON(obj));
         }
 
+        /// <summary>
+        /// Create a human readable string from the json 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string Beautify(string input)
         {
             return Formatter.PrettyPrint(input);
         }
-
+        /// <summary>
+        /// Register custom type handlers for your own types not natively handled by fastJSON
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="serializer"></param>
+        /// <param name="deserializer"></param>
         public static void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
         {
             Reflection.Instance.RegisterCustomType(type, serializer, deserializer);
+        }
+        /// <summary>
+        /// Clear the internal reflection cache so you can start from new (you will loose performance)
+        /// </summary>
+        public static void ClearReflectionCache()
+        {
+            Reflection.Instance.ClearReflectionCache();
         }
 
         internal static long CreateLong(out long num, string s, int index, int count)
@@ -216,7 +299,7 @@ namespace fastJSON
         private bool _usingglobals = false;
         private Dictionary<object, int> _circobj = new Dictionary<object, int>();
         private Dictionary<int, object> _cirrev = new Dictionary<int, object>();
-        private bool _circular = false;
+        //private bool _circular = true;
 
         public T ToObject<T>(string json)
         {
@@ -292,6 +375,7 @@ namespace fastJSON
             return o;
         }
 
+        #region [   p r i v a t e   m e t h o d s   ]
         private object RootHashTable(List<object> o)
         {
             Hashtable h = new Hashtable();
@@ -312,7 +396,6 @@ namespace fastJSON
             return h;
         }
 
-        #region [   p r i v a t e   m e t h o d s   ]
         private object ChangeType(object value, Type conversionType)
         {
             if (conversionType == typeof(int))
@@ -403,8 +486,8 @@ namespace fastJSON
                 return CreateNV(d);
             if (type == typeof(StringDictionary))
                 return CreateSD(d);
-            if (_circular == false)
-                _circular = d.TryGetValue("$circular", out tn);
+            //if (_circular == false)
+            //    _circular = d.TryGetValue("$circular", out tn);
 
             if (d.TryGetValue("$i", out tn))
             {
@@ -435,7 +518,7 @@ namespace fastJSON
                 if (_usingglobals)
                 {
                     object tname = "";
-                    if (globaltypes!=null && globaltypes.TryGetValue((string)tn, out tname))
+                    if (globaltypes != null && globaltypes.TryGetValue((string)tn, out tname))
                         tn = tname;
                 }
                 type = Reflection.Instance.GetTypeFromCache((string)tn);
@@ -453,7 +536,7 @@ namespace fastJSON
                 else
                     o = Reflection.Instance.FastCreateInstance(type);
             }
-            if (_circular)
+            //if (_circular)
             {
                 int i = 0;
                 if (_circobj.TryGetValue(o, out i) == false)
@@ -570,7 +653,7 @@ namespace fastJSON
             }
         }
 
-        static int CreateInteger(out int num, string s, int index, int count)
+        private int CreateInteger(out int num, string s, int index, int count)
         {
             num = 0;
             bool neg = false;
@@ -666,8 +749,12 @@ namespace fastJSON
                     col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
 
                 else if (ob is List<object>)
-                    col.Add(((List<object>)ob).ToArray());
-
+                {
+                    if (bt.IsGenericType)
+                        col.Add((List<object>)ob);//).ToArray());
+                    else
+                        col.Add(((List<object>)ob).ToArray());
+                }
                 else
                     col.Add(ChangeType(ob, bt));
             }

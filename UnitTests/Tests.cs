@@ -288,6 +288,12 @@ namespace UnitTests
 
         #endregion
 
+        [TestFixtureSetUp]
+        public static void setup()
+        {
+            //fastJSON.JSON.Parameters = new JSONParameters();
+        }
+
         [Test]
         public static void objectarray()
         {
@@ -701,6 +707,7 @@ namespace UnitTests
         [Test]
         public void UsingGlobalsBug_singlethread()
         {
+            var p = fastJSON.JSON.Parameters;
             string jsonA;
             string jsonB;
             GenerateJsonForAandB(out jsonA, out jsonB);
@@ -712,6 +719,7 @@ namespace UnitTests
             Assert.IsInstanceOf<ConcurrentClassA>(ax);
             Assert.IsNotNull(bx);
             Assert.IsInstanceOf<ConcurrentClassB>(bx);
+            fastJSON.JSON.Parameters = p;
         }
 
         [Test]
@@ -726,6 +734,7 @@ namespace UnitTests
         [Test]
         public void UsingGlobalsBug_multithread()
         {
+            var p = fastJSON.JSON.Parameters;
             string jsonA;
             string jsonB;
             GenerateJsonForAandB(out jsonA, out jsonB);
@@ -775,6 +784,7 @@ namespace UnitTests
             Assert.IsInstanceOf<ConcurrentClassA>(ax);
             Assert.IsNotNull(bx);
             Assert.IsInstanceOf<ConcurrentClassB>(bx);
+            fastJSON.JSON.Parameters = p;
         }
 
 
@@ -1168,12 +1178,10 @@ namespace UnitTests
         {
             string json = "{\"name\":\"aaaa\",\"age\": 42}";
 
-            fastJSON.JSON.Parameters.IgnoreCaseOnDeserialize = true;
-            var o = fastJSON.JSON.ToObject<ignorecase>(json);
+            var o = fastJSON.JSON.ToObject<ignorecase>(json, new JSONParameters { IgnoreCaseOnDeserialize = true });
             Assert.AreEqual("aaaa", o.Name);
-            var oo = fastJSON.JSON.ToObject<ignorecase2>(json.ToUpper());
+            var oo = fastJSON.JSON.ToObject<ignorecase2>(json.ToUpper(), new JSONParameters { IgnoreCaseOnDeserialize = true });
             Assert.AreEqual("AAAA", oo.name);
-            fastJSON.JSON.Parameters.IgnoreCaseOnDeserialize = false;
         }
 
         public class coltest
@@ -1284,7 +1292,7 @@ namespace UnitTests
             var o = new nondefaultctor(10);
             var s = fastJSON.JSON.ToJSON(o);
             Console.WriteLine(s);
-            var obj = fastJSON.JSON.ToObject<nondefaultctor>(s, new JSONParameters { ParametricConstructorOverride = true , UsingGlobalTypes = true});
+            var obj = fastJSON.JSON.ToObject<nondefaultctor>(s, new JSONParameters { ParametricConstructorOverride = true, UsingGlobalTypes = true });
             Assert.AreEqual(10, obj.age);
             Console.WriteLine("list of objects");
             List<nondefaultctor> l = new List<nondefaultctor> { o, o, o };
@@ -1369,7 +1377,7 @@ namespace UnitTests
                 object o = new colclass();
             }
             Console.WriteLine("normal new T() time ms = " + DateTime.Now.Subtract(dt).TotalMilliseconds);
-            
+
             dt = DateTime.Now;
             for (int i = 0; i < count; i++)
             {
@@ -1393,7 +1401,7 @@ namespace UnitTests
         }
 
 
-        public class o1 
+        public class o1
         {
             public int o1int;
             public o2 o2obj;
@@ -1402,7 +1410,7 @@ namespace UnitTests
         public class o2
         {
             public int o2int;
-            public o1 parent; 
+            public o1 parent;
         }
         public class o3
         {
@@ -1423,6 +1431,39 @@ namespace UnitTests
             var p = fastJSON.JSON.ToObject<o1>(s);
             Assert.AreEqual(p, p.o2obj.parent);
             Assert.AreEqual(p.o2obj, p.child.child);
+        }
+
+        public class lol
+        {
+            public List<List<object>> r;
+        }
+        public class lol2
+        {
+            public List<object[]> r;
+        }
+        [Test]
+        public static void ListOfList()
+        {
+            var o = new List<List<object>> { new List<object> { 1, 2, 3 }, new List<object> { "aa", 3, "bb" } };
+            var s = fastJSON.JSON.ToJSON(o);
+            Console.WriteLine(s);
+            var i = fastJSON.JSON.ToObject(s);
+            var p = new lol { r = o };
+            s = fastJSON.JSON.ToJSON(p);
+            Console.WriteLine(s);
+            i = fastJSON.JSON.ToObject(s);
+            Assert.AreEqual(3, (i as lol).r[0].Count);
+
+            var oo = new List<object[]> { new object[] { 1, 2, 3 }, new object[] { "a", 4, "b" } };
+            s = fastJSON.JSON.ToJSON(oo);
+            Console.WriteLine(s);
+            var ii = fastJSON.JSON.ToObject(s);
+            lol2 l = new lol2() { r = oo };
+
+            s = fastJSON.JSON.ToJSON(l);
+            Console.WriteLine(s);
+            var iii = fastJSON.JSON.ToObject(s);
+            Assert.AreEqual(3, (iii as lol2).r[0].Length);
         }
         //[Test]
         //public static void Exception()

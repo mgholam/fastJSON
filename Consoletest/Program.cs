@@ -18,7 +18,6 @@ namespace consoletest
         static bool exotic = false;
         static bool dsser = false;
 
-
         public static void Main(string[] args)
         {
             Console.WriteLine(".net version = " + Environment.Version);
