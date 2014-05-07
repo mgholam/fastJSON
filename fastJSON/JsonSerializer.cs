@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 #if !SILVERLIGHT
@@ -91,7 +91,11 @@ namespace fastJSON
                 obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
 
                 WriteStringDictionary((IDictionary)obj);
+#if net4
+            else if (_params.KVStyleStringDictionary == false && obj is System.Dynamic.ExpandoObject)
 
+            WriteStringDictionary((IDictionary<string, object>)obj);
+#endif
             else if (obj is IDictionary)
                 WriteDictionary((IDictionary)obj);
 #if !SILVERLIGHT
@@ -468,6 +472,23 @@ namespace fastJSON
                 if (pendingSeparator) _output.Append(',');
 
                 WritePair((string)entry.Key, entry.Value);
+
+                pendingSeparator = true;
+            }
+            _output.Append('}');
+        }
+
+        private void WriteStringDictionary(IDictionary<string, object> dic)
+        {
+            _output.Append('{');
+
+            bool pendingSeparator = false;
+
+            foreach (KeyValuePair<string, object> entry in dic)
+            {
+                if (pendingSeparator) _output.Append(',');
+
+                WritePair(entry.Key, entry.Value);
 
                 pendingSeparator = true;
             }
