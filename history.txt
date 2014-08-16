@@ -1,5 +1,5 @@
 2.1.2
-- bug fix cyclic references 
+- bug fix circular references 
 
 2.1.1
 - bug fix obj.List<List<object>> and obj.List<object[]> 
