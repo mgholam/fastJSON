@@ -186,7 +186,7 @@ namespace fastJSON
             return new deserializer(Parameters).ToObject(json, null);
         }
         /// <summary>
-        /// Create anobject from the json with parameter override on this call
+        /// Create an object from the json with parameter override on this call
         /// </summary>
         /// <param name="json"></param>
         /// <param name="param"></param>

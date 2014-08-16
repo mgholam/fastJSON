@@ -413,7 +413,7 @@ namespace fastJSON
                 _output.Append(",\"$map\":");
                 WriteStringDictionary(map);
             }
-            _current_depth--;
+            //_current_depth--;
             _output.Append('}');
             _current_depth--;
         }

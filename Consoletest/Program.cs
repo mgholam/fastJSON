@@ -8,8 +8,7 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace consoletest
-{    
-
+{
     public class Program
     {
         static int count = 1000;

@@ -1503,5 +1503,66 @@ namespace UnitTests
         //    var d = o[0].Count;
         //    Console.WriteLine(d.ToString());
         //}
+
+
+        public class Y
+        {
+            public byte[] BinaryData;
+        }
+
+        public class A
+        {
+            public int DataA;
+            public A NextA;
+        }
+
+        public class B : A
+        {
+            public string DataB;
+        }
+
+        public class C : A
+        {
+            public DateTime DataC;
+        }
+
+        public class Root
+        {
+            public Y TheY;
+            public List<A> ListOfAs = new List<A>();
+            public string UnicodeText;
+            public Root NextRoot;
+            public int MagicInt { get; set; }
+            public A TheReferenceA;
+
+            public void SetMagicInt(int value)
+            {
+                MagicInt = value;
+            }
+        }
+
+        [Test]
+        public static void complexobject()
+        {
+            Root r = new Root();
+            r.TheY = new Y { BinaryData = new byte[] { 0xDE, 0xAD, 0xBE, 0xEF } };
+            r.ListOfAs.Add(new A { DataA = 10 });
+            r.ListOfAs.Add(new B { DataA = 20, DataB = "Hello" });
+            r.ListOfAs.Add(new C { DataA = 30, DataC = DateTime.Today });
+            r.UnicodeText = "Žlutý kůň ∊ WORLD";
+            r.ListOfAs[2].NextA = r.ListOfAs[1];
+            r.ListOfAs[1].NextA = r.ListOfAs[2];
+            r.TheReferenceA = r.ListOfAs[2];
+            r.NextRoot = r;
+
+            var jsonParams = new JSONParameters();
+            jsonParams.UseEscapedUnicode = false;
+
+            Console.WriteLine("JSON:\n---\n{0}\n---", JSON.ToJSON(r, jsonParams));
+
+            Console.WriteLine();
+
+            Console.WriteLine("Nice JSON:\n---\n{0}\n---", JSON.ToNiceJSON(JSON.ToObject<Root>(JSON.ToNiceJSON(r, jsonParams)), jsonParams));
+        }
     }
 }

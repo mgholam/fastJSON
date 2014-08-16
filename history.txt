@@ -1,3 +1,6 @@
+2.1.2
+- bug fix cyclic references 
+
 2.1.1
 - bug fix obj.List<List<object>> and obj.List<object[]> 
 - added code intellisense help for methods
