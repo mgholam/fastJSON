@@ -1564,5 +1564,23 @@ namespace UnitTests
 
             Console.WriteLine("Nice JSON:\n---\n{0}\n---", JSON.ToNiceJSON(JSON.ToObject<Root>(JSON.ToNiceJSON(r, jsonParams)), jsonParams));
         }
+
+        [Test]
+        public static void TestMilliseconds()
+        {
+            var jpar = new JSONParameters();
+            jpar.DateTimeMilliseconds = false;
+            DateTime dt = DateTime.Now;
+            var s = fastJSON.JSON.ToJSON(dt, jpar);
+            Console.WriteLine(s);
+            var o = fastJSON.JSON.ToObject<DateTime>(s, jpar);
+            Assert.AreNotEqual(dt.Millisecond, o.Millisecond);
+
+            jpar.DateTimeMilliseconds = true;
+            s = fastJSON.JSON.ToJSON(dt, jpar);
+            Console.WriteLine(s);
+            o = fastJSON.JSON.ToObject<DateTime>(s, jpar);
+            Assert.AreEqual(dt.Millisecond, o.Millisecond);
+        }
     }
 }

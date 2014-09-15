@@ -209,7 +209,11 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
-
+            if (_params.DateTimeMilliseconds)
+            {
+                _output.Append('.');
+                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
+            }
             if (_params.UseUTCDateTime)
                 _output.Append('Z');
 

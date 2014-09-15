@@ -75,6 +75,10 @@ namespace fastJSON
         /// IMPORTANT NOTE : If True then all initial values within the class will be ignored and will be not set
         /// </summary>
         public bool ParametricConstructorOverride = false;
+        /// <summary>
+        /// Serialize DateTime milliseconds i.e. yyyy-MM-dd HH:mm:ss.nnn (default = false)
+        /// </summary>
+        public bool DateTimeMilliseconds = false;
 
         public void FixValues()
         {
@@ -413,6 +417,9 @@ namespace fastJSON
             else if (conversionType.IsEnum)
                 return CreateEnum(conversionType, value);
 
+            else if (conversionType == typeof(DateTime))
+                return CreateDateTime((string)value);
+
             else if (Reflection.Instance.IsTypeRegistered(conversionType))
                 return Reflection.Instance.CreateCustom((string)value, conversionType);
 
@@ -697,29 +704,33 @@ namespace fastJSON
         private DateTime CreateDateTime(string value)
         {
             bool utc = false;
-            //                   0123456789012345678
-            // datetime format = yyyy-MM-dd HH:mm:ss
+            //                   0123456789012345678 9012 9/3
+            // datetime format = yyyy-MM-dd HH:mm:ss .nnn  Z
             int year;
             int month;
             int day;
             int hour;
             int min;
             int sec;
+            int ms=0;
+            
             CreateInteger(out year, value, 0, 4);
             CreateInteger(out month, value, 5, 2);
             CreateInteger(out day, value, 8, 2);
             CreateInteger(out hour, value, 11, 2);
             CreateInteger(out min, value, 14, 2);
             CreateInteger(out sec, value, 17, 2);
+            if (value.Length>21 &&  value[19] == '.' )  
+                CreateInteger(out ms, value, 20, 3);
 
             //if (value.EndsWith("Z"))
             if (value[value.Length - 1] == 'Z')
                 utc = true;
 
             if (_params.UseUTCDateTime == false && utc == false)
-                return new DateTime(year, month, day, hour, min, sec);
+                return new DateTime(year, month, day, hour, min, sec, ms);
             else
-                return new DateTime(year, month, day, hour, min, sec, DateTimeKind.Utc).ToLocalTime();
+                return new DateTime(year, month, day, hour, min, sec, ms, DateTimeKind.Utc).ToLocalTime();
         }
 
         private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
