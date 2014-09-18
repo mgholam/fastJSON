@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace fastJSON
 {
     internal static class Formatter
     {
-        public static string Indent = "   ";
+        private const string Indent = "   ";
 
-        public static void AppendIndent(StringBuilder sb, int count)
+        private static void AppendIndent(StringBuilder sb, int count)
         {
             for (; count > 0; --count) sb.Append(Indent);
         }
@@ -29,13 +28,16 @@ namespace fastJSON
                     {
                         output.Append(ch);
                         ch = chars[++i];
-                        if (ch == '\\')
+                        switch (ch)
                         {
-                            output.Append(ch);
-                            ch = chars[++i];
+                            case '\\':
+                                output.Append(ch);
+                                ch = chars[++i];
+                                break;
+                            case '\"':
+                                str = false;
+                                break;
                         }
-                        else if (ch == '\"')
-                            str = false;
                     }
                 }
 

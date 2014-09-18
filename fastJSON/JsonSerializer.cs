@@ -15,12 +15,12 @@ namespace fastJSON
     {
         private StringBuilder _output = new StringBuilder();
         private StringBuilder _before = new StringBuilder();
-        readonly int _MAX_DEPTH = 20;
-        int _current_depth = 0;
-        private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
-        private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
-        private JSONParameters _params;
-        private bool _useEscapedUnicode = false;
+        private const int _MAX_DEPTH = 20;
+        int _current_depth;
+        private readonly Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
+        private readonly Dictionary<object, int> _cirobj = new Dictionary<object, int>();
+        private readonly JSONParameters _params;
+        private readonly bool _useEscapedUnicode;
         //private bool _circular = false;
 
         internal JSONSerializer(JSONParameters param)
@@ -33,7 +33,7 @@ namespace fastJSON
         {
             WriteValue(obj);
 
-            string str = "";
+            string str;
             if (_params.UsingGlobalTypes && _globalTypes != null && _globalTypes.Count > 0)
             {
                 StringBuilder sb = _before;
@@ -52,7 +52,7 @@ namespace fastJSON
                     sb.Append('\"');
                 }
                 sb.Append("},");
-                sb.Append(_output.ToString());
+                sb.Append(_output);
                 str = sb.ToString();
             }
             else
@@ -86,41 +86,68 @@ namespace fastJSON
 
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
-
-            else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
-                obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
-
-                WriteStringDictionary((IDictionary)obj);
-
-            else if (obj is IDictionary)
-                WriteDictionary((IDictionary)obj);
+            else if (JSONParameters.KVStyleStringDictionary == false && obj is IDictionary &&
+                     obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof (string))
+            {
+                WriteStringDictionary((IDictionary) obj);
+                return;
+            }
+            var dic = obj as IDictionary;
+            if (dic != null)
+            {
+                WriteDictionary(dic);
+                return;
+            }
 #if !SILVERLIGHT
-            else if (obj is DataSet)
-                WriteDataset((DataSet)obj);
-
-            else if (obj is DataTable)
-                this.WriteDataTable((DataTable)obj);
+            var ds = obj as DataSet;
+            if (ds != null)
+            {
+                WriteDataset(ds);
+                return;
+            }
+            var dt = obj as DataTable;
+            if (dt != null)
+            {
+                WriteDataTable(dt);
+                return;
+            }
 #endif
-            else if (obj is byte[])
-                WriteBytes((byte[])obj);
-
-            else if (obj is StringDictionary)
-                WriteSD((StringDictionary)obj);
-
-            else if (obj is NameValueCollection)
-                WriteNV((NameValueCollection)obj);
-
-            else if (obj is IEnumerable)
-                WriteArray((IEnumerable)obj);
-
-            else if (obj is Enum)
-                WriteEnum((Enum)obj);
-
-            else if (Reflection.Instance.IsTypeRegistered(obj.GetType()))
+            var bytes = obj as byte[];
+            if (bytes != null)
+            {
+                WriteBytes(bytes);
+                return;
+            }
+            var strDictionary = obj as StringDictionary;
+            if (strDictionary != null)
+            {
+                WriteSD(strDictionary);
+                return;
+            }
+            var collection = obj as NameValueCollection;
+            if (collection != null)
+            {
+                WriteNV(collection);
+                return;
+            }
+            var enumerable = obj as IEnumerable;
+            if (enumerable != null)
+            {
+                WriteArray(enumerable);
+                return;
+            }
+            var @enum = obj as Enum;
+            if (@enum != null)
+            {
+                WriteEnum(@enum);
+                return;
+            }
+            if (Reflection.Instance.IsTypeRegistered(obj.GetType()))
+            {
                 WriteCustom(obj);
-
-            else
-                WriteObject(obj);
+                return;
+            }
+            WriteObject(obj);
         }
 
         private void WriteNV(NameValueCollection nameValueCollection)
@@ -221,13 +248,15 @@ namespace fastJSON
         }
 
 #if !SILVERLIGHT
-        private DatasetSchema GetSchema(DataTable ds)
+        private static DatasetSchema GetSchema(DataTable ds)
         {
             if (ds == null) return null;
 
-            DatasetSchema m = new DatasetSchema();
-            m.Info = new List<string>();
-            m.Name = ds.TableName;
+            var m = new DatasetSchema
+            {
+                Info = new List<string>(),
+                Name = ds.TableName
+            };
 
             foreach (DataColumn c in ds.Columns)
             {
@@ -240,13 +269,15 @@ namespace fastJSON
             return m;
         }
 
-        private DatasetSchema GetSchema(DataSet ds)
+        private static DatasetSchema GetSchema(DataSet ds)
         {
             if (ds == null) return null;
 
-            DatasetSchema m = new DatasetSchema();
-            m.Info = new List<string>();
-            m.Name = ds.DataSetName;
+            var m = new DatasetSchema
+            {
+                Info = new List<string>(),
+                Name = ds.DataSetName
+            };
 
             foreach (DataTable t in ds.Tables)
             {
@@ -262,7 +293,7 @@ namespace fastJSON
             return m;
         }
 
-        private string GetXmlSchema(DataTable dt)
+        private static string GetXmlSchema(DataTable dt)
         {
             using (var writer = new StringWriter())
             {
@@ -318,25 +349,25 @@ namespace fastJSON
 
         void WriteDataTable(DataTable dt)
         {
-            this._output.Append('{');
+            _output.Append('{');
             if (_params.UseExtensions)
             {
-                this.WritePair("$schema", _params.UseOptimizedDatasetSchema ? (object)this.GetSchema(dt) : this.GetXmlSchema(dt));
-                this._output.Append(',');
+                WritePair("$schema", _params.UseOptimizedDatasetSchema ? (object)GetSchema(dt) : GetXmlSchema(dt));
+                _output.Append(',');
             }
 
             WriteDataTableData(dt);
 
             // end datatable
-            this._output.Append('}');
+            _output.Append('}');
         }
 #endif
 
-        bool _TypesWritten = false;
+        bool _TypesWritten;
         private void WriteObject(object obj)
         {
-            int i =0;
-            if (_cirobj.TryGetValue(obj, out i) == false)
+            int i;
+            if (!_cirobj.TryGetValue(obj, out i))
                 _cirobj.Add(obj, _cirobj.Count + 1);
             else
             {
@@ -347,18 +378,18 @@ namespace fastJSON
                     return;
                 }
             }
-            if (_params.UsingGlobalTypes == false)
+            if (!_params.UsingGlobalTypes)
                 _output.Append('{');
             else
             {
-                if (_TypesWritten == false)
+                if (_TypesWritten)
+                    _output.Append('{');
+                else
                 {
                     _output.Append('{');
                     _before = _output;
                     _output = new StringBuilder();
                 }
-                else
-                    _output.Append('{');
             }
             _TypesWritten = true;
             _current_depth++;
@@ -366,7 +397,7 @@ namespace fastJSON
                 throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
 
 
-            Dictionary<string, string> map = new Dictionary<string, string>();
+            var map = new Dictionary<string, string>();
             Type t = obj.GetType();
             bool append = false;
             if (_params.UseExtensions)
@@ -375,7 +406,7 @@ namespace fastJSON
                     WritePairFast("$type", Reflection.Instance.GetTypeAssemblyName(t));
                 else
                 {
-                    int dt = 0;
+                    int dt;
                     string ct = Reflection.Instance.GetTypeAssemblyName(t);
                     if (_globalTypes.TryGetValue(ct, out dt) == false)
                     {
@@ -406,7 +437,7 @@ namespace fastJSON
                     if (o != null && _params.UseExtensions)
                     {
                         Type tt = o.GetType();
-                        if (tt == typeof(System.Object))
+                        if (tt == typeof(Object))
                             map.Add(p.Name, tt.ToString());
                     }
                     append = true;
