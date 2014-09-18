@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -32,7 +31,7 @@ namespace fastJSON
         readonly StringBuilder s = new StringBuilder();
         Token lookAheadToken = Token.None;
         int index;
-        bool _ignorecase = false;
+        readonly bool _ignorecase;
 
 
         internal JsonParser(string json, bool ignorecase)
@@ -48,7 +47,7 @@ namespace fastJSON
 
         private Dictionary<string, object> ParseObject()
         {
-            Dictionary<string, object> table = new Dictionary<string, object>();
+            var table = new Dictionary<string, object>();
 
             ConsumeToken(); // {
 
@@ -90,7 +89,7 @@ namespace fastJSON
 
         private List<object> ParseArray()
         {
-            List<object> array = new List<object>();
+            var array = new List<object>();
             ConsumeToken(); // [
 
             while (true)
@@ -158,13 +157,12 @@ namespace fastJSON
 
                 if (c == '"')
                 {
-                    if (runIndex != -1)
-                    {
-                        if (s.Length == 0)
-                            return json.Substring(runIndex, index - runIndex - 1);
+                    if (runIndex == -1)
+                        return s.ToString();
+                    if (s.Length == 0)
+                        return json.Substring(runIndex, index - runIndex - 1);
 
-                        s.Append(json, runIndex, index - runIndex - 1);
-                    }
+                    s.Append(json, runIndex, index - runIndex - 1);
                     return s.ToString();
                 }
 
@@ -237,7 +235,7 @@ namespace fastJSON
             throw new Exception("Unexpectedly reached end of string");
         }
 
-        private uint ParseSingleChar(char c1, uint multipliyer)
+        private static uint ParseSingleChar(char c1, uint multipliyer)
         {
             uint p1 = 0;
             if (c1 >= '0' && c1 <= '9')
@@ -249,7 +247,7 @@ namespace fastJSON
             return p1;
         }
 
-        private uint ParseUnicode(char c1, char c2, char c3, char c4)
+        private static uint ParseUnicode(char c1, char c2, char c3, char c4)
         {
             uint p1 = ParseSingleChar(c1, 0x1000);
             uint p2 = ParseSingleChar(c2, 0x100);
@@ -259,20 +257,24 @@ namespace fastJSON
             return p1 + p2 + p3 + p4;
         }
 
-        private long CreateLong(string s)
+        private long CreateLong(string value)
         {
             long num = 0;
             bool neg = false;
-            foreach (char cc in s)
+            foreach (char cc in value)
             {
-                if (cc == '-')
-                    neg = true;
-                else if (cc == '+')
-                    neg = false;
-                else
+                switch (cc)
                 {
-                    num *= 10;
-                    num += (int)(cc - '0');
+                    case '-':
+                        neg = true;
+                        break;
+                    case '+':
+                        neg = false;
+                        break;
+                    default:
+                        num *= 10;
+                        num += cc - '0';
+                        break;
                 }
             }
 
@@ -303,13 +305,13 @@ namespace fastJSON
                 break;
             } while (true);
 
-			if (dec)
-			{
-				string s = json.Substring(startIndex, index - startIndex);
-				return double.Parse(s, NumberFormatInfo.InvariantInfo);
-			}
-			long num;
-			return JSON.CreateLong(out num, json, startIndex, index - startIndex);
+            if (dec)
+            {
+                string substring = json.Substring(startIndex, index - startIndex);
+                return double.Parse(substring, NumberFormatInfo.InvariantInfo);
+            }
+            long num;
+            return JSON.CreateLong(out num, json, startIndex, index - startIndex);
         }
 
         private Token LookAhead()

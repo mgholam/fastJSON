@@ -1,39 +1,39 @@
-﻿#if net4
+﻿using System.Linq;
+#if net4
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Dynamic;
 
 namespace fastJSON
 {
-    internal class DynamicJson : DynamicObject
+    internal sealed class DynamicJson : DynamicObject
     {
         private IDictionary<string, object> _dictionary { get; set; }
         private List<object> _list { get; set; }
 
         public DynamicJson(string json)
         {
-            var parse = fastJSON.JSON.Parse(json);
+            var parse = JSON.Parse(json);
 
-            if (parse is IDictionary<string, object>)
-                _dictionary = (IDictionary<string, object>)parse;
+            var objects = parse as IDictionary<string, object>;
+            if (objects != null)
+                _dictionary = objects;
             else
                 _list = (List<object>)parse;
         }
 
-        private DynamicJson(object dictionary)
+        private DynamicJson(IDictionary<string, object> dictionary)
         {
-            if (dictionary is IDictionary<string, object>)
-                _dictionary = (IDictionary<string, object>)dictionary;
+            _dictionary = dictionary;
         }
 
         public override bool TryGetIndex(GetIndexBinder binder, Object[] indexes, out Object result)
         {
-            int index = (int)indexes[0];
+            var index = (int)indexes[0];
             result = _list[index];
-            if (result is IDictionary<string, object>)
-                result = new DynamicJson(result as IDictionary<string, object>);
+            var objects = result as IDictionary<string, object>;
+            if (objects != null)
+                result = new DynamicJson(objects);
             return true;
         }
 
@@ -43,20 +43,17 @@ namespace fastJSON
                 if (_dictionary.TryGetValue(binder.Name.ToLower(), out result) == false)
                     return false;// throw new Exception("property not found " + binder.Name);
 
-            if (result is IDictionary<string, object>)
+            var objects = result as IDictionary<string, object>;
+            if (objects != null)
             {
-                result = new DynamicJson(result as IDictionary<string, object>);
+                result = new DynamicJson(objects);
             }
             else if (result is List<object>)
             {
-                List<object> list = new List<object>();
-                foreach (object item in (List<object>)result)
-                {
-                    if (item is IDictionary<string, object>)
-                        list.Add(new DynamicJson(item as IDictionary<string, object>));
-                    else
-                        list.Add(item);
-                }
+                var list = 
+                    (from item in (List<object>) result
+                     let dictionary = item as IDictionary<string, object>
+                     select dictionary != null ? new DynamicJson(dictionary) : item).ToList();
                 result = list;
             }
 
