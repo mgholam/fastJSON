@@ -62,6 +62,7 @@ namespace fastJSON
         public bool IsClass;
         public bool IsValueType;
         public bool IsGenericType;
+        public bool IsStruct;
     }
 
     internal sealed class Reflection
@@ -222,9 +223,11 @@ namespace fastJSON
             else if (t == typeof(DataSet)) d_type = myPropInfoType.DataSet;
             else if (t == typeof(DataTable)) d_type = myPropInfoType.DataTable;
 #endif
-
             else if (customType)
                 d_type = myPropInfoType.Custom;
+
+            if (t.IsValueType && !t.IsPrimitive && !t.IsEnum && t != typeof(decimal))
+                d.IsStruct = true;
 
             d.IsClass = t.IsClass;
             d.IsValueType = t.IsValueType;
@@ -543,13 +546,13 @@ namespace fastJSON
         }
 
         internal void ClearReflectionCache()
-        {            
-            _tyname = new SafeDictionary<Type,string>();
-            _typecache = new SafeDictionary<string,Type>();
-            _constrcache = new SafeDictionary<Type,CreateObject>();
-            _getterscache = new SafeDictionary<Type,Getters[]>();
+        {
+            _tyname = new SafeDictionary<Type, string>();
+            _typecache = new SafeDictionary<string, Type>();
+            _constrcache = new SafeDictionary<Type, CreateObject>();
+            _getterscache = new SafeDictionary<Type, Getters[]>();
             _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
-            _genericTypes = new SafeDictionary<Type,Type[]>();
+            _genericTypes = new SafeDictionary<Type, Type[]>();
             _genericTypeDef = new SafeDictionary<Type, Type>();
         }
     }

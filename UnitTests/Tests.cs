@@ -1582,5 +1582,26 @@ namespace UnitTests
             o = fastJSON.JSON.ToObject<DateTime>(s, jpar);
             Assert.AreEqual(dt.Millisecond, o.Millisecond);
         }
+
+        public struct Foo
+        {
+            public string name;
+        };
+
+        public class Bar
+        {
+            public Foo foo;
+        };
+
+        [Test]
+        public static void StructProperty()
+        {
+            Bar b = new Bar();
+            b.foo = new Foo();
+            b.foo.name = "Buzz";
+            string json = fastJSON.JSON.ToJSON(b);
+            Bar bar = fastJSON.JSON.ToObject<Bar>(json);
+        }
+
     }
 }

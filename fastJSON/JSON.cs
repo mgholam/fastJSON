@@ -606,7 +606,7 @@ namespace fastJSON
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
                                         oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 
-                                    else if (pi.IsClass && v is Dictionary<string, object>)
+                                    else if ((pi.IsClass || pi.IsStruct) && v is Dictionary<string, object>)
                                         oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(o));
 
                                     else if (v is List<object>)
@@ -660,9 +660,9 @@ namespace fastJSON
             }
         }
 
-        private int CreateInteger(out int num, string s, int index, int count)
+        private int CreateInteger(/*out int num,*/ string s, int index, int count)
         {
-            num = 0;
+            int num = 0;
             bool neg = false;
             for (int x = 0; x < count; x++, index++)
             {
@@ -712,16 +712,16 @@ namespace fastJSON
             int hour;
             int min;
             int sec;
-            int ms=0;
-            
-            CreateInteger(out year, value, 0, 4);
-            CreateInteger(out month, value, 5, 2);
-            CreateInteger(out day, value, 8, 2);
-            CreateInteger(out hour, value, 11, 2);
-            CreateInteger(out min, value, 14, 2);
-            CreateInteger(out sec, value, 17, 2);
-            if (value.Length>21 &&  value[19] == '.' )  
-                CreateInteger(out ms, value, 20, 3);
+            int ms = 0;
+
+            year = CreateInteger(/*out year,*/ value, 0, 4);
+            month = CreateInteger(/*out month,*/ value, 5, 2);
+            day = CreateInteger(/*out day,*/ value, 8, 2);
+            hour = CreateInteger(/*out hour,*/ value, 11, 2);
+            min = CreateInteger(/*out min,*/ value, 14, 2);
+            sec = CreateInteger(/*out sec,*/ value, 17, 2);
+            if (value.Length > 21 && value[19] == '.')
+                ms = CreateInteger(/*out ms,*/ value, 20, 3);
 
             //if (value.EndsWith("Z"))
             if (value[value.Length - 1] == 'Z')
