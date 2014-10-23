@@ -411,8 +411,8 @@ namespace fastJSON
             else if (conversionType == typeof(string))
                 return (string)value;
 
-            else if (conversionType == typeof(Guid))
-                return CreateGuid((string)value);
+            //else if (conversionType == typeof(Guid))
+            //    return CreateGuid((string)value);
 
             else if (conversionType.IsEnum)
                 return CreateEnum(conversionType, value);
@@ -423,7 +423,33 @@ namespace fastJSON
             else if (Reflection.Instance.IsTypeRegistered(conversionType))
                 return Reflection.Instance.CreateCustom((string)value, conversionType);
 
+            // 8-30-2014 - James Brooks - Added code for nullable types.
+            if (IsNullable(conversionType))
+            {
+                if (value == null)
+                {
+                    return value;
+                }
+                conversionType = UnderlyingTypeOf(conversionType);
+            }
+
+            // 8-30-2014 - James Brooks - Nullable Guid is a special case so it was moved after the "IsNullable" check.
+            if (conversionType == typeof(Guid))
+                return CreateGuid((string)value);
+
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+        }
+
+        private bool IsNullable(Type t)
+        {
+            if (!t.IsGenericType) return false;
+            Type g = t.GetGenericTypeDefinition();
+            return (g.Equals(typeof(Nullable<>)));
+        }
+
+        private Type UnderlyingTypeOf(Type t)
+        {
+            return t.GetGenericArguments()[0];
         }
 
         private object RootList(object parse, Type type)
@@ -567,7 +593,7 @@ namespace fastJSON
                 myPropInfo pi;
                 if (props.TryGetValue(name, out pi) == false)
                     continue;
-                if ((pi.Flags & (myPropInfoFlags.Filled | myPropInfoFlags.CanWrite)) != 0)
+                if (pi.CanWrite)// (pi.Flags & (/*myPropInfoFlags.Filled | */myPropInfoFlags.CanWrite)) != 0)
                 {
                     object v = d[name];
 

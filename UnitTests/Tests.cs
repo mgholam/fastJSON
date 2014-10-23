@@ -1603,5 +1603,35 @@ namespace UnitTests
             Bar bar = fastJSON.JSON.ToObject<Bar>(json);
         }
 
+        [Test]
+        public static void NullVariable()
+        {
+            var i = fastJSON.JSON.ToObject<int?>("10");
+            Assert.AreEqual(10, i);
+            var l = fastJSON.JSON.ToObject<long?>("100");
+            Assert.AreEqual(100L, l);
+            var d = fastJSON.JSON.ToObject<DateTime?>("\"2000-01-01 10:10:10\"");
+            Assert.AreEqual(2000, d.Value.Year);
+        }
+
+        public class readonlyclass
+        {
+            public readonlyclass()
+            {
+                ROName = "bb";
+                Age = 10;
+            }
+            private string _ro = "aa";
+            public string ROAddress { get {return _ro;} }
+            public string ROName { get; private set; }
+            public int Age { get; set; }
+        }
+
+        [Test]
+        public static void ReadonlyTest()
+        {
+            var s = fastJSON.JSON.ToJSON(new readonlyclass(), new JSONParameters{ ShowReadOnlyProperties=true});
+            var o = fastJSON.JSON.ToObject(s);
+        }
     }
 }

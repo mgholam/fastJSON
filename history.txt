@@ -1,3 +1,8 @@
+2.1.5
+- added direct nullable convert ToObject<x?> i.e. int? long? etc. (thanks to goroth)
+- bug fix deserialize private set and no set properties 
+- added ReadonlyTest() test for the above 
+
 2.1.4
 - bug fix deserializing a struct property in a class
 

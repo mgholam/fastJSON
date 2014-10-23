@@ -40,12 +40,12 @@ namespace fastJSON
         Unknown,
     }
 
-    [Flags]
-    internal enum myPropInfoFlags
-    {
-        Filled = 1 << 0,
-        CanWrite = 1 << 1
-    }
+    //[Flags]
+    //internal enum myPropInfoFlags
+    //{
+    //    Filled = 1,// << 0,
+    //    CanWrite = 2//1 << 1
+    //}
 
     internal struct myPropInfo
     {
@@ -57,7 +57,8 @@ namespace fastJSON
         public Type[] GenericTypes;
         public string Name;
         public myPropInfoType Type;
-        public myPropInfoFlags Flags;
+        //public myPropInfoFlags Flags;
+        public bool CanWrite;
 
         public bool IsClass;
         public bool IsValueType;
@@ -162,8 +163,11 @@ namespace fastJSON
                 foreach (PropertyInfo p in pr)
                 {
                     myPropInfo d = CreateMyProp(p.PropertyType, p.Name, customType);
-                    d.Flags |= myPropInfoFlags.CanWrite;
+                    //if (p.CanWrite)
+                    //    d.Flags |= myPropInfoFlags.CanWrite;
                     d.setter = Reflection.CreateSetMethod(type, p);
+                    if (d.setter != null)
+                        d.CanWrite = true;// Flags |= myPropInfoFlags.CanWrite;
                     d.getter = Reflection.CreateGetMethod(type, p);
                     if (IgnoreCaseOnDeserialize)
                         sd.Add(p.Name.ToLower(), d);
@@ -174,6 +178,7 @@ namespace fastJSON
                 foreach (FieldInfo f in fi)
                 {
                     myPropInfo d = CreateMyProp(f.FieldType, f.Name, customType);
+                    d.CanWrite = true;// Flags |= myPropInfoFlags.CanWrite;
                     d.setter = Reflection.CreateSetField(type, f);
                     d.getter = Reflection.CreateGetField(type, f);
                     if (IgnoreCaseOnDeserialize)
@@ -191,7 +196,7 @@ namespace fastJSON
         {
             myPropInfo d = new myPropInfo();
             myPropInfoType d_type = myPropInfoType.Unknown;
-            myPropInfoFlags d_flags = myPropInfoFlags.Filled | myPropInfoFlags.CanWrite;
+            //myPropInfoFlags d_flags = myPropInfoFlags.Filled ;//| myPropInfoFlags.CanWrite;
 
             if (t == typeof(int) || t == typeof(int?)) d_type = myPropInfoType.Int;
             else if (t == typeof(long) || t == typeof(long?)) d_type = myPropInfoType.Long;
@@ -241,7 +246,7 @@ namespace fastJSON
             d.Name = name;
             d.changeType = GetChangeType(t);
             d.Type = d_type;
-            d.Flags = d_flags;
+            //d.Flags = d_flags;
 
             return d;
         }
