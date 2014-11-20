@@ -15,7 +15,7 @@ namespace fastJSON
     {
         private StringBuilder _output = new StringBuilder();
         private StringBuilder _before = new StringBuilder();
-        readonly int _MAX_DEPTH = 20;
+        private int _MAX_DEPTH = 20;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
         private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
@@ -27,6 +27,7 @@ namespace fastJSON
         {
             _params = param;
             _useEscapedUnicode = _params.UseEscapedUnicode;
+            _MAX_DEPTH = _params.SerializerMaxDepth;
         }
 
         internal string ConvertToJSON(object obj)
@@ -91,7 +92,10 @@ namespace fastJSON
                 obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
 
                 WriteStringDictionary((IDictionary)obj);
-
+#if net4
+            else if (_params.KVStyleStringDictionary == false && obj is System.Dynamic.ExpandoObject)
+                WriteStringDictionary((IDictionary<string, object>)obj);
+#endif
             else if (obj is IDictionary)
                 WriteDictionary((IDictionary)obj);
 #if !SILVERLIGHT
@@ -340,7 +344,7 @@ namespace fastJSON
                 _cirobj.Add(obj, _cirobj.Count + 1);
             else
             {
-                if (_current_depth > 0)
+                if (_current_depth > 0 && _params.InlineCircularReferences == false)
                 {
                     //_circular = true;
                     _output.Append("{\"$i\":" + i + "}");
@@ -417,7 +421,6 @@ namespace fastJSON
                 _output.Append(",\"$map\":");
                 WriteStringDictionary(map);
             }
-            //_current_depth--;
             _output.Append('}');
             _current_depth--;
         }
@@ -473,6 +476,19 @@ namespace fastJSON
 
                 WritePair((string)entry.Key, entry.Value);
 
+                pendingSeparator = true;
+            }
+            _output.Append('}');
+        }
+
+        private void WriteStringDictionary(IDictionary<string, object> dic)
+        {
+            _output.Append('{');
+            bool pendingSeparator = false;
+            foreach (KeyValuePair<string, object> entry in dic)
+            {
+                if (pendingSeparator) _output.Append(',');
+                WritePair(entry.Key, entry.Value);
                 pendingSeparator = true;
             }
             _output.Append('}');

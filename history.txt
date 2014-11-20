@@ -1,3 +1,10 @@
+2.1.6
+- fix for release build in net4 (thanks to Craig Minihan)
+- support for ExpandoObject serialize in net4 (thanks to Craig Minihan)
+- added JSONParameters.SerializerMaxDepth to control the max depth to go down to
+- added JSONParameters.InlineCircularReferences to disable the $i feature and inline already seen objects
+- JSONParameters.UseExtensions = false disables circular references also
+
 2.1.5
 - added direct nullable convert ToObject<x?> i.e. int? long? etc. (thanks to goroth)
 - bug fix deserialize private set and no set properties 

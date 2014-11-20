@@ -79,11 +79,22 @@ namespace fastJSON
         /// Serialize DateTime milliseconds i.e. yyyy-MM-dd HH:mm:ss.nnn (default = false)
         /// </summary>
         public bool DateTimeMilliseconds = false;
+        /// <summary>
+        /// Maximum depth for circular references in inline mode (default = 20)
+        /// </summary>
+        public byte SerializerMaxDepth = 20;
+        /// <summary>
+        /// Inline circular or already seen objects instead of replacement with $i (default = False) 
+        /// </summary>
+        public bool InlineCircularReferences = false;
 
         public void FixValues()
         {
             if (UseExtensions == false) // disable conflicting params
+            {
                 UsingGlobalTypes = false;
+                InlineCircularReferences = true;
+            }
             if (EnableAnonymousTypes)
                 ShowReadOnlyProperties = true;
         }

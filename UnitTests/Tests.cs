@@ -1633,5 +1633,33 @@ namespace UnitTests
             var s = fastJSON.JSON.ToJSON(new readonlyclass(), new JSONParameters{ ShowReadOnlyProperties=true});
             var o = fastJSON.JSON.ToObject(s);
         }
+
+        public class container
+        {
+            public string name = "aa";
+            public List<inline> items = new List<inline>();
+        }
+        public class inline
+        {
+            public string aaaa = "1111";
+            public int id = 1;
+        }
+
+        [Test]
+        public static void InlineCircular()
+        {
+            var o = new container();
+            var i = new inline();
+            o.items.Add(i);
+            o.items.Add(i);
+
+            var s = fastJSON.JSON.ToNiceJSON(o, fastJSON.JSON.Parameters);
+            Console.WriteLine("*** circular replace");
+            Console.WriteLine(s);
+
+            s = fastJSON.JSON.ToNiceJSON(o, new JSONParameters{ InlineCircularReferences=true});
+            Console.WriteLine("*** inline objects");
+            Console.WriteLine(s);
+        }
     }
 }
