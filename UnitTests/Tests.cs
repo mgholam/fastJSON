@@ -849,73 +849,6 @@ namespace UnitTests
         }
 
 
-
-        //[Test]
-        //public static void LinkedList()
-        //{
-        //    LinkedList<Retclass> l = new LinkedList<Retclass>();
-        //    var n = l.AddFirst(new Retclass { date = DateTime.Now, Name = "aaa" });
-        //    l.AddAfter(n, new Retclass { Name = "bbbb", date = DateTime.Now });
-
-        //    var s = fastJSON.JSON.ToJSON(l);
-        //    var o = fastJSON.JSON.ToObject<LinkedList<Retclass>>(s);
-
-
-        //}
-        //[Test]
-        //public static void SubClasses()
-        //{
-
-        //}
-
-        //[Test]
-        //public static void CasttoSomthing()
-        //{
-
-        //}
-
-        //[Test]
-        //public static void SimpleTests()
-        //{
-        //    #region ulong
-        //    var s = JSON.ToJSON(long.MaxValue);
-        //    var o = JSON.ToObject(s);
-        //    Assert.That(long.MaxValue, Is.EqualTo(o));
-        //    #endregion
-
-        //    #region float
-        //    s = JSON.ToJSON(float.MinValue);
-        //    o = JSON.ToObject<float>(s);
-        //    Assert.That(float.MinValue, Is.EqualTo(o));
-
-        //    s = JSON.ToJSON(float.MaxValue);
-        //    o = JSON.ToObject<float>(s);
-        //    Assert.That(float.MaxValue, Is.EqualTo(o));
-        //    #endregion
-
-        //    #region double
-        //    s = JSON.ToJSON(double.MinValue);
-        //    o = JSON.ToObject<double>(s);
-        //    Assert.That(double.MinValue, Is.EqualTo(o));
-
-        //    s = JSON.ToJSON(double.MaxValue);
-        //    o = JSON.ToObject<double>(s);
-        //    Assert.That(double.MaxValue, Is.EqualTo(o));
-        //    #endregion
-
-        //    #region decimal
-        //    s = JSON.ToJSON(decimal.MinValue);
-        //    o = JSON.ToObject(s);
-        //    Assert.That(decimal.MinValue, Is.EqualTo(o));
-
-        //    s = JSON.ToJSON(decimal.MaxValue);
-        //    o = JSON.ToObject(s);
-        //    Assert.That(decimal.MaxValue, Is.EqualTo(o));
-        //    #endregion
-        //}
-
-
-
 #if !SILVERLIGHT
         [Test]
         public static void SingleCharNumber()
@@ -1178,9 +1111,9 @@ namespace UnitTests
         {
             string json = "{\"name\":\"aaaa\",\"age\": 42}";
 
-            var o = fastJSON.JSON.ToObject<ignorecase>(json, new JSONParameters { IgnoreCaseOnDeserialize = true });
+            var o = fastJSON.JSON.ToObject<ignorecase>(json);
             Assert.AreEqual("aaaa", o.Name);
-            var oo = fastJSON.JSON.ToObject<ignorecase2>(json.ToUpper(), new JSONParameters { IgnoreCaseOnDeserialize = true });
+            var oo = fastJSON.JSON.ToObject<ignorecase2>(json.ToUpper());
             Assert.AreEqual("AAAA", oo.name);
         }
 
@@ -1622,7 +1555,7 @@ namespace UnitTests
                 Age = 10;
             }
             private string _ro = "aa";
-            public string ROAddress { get {return _ro;} }
+            public string ROAddress { get { return _ro; } }
             public string ROName { get; private set; }
             public int Age { get; set; }
         }
@@ -1630,7 +1563,7 @@ namespace UnitTests
         [Test]
         public static void ReadonlyTest()
         {
-            var s = fastJSON.JSON.ToJSON(new readonlyclass(), new JSONParameters{ ShowReadOnlyProperties=true});
+            var s = fastJSON.JSON.ToJSON(new readonlyclass(), new JSONParameters { ShowReadOnlyProperties = true });
             var o = fastJSON.JSON.ToObject(s);
         }
 
@@ -1657,9 +1590,26 @@ namespace UnitTests
             Console.WriteLine("*** circular replace");
             Console.WriteLine(s);
 
-            s = fastJSON.JSON.ToNiceJSON(o, new JSONParameters{ InlineCircularReferences=true});
+            s = fastJSON.JSON.ToNiceJSON(o, new JSONParameters { InlineCircularReferences = true });
             Console.WriteLine("*** inline objects");
             Console.WriteLine(s);
+        }
+
+
+        [Test]
+        public static void lowercaseSerilaize()
+        {
+            Retclass r = new Retclass();
+            r.Name = "Hello";
+            r.Field1 = "dsasdF";
+            r.Field2 = 2312;
+            r.date = DateTime.Now;
+            var s = fastJSON.JSON.ToNiceJSON(r, new JSONParameters { SerializeToLowerCaseNames = true });
+            Console.WriteLine(s);
+            var o = fastJSON.JSON.ToObject(s);
+            Assert.IsNotNull(o);
+            Assert.AreEqual("Hello", (o as Retclass).Name);
+            Assert.AreEqual(2312, (o as Retclass).Field2);
         }
     }
 }

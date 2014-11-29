@@ -44,6 +44,7 @@ namespace fastJSON
         /// <summary>
         /// Ignore case when processing json and deserializing 
         /// </summary>
+        [Obsolete("Not needed anymore and will always match")]
         public bool IgnoreCaseOnDeserialize = false;
         /// <summary>
         /// Anonymous types have read only properties 
@@ -87,6 +88,10 @@ namespace fastJSON
         /// Inline circular or already seen objects instead of replacement with $i (default = False) 
         /// </summary>
         public bool InlineCircularReferences = false;
+        /// <summary>
+        /// Save property/field names as lowercase (default = false)
+        /// </summary>
+        public bool SerializeToLowerCaseNames = false;
 
         public void FixValues()
         {
@@ -157,7 +162,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object Parse(string json)
         {
-            return new JsonParser(json, JSON.Parameters.IgnoreCaseOnDeserialize).Decode();
+            return new JsonParser(json).Decode();
         }
 #if net4
         /// <summary>
@@ -228,7 +233,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object FillObject(object input, string json)
         {
-            Dictionary<string, object> ht = new JsonParser(json, Parameters.IgnoreCaseOnDeserialize).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return new deserializer(Parameters).ParseDictionary(ht, null, input.GetType(), input);
         }
@@ -314,7 +319,6 @@ namespace fastJSON
         private bool _usingglobals = false;
         private Dictionary<object, int> _circobj = new Dictionary<object, int>();
         private Dictionary<int, object> _cirrev = new Dictionary<int, object>();
-        //private bool _circular = true;
 
         public T ToObject<T>(string json)
         {
@@ -352,7 +356,7 @@ namespace fastJSON
                 _params.UsingGlobalTypes = false;
             _usingglobals = _params.UsingGlobalTypes;
 
-            object o = new JsonParser(json, _params.IgnoreCaseOnDeserialize).Decode();
+            object o = new JsonParser(json).Decode();
             if (o == null)
                 return null;
 #if !SILVERLIGHT
@@ -421,9 +425,6 @@ namespace fastJSON
 
             else if (conversionType == typeof(string))
                 return (string)value;
-
-            //else if (conversionType == typeof(Guid))
-            //    return CreateGuid((string)value);
 
             else if (conversionType.IsEnum)
                 return CreateEnum(conversionType, value);
@@ -530,8 +531,6 @@ namespace fastJSON
                 return CreateNV(d);
             if (type == typeof(StringDictionary))
                 return CreateSD(d);
-            //if (_circular == false)
-            //    _circular = d.TryGetValue("$circular", out tn);
 
             if (d.TryGetValue("$i", out tn))
             {
@@ -580,22 +579,18 @@ namespace fastJSON
                 else
                     o = Reflection.Instance.FastCreateInstance(type);
             }
-            //if (_circular)
+            int circount = 0;
+            if (_circobj.TryGetValue(o, out circount) == false)
             {
-                int i = 0;
-                if (_circobj.TryGetValue(o, out i) == false)
-                {
-                    i = _circobj.Count + 1;
-                    _circobj.Add(o, i);
-                    _cirrev.Add(i, o);
-                }
+                circount = _circobj.Count + 1;
+                _circobj.Add(o, circount);
+                _cirrev.Add(circount, o);
             }
 
-            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, _params.IgnoreCaseOnDeserialize, Reflection.Instance.IsTypeRegistered(type));
+            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, Reflection.Instance.IsTypeRegistered(type));
             foreach (string n in d.Keys)
             {
-                string name = n;
-                if (_params.IgnoreCaseOnDeserialize) name = name.ToLower();
+                string name = n.ToLower();
                 if (name == "$map")
                 {
                     ProcessMap(o, props, (Dictionary<string, object>)d[name]);
@@ -604,9 +599,9 @@ namespace fastJSON
                 myPropInfo pi;
                 if (props.TryGetValue(name, out pi) == false)
                     continue;
-                if (pi.CanWrite)// (pi.Flags & (/*myPropInfoFlags.Filled | */myPropInfoFlags.CanWrite)) != 0)
+                if (pi.CanWrite)
                 {
-                    object v = d[name];
+                    object v = d[n];
 
                     if (v != null)
                     {
@@ -697,7 +692,7 @@ namespace fastJSON
             }
         }
 
-        private int CreateInteger(/*out int num,*/ string s, int index, int count)
+        private int CreateInteger(string s, int index, int count)
         {
             int num = 0;
             bool neg = false;
@@ -742,7 +737,7 @@ namespace fastJSON
         {
             bool utc = false;
             //                   0123456789012345678 9012 9/3
-            // datetime format = yyyy-MM-dd HH:mm:ss .nnn  Z
+            // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  Z
             int year;
             int month;
             int day;
@@ -751,16 +746,15 @@ namespace fastJSON
             int sec;
             int ms = 0;
 
-            year = CreateInteger(/*out year,*/ value, 0, 4);
-            month = CreateInteger(/*out month,*/ value, 5, 2);
-            day = CreateInteger(/*out day,*/ value, 8, 2);
-            hour = CreateInteger(/*out hour,*/ value, 11, 2);
-            min = CreateInteger(/*out min,*/ value, 14, 2);
-            sec = CreateInteger(/*out sec,*/ value, 17, 2);
+            year = CreateInteger(value, 0, 4);
+            month = CreateInteger(value, 5, 2);
+            day = CreateInteger(value, 8, 2);
+            hour = CreateInteger(value, 11, 2);
+            min = CreateInteger(value, 14, 2);
+            sec = CreateInteger(value, 17, 2);
             if (value.Length > 21 && value[19] == '.')
-                ms = CreateInteger(/*out ms,*/ value, 20, 3);
+                ms = CreateInteger(value, 20, 3);
 
-            //if (value.EndsWith("Z"))
             if (value[value.Length - 1] == 'Z')
                 utc = true;
 

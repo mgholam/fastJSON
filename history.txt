@@ -1,3 +1,10 @@
+2.1.7
+- strict ISO date format compliance with a T in the output (IE, firefox javascript engines complained)
+- added JSONParameters.SerializeToLowerCaseNames for javascript interop
+- JSONParameters.IgnoreCaseOnDeserialize is depricated and not needed anymore 
+- added tests for lowercase output
+- internal code cleanup
+
 2.1.6
 - fix for release build in net4 (thanks to Craig Minihan)
 - support for ExpandoObject serialize in net4 (thanks to Craig Minihan)
