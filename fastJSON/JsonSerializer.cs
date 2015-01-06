@@ -364,8 +364,12 @@ namespace fastJSON
             _TypesWritten = true;
             _current_depth++;
             if (_current_depth > _MAX_DEPTH)
-                throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
-
+            {
+                //throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
+                _output.Append('}');
+                _current_depth--;
+                return;
+            }
 
             Dictionary<string, string> map = new Dictionary<string, string>();
             Type t = obj.GetType();

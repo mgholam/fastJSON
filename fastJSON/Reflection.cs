@@ -481,6 +481,10 @@ namespace fastJSON
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
+                if (p.GetIndexParameters().Length > 0)
+                {// Property is an indexer
+                    continue;
+                }
                 if (!p.CanWrite && param.ShowReadOnlyProperties == false) continue;
                 if (param.IgnoreAttributes != null)
                 {
