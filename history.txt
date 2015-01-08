@@ -1,3 +1,8 @@
+2.1.8
+- bug fix serializing static fields and properties
+- skip indexer properties on objects (thanks to scymen)
+- JSONParameters.SerializeToLowerCaseNames also handles Dictionary and NameValueCollection 
+
 2.1.7
 - strict ISO date format compliance with a T in the output (IE, firefox javascript engines complained)
 - added JSONParameters.SerializeToLowerCaseNames for javascript interop

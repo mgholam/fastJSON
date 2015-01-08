@@ -133,9 +133,10 @@ namespace fastJSON
             foreach (string key in nameValueCollection)
             {
                 if (pendingSeparator) _output.Append(',');
-
-                WritePair(key, nameValueCollection[key]);
-
+                if (_params.SerializeToLowerCaseNames)
+                    WritePair(key.ToLower(), nameValueCollection[key]);
+                else
+                    WritePair(key, nameValueCollection[key]);
                 pendingSeparator = true;
             }
             _output.Append('}');
@@ -151,7 +152,11 @@ namespace fastJSON
             {
                 if (pendingSeparator) _output.Append(',');
 
-                WritePair((string)entry.Key, entry.Value);
+                string k = (string)entry.Key;
+                if (_params.SerializeToLowerCaseNames)
+                    WritePair(k.ToLower(), entry.Value);
+                else
+                    WritePair(k, entry.Value);
 
                 pendingSeparator = true;
             }
@@ -388,7 +393,7 @@ namespace fastJSON
                 append = true;
             }
 
-            Getters[] g = Reflection.Instance.GetGetters(t, _params);
+            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties, _params.IgnoreAttributes);
             int c = g.Length;
             for (int ii = 0; ii < c; ii++)
             {
@@ -428,6 +433,7 @@ namespace fastJSON
         {
             if ((value == null) && _params.SerializeNullValues == false)
                 return;
+
             WriteStringFast(name);
 
             _output.Append(':');
@@ -439,6 +445,7 @@ namespace fastJSON
         {
             if ((value == null || value is DBNull) && _params.SerializeNullValues == false)
                 return;
+
             WriteStringFast(name);
 
             _output.Append(':');
@@ -473,7 +480,11 @@ namespace fastJSON
             {
                 if (pendingSeparator) _output.Append(',');
 
-                WritePair((string)entry.Key, entry.Value);
+                string k = (string)entry.Key;
+                if (_params.SerializeToLowerCaseNames)
+                    WritePair(k.ToLower(), entry.Value);
+                else
+                    WritePair(k, entry.Value);
 
                 pendingSeparator = true;
             }
@@ -487,7 +498,11 @@ namespace fastJSON
             foreach (KeyValuePair<string, object> entry in dic)
             {
                 if (pendingSeparator) _output.Append(',');
-                WritePair(entry.Key, entry.Value);
+                string k = entry.Key;
+                if (_params.SerializeToLowerCaseNames)
+                    WritePair(k.ToLower(), entry.Value);
+                else
+                    WritePair(k, entry.Value);
                 pendingSeparator = true;
             }
             _output.Append('}');
