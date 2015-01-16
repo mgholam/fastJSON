@@ -726,9 +726,11 @@ namespace UnitTests
         public static void NullOutput()
         {
             var c = new ConcurrentClassA();
-            var s = fastJSON.JSON.ToJSON(c, new JSONParameters { UseExtensions = false });
+            var s = fastJSON.JSON.ToJSON(c, new JSONParameters { UseExtensions = false , SerializeNullValues=false});
             Console.WriteLine(fastJSON.JSON.Beautify(s));
             Assert.AreEqual(false, s.Contains(",")); // should not have a comma
+
+
         }
 
         [Test]
@@ -1610,6 +1612,33 @@ namespace UnitTests
             Assert.IsNotNull(o);
             Assert.AreEqual("Hello", (o as Retclass).Name);
             Assert.AreEqual(2312, (o as Retclass).Field2);
+        }
+
+
+        public class nulltest
+        {
+            public string A;
+            public int b;
+            public DateTime? d;
+        }
+
+        [Test]
+        public static void null_in_dictionary()
+        {
+            Dictionary<string, object> d = new Dictionary<string, object>();
+            d.Add("a", null);
+            d.Add("b", 12);
+            d.Add("c", null);
+
+            string s = fastJSON.JSON.ToJSON(d);
+            Console.WriteLine(s);
+            s = fastJSON.JSON.ToJSON(d, new JSONParameters() { SerializeNullValues = false });
+            Console.WriteLine(s);
+            Assert.AreEqual("{\"b\":12}", s);
+
+            s = fastJSON.JSON.ToJSON(new nulltest(), new JSONParameters { SerializeNullValues = false, UseExtensions=false });
+            Console.WriteLine(s);
+            Assert.AreEqual("{\"b\":0}", s);
         }
     }
 }

@@ -132,12 +132,18 @@ namespace fastJSON
 
             foreach (string key in nameValueCollection)
             {
-                if (pendingSeparator) _output.Append(',');
-                if (_params.SerializeToLowerCaseNames)
-                    WritePair(key.ToLower(), nameValueCollection[key]);
+                if (_params.SerializeNullValues == false && (nameValueCollection[key] == null))
+                {
+                }
                 else
-                    WritePair(key, nameValueCollection[key]);
-                pendingSeparator = true;
+                {
+                    if (pendingSeparator) _output.Append(',');
+                    if (_params.SerializeToLowerCaseNames)
+                        WritePair(key.ToLower(), nameValueCollection[key]);
+                    else
+                        WritePair(key, nameValueCollection[key]);
+                    pendingSeparator = true;
+                }
             }
             _output.Append('}');
         }
@@ -150,15 +156,20 @@ namespace fastJSON
 
             foreach (DictionaryEntry entry in stringDictionary)
             {
-                if (pendingSeparator) _output.Append(',');
-
-                string k = (string)entry.Key;
-                if (_params.SerializeToLowerCaseNames)
-                    WritePair(k.ToLower(), entry.Value);
+                if (_params.SerializeNullValues == false && (entry.Value == null))
+                {
+                }
                 else
-                    WritePair(k, entry.Value);
+                {
+                    if (pendingSeparator) _output.Append(',');
 
-                pendingSeparator = true;
+                    string k = (string)entry.Key;
+                    if (_params.SerializeToLowerCaseNames)
+                        WritePair(k.ToLower(), entry.Value);
+                    else
+                        WritePair(k, entry.Value);
+                    pendingSeparator = true;
+                }
             }
             _output.Append('}');
         }
@@ -399,7 +410,7 @@ namespace fastJSON
             {
                 var p = g[ii];
                 object o = p.Getter(obj);
-                if ((o == null || o is DBNull) && _params.SerializeNullValues == false)
+                if (_params.SerializeNullValues == false && (o == null || o is DBNull))
                 {
                     //append = false;
                 }
@@ -431,9 +442,6 @@ namespace fastJSON
 
         private void WritePairFast(string name, string value)
         {
-            if ((value == null) && _params.SerializeNullValues == false)
-                return;
-
             WriteStringFast(name);
 
             _output.Append(':');
@@ -443,9 +451,6 @@ namespace fastJSON
 
         private void WritePair(string name, object value)
         {
-            if ((value == null || value is DBNull) && _params.SerializeNullValues == false)
-                return;
-
             WriteStringFast(name);
 
             _output.Append(':');
@@ -478,15 +483,20 @@ namespace fastJSON
 
             foreach (DictionaryEntry entry in dic)
             {
-                if (pendingSeparator) _output.Append(',');
-
-                string k = (string)entry.Key;
-                if (_params.SerializeToLowerCaseNames)
-                    WritePair(k.ToLower(), entry.Value);
+                if (_params.SerializeNullValues == false && (entry.Value == null))
+                {
+                }
                 else
-                    WritePair(k, entry.Value);
+                {
+                    if (pendingSeparator) _output.Append(',');
 
-                pendingSeparator = true;
+                    string k = (string)entry.Key;
+                    if (_params.SerializeToLowerCaseNames)
+                        WritePair(k.ToLower(), entry.Value);
+                    else
+                        WritePair(k, entry.Value);
+                    pendingSeparator = true;
+                }
             }
             _output.Append('}');
         }
@@ -497,13 +507,20 @@ namespace fastJSON
             bool pendingSeparator = false;
             foreach (KeyValuePair<string, object> entry in dic)
             {
-                if (pendingSeparator) _output.Append(',');
-                string k = entry.Key;
-                if (_params.SerializeToLowerCaseNames)
-                    WritePair(k.ToLower(), entry.Value);
+                if (_params.SerializeNullValues == false && (entry.Value == null))
+                {
+                }
                 else
-                    WritePair(k, entry.Value);
-                pendingSeparator = true;
+                {
+                    if (pendingSeparator) _output.Append(',');
+                    string k = entry.Key;
+
+                    if (_params.SerializeToLowerCaseNames)
+                        WritePair(k.ToLower(), entry.Value);
+                    else
+                        WritePair(k, entry.Value);
+                    pendingSeparator = true;
+                }
             }
             _output.Append('}');
         }
