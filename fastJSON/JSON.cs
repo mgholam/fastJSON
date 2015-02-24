@@ -823,8 +823,12 @@ namespace fastJSON
                     val = ParseDictionary((Dictionary<string, object>)values.Value, globalTypes, t2, null);
 
                 else if (types != null && t2.IsArray)
-                    val = CreateArray((List<object>)values.Value, t2, t2.GetElementType(), globalTypes);
-
+                {
+                    if (values.Value is Array)
+                        val = values.Value;
+                    else
+                        val = CreateArray((List<object>)values.Value, t2, t2.GetElementType(), globalTypes);
+                }
                 else if (values.Value is IList)
                     val = CreateGenericList((List<object>)values.Value, t2, t1, globalTypes);
 

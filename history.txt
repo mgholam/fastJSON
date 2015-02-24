@@ -1,3 +1,6 @@
+2.1.10
+- bug fix byte[] keys with Dictionary (thanks to Stanislav Lukeš)
+
 2.1.9
 - JSONParameters.SerializeNullValues = false handles Dictionary and NameValueCollection correctly
 

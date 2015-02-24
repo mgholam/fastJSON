@@ -292,6 +292,7 @@ namespace UnitTests
         public static void setup()
         {
             //fastJSON.JSON.Parameters = new JSONParameters();
+            fastJSON.JSON.Parameters.FixValues();
         }
 
         [Test]
