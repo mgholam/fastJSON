@@ -727,7 +727,7 @@ namespace UnitTests
         public static void NullOutput()
         {
             var c = new ConcurrentClassA();
-            var s = fastJSON.JSON.ToJSON(c, new JSONParameters { UseExtensions = false , SerializeNullValues=false});
+            var s = fastJSON.JSON.ToJSON(c, new JSONParameters { UseExtensions = false, SerializeNullValues = false });
             Console.WriteLine(fastJSON.JSON.Beautify(s));
             Assert.AreEqual(false, s.Contains(",")); // should not have a comma
 
@@ -1637,9 +1637,36 @@ namespace UnitTests
             Console.WriteLine(s);
             Assert.AreEqual("{\"b\":12}", s);
 
-            s = fastJSON.JSON.ToJSON(new nulltest(), new JSONParameters { SerializeNullValues = false, UseExtensions=false });
+            s = fastJSON.JSON.ToJSON(new nulltest(), new JSONParameters { SerializeNullValues = false, UseExtensions = false });
             Console.WriteLine(s);
             Assert.AreEqual("{\"b\":0}", s);
+        }
+
+
+        public class InstrumentSettings
+        {
+            public string dataProtocol { get; set; }
+            public static bool isBad { get; set; }
+            public static bool isOk;
+
+            public InstrumentSettings()
+            {
+                dataProtocol = "Wireless";
+            }
+        }
+
+        [Test]
+        public static void statictest()
+        {
+            var s = new InstrumentSettings();
+            JSONParameters pa = new JSONParameters();
+            pa.UseExtensions = false;
+            InstrumentSettings.isOk = true;
+            InstrumentSettings.isBad = true;
+
+            var jsonStr = JSON.ToNiceJSON(s, pa);
+
+            var o = fastJSON.JSON.ToObject<InstrumentSettings>(jsonStr);
         }
     }
 }

@@ -398,15 +398,28 @@ namespace fastJSON
             }
             else
             {
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
-                il.Emit(OpCodes.Ldarg_1);
-                if (propertyInfo.PropertyType.IsClass)
-                    il.Emit(OpCodes.Castclass, propertyInfo.PropertyType);
+                if (!setMethod.IsStatic)
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
+                    il.Emit(OpCodes.Ldarg_1);
+                    if (propertyInfo.PropertyType.IsClass)
+                        il.Emit(OpCodes.Castclass, propertyInfo.PropertyType);
+                    else
+                        il.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
+                    il.EmitCall(OpCodes.Callvirt, setMethod, null);
+                    il.Emit(OpCodes.Ldarg_0);
+                }
                 else
-                    il.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
-                il.EmitCall(OpCodes.Callvirt, setMethod, null);
-                il.Emit(OpCodes.Ldarg_0);
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Ldarg_1);
+                    if (propertyInfo.PropertyType.IsClass)
+                        il.Emit(OpCodes.Castclass, propertyInfo.PropertyType);
+                    else
+                        il.Emit(OpCodes.Unbox_Any, propertyInfo.PropertyType);
+                    il.Emit(OpCodes.Call, setMethod);
+                }
             }
 
             il.Emit(OpCodes.Ret);
@@ -467,9 +480,15 @@ namespace fastJSON
             }
             else
             {
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
-                il.EmitCall(OpCodes.Callvirt, getMethod, null);
+                if (!getMethod.IsStatic)
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Castclass, propertyInfo.DeclaringType);
+                    il.EmitCall(OpCodes.Callvirt, getMethod, null);
+                }
+                else
+                    il.Emit(OpCodes.Call, getMethod);
+
                 if (propertyInfo.PropertyType.IsValueType)
                     il.Emit(OpCodes.Box, propertyInfo.PropertyType);
             }

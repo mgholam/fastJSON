@@ -1,3 +1,6 @@
+2.1.11
+- bug fix public static properties
+
 2.1.10
 - bug fix byte[] keys with Dictionary (thanks to Stanislav Lukeš)
 
