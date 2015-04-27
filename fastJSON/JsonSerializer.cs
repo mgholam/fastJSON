@@ -360,7 +360,9 @@ namespace fastJSON
                 if (_current_depth > 0 && _params.InlineCircularReferences == false)
                 {
                     //_circular = true;
-                    _output.Append("{\"$i\":" + i + "}");
+                    _output.Append("{\"$i\":" );
+                    _output.Append(i.ToString());
+                    _output.Append("}");
                     return;
                 }
             }

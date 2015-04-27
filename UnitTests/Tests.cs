@@ -1668,5 +1668,76 @@ namespace UnitTests
 
             var o = fastJSON.JSON.ToObject<InstrumentSettings>(jsonStr);
         }
+
+        public class arrayclass2
+        {
+            public int[] ints { get; set; }
+            public string[] strs;
+            public int[][] int2d { get; set; }
+            public int[][][] int3d;
+            public baseclass[][] class2d;
+        }
+
+        [Test]
+        public static void ArrayTest2()
+        {
+            arrayclass2 a = new arrayclass2();
+            a.ints = new int[] { 3, 1, 4 };
+            a.strs = new string[] { "a", "b", "c" };
+            a.int2d = new int[][] { new int[] { 1, 2, 3 }, new int[] { 2, 3, 4 } };
+            a.int3d = new int[][][] {        new int[][] { 
+            new int[] { 0, 0, 1 },
+            new int[] { 0, 1, 0 }
+        },
+        null,
+        new int[][] { 
+            new int[] { 0, 0, 2 },
+            new int[] { 0, 2, 0 },
+            null
+        }
+    };
+            a.class2d = new baseclass[][]{
+        new baseclass[] {
+            new baseclass () { Name = "a", Code = "A" },
+            new baseclass () { Name = "b", Code = "B" }
+        },
+        new baseclass[] {
+            new baseclass () { Name = "c" }
+        },
+        null
+    };
+            var s = JSON.ToJSON(a);
+            var o = JSON.ToObject<arrayclass2>(s);
+            CollectionAssert.AreEqual(a.ints, o.ints);
+            CollectionAssert.AreEqual(a.strs, o.strs);
+            CollectionAssert.AreEqual(a.int2d[0], o.int2d[0]);
+            CollectionAssert.AreEqual(a.int2d[1], o.int2d[1]);
+            CollectionAssert.AreEqual(a.int3d[0][0], o.int3d[0][0]);
+            CollectionAssert.AreEqual(a.int3d[0][1], o.int3d[0][1]);
+            Assert.AreEqual(null, o.int3d[1]);
+            CollectionAssert.AreEqual(a.int3d[2][0], o.int3d[2][0]);
+            CollectionAssert.AreEqual(a.int3d[2][1], o.int3d[2][1]);
+            CollectionAssert.AreEqual(a.int3d[2][2], o.int3d[2][2]);
+            for (int i = 0; i < a.class2d.Length; i++)
+            {
+                var ai = a.class2d[i];
+                var oi = o.class2d[i];
+                if (ai == null && oi == null)
+                {
+                    continue;
+                }
+                for (int j = 0; j < ai.Length; j++)
+                {
+                    var aii = ai[j];
+                    var oii = oi[j];
+                    if (aii == null && oii == null)
+                    {
+                        continue;
+                    }
+                    Assert.AreEqual(aii.Name, oii.Name);
+                    Assert.AreEqual(aii.Code, oii.Code);
+                }
+            }
+        }
     }
 }
