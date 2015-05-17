@@ -362,8 +362,7 @@ namespace fastJSON
 #if !SILVERLIGHT
             if (type != null && type == typeof(DataSet))
                 return CreateDataset(o as Dictionary<string, object>, null);
-
-            if (type != null && type == typeof(DataTable))
+            else if (type != null && type == typeof(DataTable))
                 return CreateDataTable(o as Dictionary<string, object>, null);
 #endif
             if (o is IDictionary)
@@ -373,22 +372,18 @@ namespace fastJSON
                 else // deserialize an object
                     return ParseDictionary(o as Dictionary<string, object>, null, type, null);
             }
-
-            if (o is List<object>)
+            else if (o is List<object>)
             {
                 if (type != null && t == typeof(Dictionary<,>)) // kv format
                     return RootDictionary(o, type);
-
-                if (type != null && t == typeof(List<>)) // deserialize to generic list
+                else if (type != null && t == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
-
-                if (type == typeof(Hashtable))
+                else if (type == typeof(Hashtable))
                     return RootHashTable((List<object>)o);
                 else
                     return (o as List<object>).ToArray();
             }
-
-            if (type != null && o.GetType() != type)
+            else if (type != null && o.GetType() != type)
                 return ChangeType(o, type);
 
             return o;
@@ -588,8 +583,10 @@ namespace fastJSON
             }
 
             Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, Reflection.Instance.IsTypeRegistered(type));
-            foreach (string n in d.Keys)
+            foreach (var kv in d)
             {
+                var n = kv.Key;
+                var v = kv.Value;
                 string name = n.ToLower();
                 if (name == "$map")
                 {
@@ -601,7 +598,7 @@ namespace fastJSON
                     continue;
                 if (pi.CanWrite)
                 {
-                    object v = d[n];
+                    //object v = d[n];
 
                     if (v != null)
                     {

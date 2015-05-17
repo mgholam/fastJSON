@@ -14,7 +14,8 @@ namespace fastJSON
     internal sealed class JSONSerializer
     {
         private StringBuilder _output = new StringBuilder();
-        private StringBuilder _before = new StringBuilder();
+        //private StringBuilder _before = new StringBuilder();
+        private int _before;
         private int _MAX_DEPTH = 20;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
@@ -33,12 +34,11 @@ namespace fastJSON
         {
             WriteValue(obj);
 
-            string str = "";
             if (_params.UsingGlobalTypes && _globalTypes != null && _globalTypes.Count > 0)
             {
-                StringBuilder sb = _before;
+                var sb = new StringBuilder();
                 sb.Append("\"$types\":{");
-                bool pendingSeparator = false;
+                var pendingSeparator = false;
                 foreach (var kv in _globalTypes)
                 {
                     if (pendingSeparator) sb.Append(',');
@@ -50,13 +50,9 @@ namespace fastJSON
                     sb.Append('\"');
                 }
                 sb.Append("},");
-                sb.Append(_output.ToString());
-                str = sb.ToString();
+                _output.Insert(_before, sb.ToString());
             }
-            else
-                str = _output.ToString();
-
-            return str;
+            return _output.ToString();
         }
 
         private void WriteValue(object obj)
@@ -360,7 +356,7 @@ namespace fastJSON
                 if (_current_depth > 0 && _params.InlineCircularReferences == false)
                 {
                     //_circular = true;
-                    _output.Append("{\"$i\":" );
+                    _output.Append("{\"$i\":");
                     _output.Append(i.ToString());
                     _output.Append("}");
                     return;
@@ -373,8 +369,8 @@ namespace fastJSON
                 if (_TypesWritten == false)
                 {
                     _output.Append('{');
-                    _before = _output;
-                    _output = new StringBuilder();
+                    _before = _output.Length;
+                    //_output = new StringBuilder();
                 }
                 else
                     _output.Append('{');

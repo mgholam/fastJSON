@@ -530,10 +530,7 @@ namespace fastJSON
                 }
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                {
-
                     getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower() });
-                }
             }
 
             FieldInfo[] fi = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
@@ -557,10 +554,7 @@ namespace fastJSON
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                    {
-
                         getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower() });
-                    }
                 }
             }
             val = getters.ToArray();
