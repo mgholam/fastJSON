@@ -1,3 +1,6 @@
+2.1.14
+- dynamic object processing enhancements (thanks to Justin Dearing)
+
 2.1.13
 - code speedups (thanks to wmjordan)
 
