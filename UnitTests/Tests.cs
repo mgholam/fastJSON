@@ -916,6 +916,18 @@ namespace UnitTests
             var p = d[5].key;
             Assert.AreEqual(90, p);
         }
+#endif
+
+        [Test]
+        public static void GetDynamicMemberNamesTests()
+        {
+            string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30},\"arr\":[1,{\"a\":2},3,4,5,6]}";
+            dynamic d = fastJSON.JSON.ToDynamic(s);
+            Assert.AreEqual(5, d.GetDynamicMemberNames().Count);
+            Assert.AreEqual(6, d.arr.Count);
+            Assert.AreEqual("aaaaaa", d["Name"]);
+        }
+
 
         [Test]
         public static void GetDynamicMemberNamesTests()
