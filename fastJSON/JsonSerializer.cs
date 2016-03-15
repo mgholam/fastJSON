@@ -179,7 +179,7 @@ namespace fastJSON
 
         private void WriteEnum(Enum e)
         {
-            // TODO : optimize enum write
+            // FEATURE : optimize enum write
             if (_params.UseValuesOfEnums)
                 WriteValue(Convert.ToInt32(e));
             else

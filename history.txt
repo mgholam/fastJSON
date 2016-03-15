@@ -1,3 +1,7 @@
+2.1.15
+- usings cleanup
+- bug fix : edge case CreateArray() bt is null -> default to typeof(object)
+
 2.1.14
 - dynamic object processing enhancements (thanks to Justin Dearing)
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -30,7 +29,7 @@ namespace fastJSON
         }
 
         readonly string json;
-        readonly StringBuilder s = new StringBuilder();
+        readonly StringBuilder s = new StringBuilder(); // used for inner string parsing " \"\r\n\u1234\'\t " 
         Token lookAheadToken = Token.None;
         int index;
 

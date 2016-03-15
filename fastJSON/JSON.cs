@@ -6,8 +6,6 @@ using System.Data;
 #endif
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Collections.Specialized;
 
 namespace fastJSON
@@ -714,7 +712,7 @@ namespace fastJSON
 
         private object CreateEnum(Type pt, object v)
         {
-            // TODO : optimize create enum
+            // FEATURE : optimize create enum
 #if !SILVERLIGHT
             return Enum.Parse(pt, v.ToString());
 #else
@@ -763,6 +761,9 @@ namespace fastJSON
 
         private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
         {
+            if (bt == null)
+                bt = typeof(object);
+
             Array col = Array.CreateInstance(bt, data.Count);
             // create an array of objects
             for (int i = 0; i < data.Count; i++)
@@ -783,14 +784,12 @@ namespace fastJSON
             return col;
         }
 
-
         private object CreateGenericList(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
         {
             IList col = (IList)Reflection.Instance.FastCreateInstance(pt);
             // create an array of objects
             foreach (object ob in data)
             {
-
                 if (ob is IDictionary)
                     col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 #if !SILVERLIGHT
 using NUnit.Framework;
 using System.Data;
@@ -8,7 +7,6 @@ using System.Data;
 using System.Collections;
 using System.Threading;
 using fastJSON;
-using System.Dynamic;
 using System.Collections.Specialized;
 using System.Reflection.Emit;
 using System.Linq.Expressions;
@@ -916,18 +914,6 @@ namespace UnitTests
             var p = d[5].key;
             Assert.AreEqual(90, p);
         }
-#endif
-
-        [Test]
-        public static void GetDynamicMemberNamesTests()
-        {
-            string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30},\"arr\":[1,{\"a\":2},3,4,5,6]}";
-            dynamic d = fastJSON.JSON.ToDynamic(s);
-            Assert.AreEqual(5, d.GetDynamicMemberNames().Count);
-            Assert.AreEqual(6, d.arr.Count);
-            Assert.AreEqual("aaaaaa", d["Name"]);
-        }
-
 
         [Test]
         public static void GetDynamicMemberNamesTests()
