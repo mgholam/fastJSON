@@ -90,6 +90,11 @@ namespace fastJSON
         /// Save property/field names as lowercase (default = false)
         /// </summary>
         public bool SerializeToLowerCaseNames = false;
+    		/// <summary>
+    		/// Convert Dictionary Int Keys to String Keys (default = false)
+    		/// </summary>
+    		public bool IntDictionaryKeysToString = false;
+
 
         public void FixValues()
         {

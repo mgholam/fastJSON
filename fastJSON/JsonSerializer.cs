@@ -80,7 +80,10 @@ namespace fastJSON
 
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
+            else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
+                obj.GetType().IsGenericType && (obj.GetType().GetGenericArguments()[0] == typeof(int) && _params.IntDictionaryKeysToString))
 
+                WriteIntDictionary((IDictionary)obj);
             else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
                 obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
 
@@ -471,6 +474,32 @@ namespace fastJSON
                 pendingSeperator = true;
             }
             _output.Append(']');
+        }
+
+        private void WriteIntDictionary(IDictionary dic)
+        {
+            _output.Append('{');
+
+            bool pendingSeparator = false;
+
+            foreach (DictionaryEntry entry in dic)
+            {
+                if (_params.SerializeNullValues == false && (entry.Value == null))
+                {
+                }
+                else
+                {
+                    if (pendingSeparator) _output.Append(',');
+
+                    string k = Convert.ToString(entry.Key);
+                    if (_params.SerializeToLowerCaseNames)
+                        WritePair(k.ToLower(), entry.Value);
+                    else
+                        WritePair(k, entry.Value);
+                    pendingSeparator = true;
+                }
+            }
+            _output.Append('}');
         }
 
         private void WriteStringDictionary(IDictionary dic)
