@@ -425,6 +425,9 @@ namespace fastJSON
             else if (conversionType == typeof(DateTime))
                 return CreateDateTime((string)value);
 
+            if (conversionType == typeof(byte[]))
+                return Convert.FromBase64String((string)value);
+
             else if (Reflection.Instance.IsTypeRegistered(conversionType))
                 return Reflection.Instance.CreateCustom((string)value, conversionType);
 

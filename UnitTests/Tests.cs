@@ -293,6 +293,28 @@ namespace UnitTests
             fastJSON.JSON.Parameters.FixValues();
         }
 
+        public class Byte_Array_Deserialization_Test_Class<TEntity>
+        {
+            public TEntity[] Results { get; set; }
+        }
+
+        [Test]
+        public static void Byte_Array_Deserialization_Test()
+        {
+            var data = @"{
+                ""Results"": [
+                    ""dGVzdA==""
+                    ]
+            }";
+            var deserialized = fastJSON.JSON.ToObject<Byte_Array_Deserialization_Test_Class<byte[]>>(data);
+            using (var memoryStream = new System.IO.MemoryStream(deserialized.Results[0]))
+            using (var streamReader = new System.IO.StreamReader(memoryStream))
+            {
+                var text = streamReader.ReadToEnd();
+                Assert.AreEqual("test", text);
+            }
+        }
+
         [Test]
         public static void objectarray()
         {
