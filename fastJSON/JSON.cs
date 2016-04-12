@@ -735,7 +735,7 @@ namespace fastJSON
             // - Voir "Tony" Hillaire (B9Tony) 4/12/2016
 #if net4
             return DateTime.Parse(value, null, System.Globalization.DateTimeStyles.RoundtripKind);
-#endif
+#else
             bool utc = false;
             //                   0123456789012345678 9012 9/3
             // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  Z
@@ -767,6 +767,8 @@ namespace fastJSON
                 return new DateTime(year, month, day, hour, min, sec, ms);
             else
                 return new DateTime(year, month, day, hour, min, sec, ms, DateTimeKind.Utc).ToLocalTime();
+#endif
+
         }
 
         private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
