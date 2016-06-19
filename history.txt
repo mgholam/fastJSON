@@ -1,3 +1,9 @@
+2.1.16
+- bug fix ToObject<Dictionary<string, List<X>>>() (thanks to sleiN13)
+- bug fix CreateStringKeyDictionary() (thanks to John Earnshaw)
+- type access optimizations
+- test restructuring
+
 2.1.15
 - usings cleanup
 - bug fix : edge case CreateArray() bt is null -> default to typeof(object)
