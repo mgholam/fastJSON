@@ -303,8 +303,7 @@ namespace fastJSON
                 string s = json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            long num;
-            return JSON.CreateLong(out num, json, startIndex, index - startIndex);
+            return JSON.CreateLong(json, startIndex, index - startIndex);
         }
 
         private Token LookAhead()
@@ -337,6 +336,17 @@ namespace fastJSON
             {
                 c = json[index];
 
+                if (c == '/' && json[index + 1] == '/') // c++ style single line comments
+                {
+                    index++;
+                    index++;
+                    do
+                    {
+                        c = json[index];
+                        if (c == '\r' || c == '\n') break; // read till end of line
+                    }
+                    while (++index < json.Length);
+                }
                 if (c > ' ') break;
                 if (c != ' ' && c != '\t' && c != '\n' && c != '\r') break;
 

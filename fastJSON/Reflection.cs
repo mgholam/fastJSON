@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Reflection;
 using System.Collections;
+using System.Runtime.CompilerServices;
 #if !SILVERLIGHT
 using System.Data;
 #endif
@@ -144,7 +145,7 @@ namespace fastJSON
             }
         }
 
-        public Dictionary<string, myPropInfo> Getproperties(Type type, string typename, bool customType)
+        public Dictionary<string, myPropInfo> Getproperties(Type type, string typename)//, bool customType)
         {
             Dictionary<string, myPropInfo> sd = null;
             if (_propertycache.TryGetValue(typename, out sd))
@@ -161,7 +162,7 @@ namespace fastJSON
                     {// Property is an indexer
                         continue;
                     }
-                    myPropInfo d = CreateMyProp(p.PropertyType, p.Name, customType);
+                    myPropInfo d = CreateMyProp(p.PropertyType, p.Name);//, customType);
                     d.setter = Reflection.CreateSetMethod(type, p);
                     if (d.setter != null)
                         d.CanWrite = true;
@@ -171,7 +172,7 @@ namespace fastJSON
                 FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                 foreach (FieldInfo f in fi)
                 {
-                    myPropInfo d = CreateMyProp(f.FieldType, f.Name, customType);
+                    myPropInfo d = CreateMyProp(f.FieldType, f.Name);//, customType);
                     if (f.IsLiteral == false)
                     {
                         d.setter = Reflection.CreateSetField(type, f);
@@ -187,7 +188,7 @@ namespace fastJSON
             }
         }
 
-        private myPropInfo CreateMyProp(Type t, string name, bool customType)
+        private myPropInfo CreateMyProp(Type t, string name)//, bool customType)
         {
             myPropInfo d = new myPropInfo();
             myPropInfoType d_type = myPropInfoType.Unknown;
@@ -222,7 +223,7 @@ namespace fastJSON
             else if (t == typeof(DataSet)) d_type = myPropInfoType.DataSet;
             else if (t == typeof(DataTable)) d_type = myPropInfoType.DataTable;
 #endif
-            else if (customType)
+            else if (IsTypeRegistered(t))
                 d_type = myPropInfoType.Custom;
 
             if (t.IsValueType && !t.IsPrimitive && !t.IsEnum && t != typeof(decimal))
@@ -504,6 +505,8 @@ namespace fastJSON
             if (_getterscache.TryGetValue(type, out val))
                 return val;
 
+            bool isAnonymous = IsAnonymousType(type);
+
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
@@ -512,7 +515,7 @@ namespace fastJSON
                 {// Property is an indexer
                     continue;
                 }
-                if (!p.CanWrite && ShowReadOnlyProperties == false) continue;
+                if (!p.CanWrite && (ShowReadOnlyProperties == false || isAnonymous == false)) continue;
                 if (IgnoreAttributes != null)
                 {
                     bool found = false;
@@ -561,6 +564,22 @@ namespace fastJSON
             return val;
         }
 
+        private static bool IsAnonymousType(Type type)
+        {
+            // may break in the future if compiler defined names change...
+            const string CS_ANONYMOUS_PREFIX = "<>f__AnonymousType";
+            const string VB_ANONYMOUS_PREFIX = "VB$AnonymousType";
+
+            if (type == null)
+                throw new ArgumentNullException("type");
+
+            if (type.Name.StartsWith(CS_ANONYMOUS_PREFIX, StringComparison.Ordinal) || type.Name.StartsWith(VB_ANONYMOUS_PREFIX, StringComparison.Ordinal))
+            {
+                return type.IsDefined(typeof(CompilerGeneratedAttribute), false);
+            }
+
+            return false;
+        }
         #endregion
 
         internal void ResetPropertyCache()

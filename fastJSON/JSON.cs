@@ -282,9 +282,9 @@ namespace fastJSON
             Reflection.Instance.ClearReflectionCache();
         }
 
-        internal static long CreateLong(out long num, string s, int index, int count)
+        internal static long CreateLong(string s, int index, int count)
         {
-            num = 0;
+            long num = 0;
             bool neg = false;
             for (int x = 0; x < count; x++, index++)
             {
@@ -376,6 +376,8 @@ namespace fastJSON
                     return RootDictionary(o, type);
                 else if (type != null && t == typeof(List<>)) // deserialize to generic list
                     return RootList(o, type);
+                else if (type != null && type.IsArray)
+                    return RootArray(o, type);
                 else if (type == typeof(Hashtable))
                     return RootHashTable((List<object>)o);
                 else
@@ -411,11 +413,21 @@ namespace fastJSON
         private object ChangeType(object value, Type conversionType)
         {
             if (conversionType == typeof(int))
-                return (int)((long)value);
-
+            {
+                string s = value as string;
+                if (s == null)
+                    return (int)((long)value);
+                else
+                    return CreateInteger(s, 0, s.Length);
+            }
             else if (conversionType == typeof(long))
-                return (long)value;
-
+            {
+                string s = value as string;
+                if (s == null)
+                    return (long)value;
+                else
+                    return JSON.CreateLong(s, 0, s.Length);
+            }
             else if (conversionType == typeof(string))
                 return (string)value;
 
@@ -424,6 +436,9 @@ namespace fastJSON
 
             else if (conversionType == typeof(DateTime))
                 return CreateDateTime((string)value);
+
+            else if (conversionType == typeof(DateTimeOffset))
+                return CreateDateTimeOffset((string)value);
 
             else if (Reflection.Instance.IsTypeRegistered(conversionType))
                 return Reflection.Instance.CreateCustom((string)value, conversionType);
@@ -441,8 +456,46 @@ namespace fastJSON
             // 8-30-2014 - James Brooks - Nullable Guid is a special case so it was moved after the "IsNullable" check.
             if (conversionType == typeof(Guid))
                 return CreateGuid((string)value);
+            // 2016-04-02 - Enrico Padovani - proper conversion of byte[] back from string
+            if (conversionType == typeof(byte[]))
+                return Convert.FromBase64String((string)value);
 
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+        }
+
+        private object CreateDateTimeOffset(string value)
+        {
+            //                   0123456789012345678 9012 9/3 0/4  1/5
+            // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  _   +   00:00
+            int year;
+            int month;
+            int day;
+            int hour;
+            int min;
+            int sec;
+            int ms = 0;
+            int th = 0;
+            int tm = 0;
+
+            year = CreateInteger(value, 0, 4);
+            month = CreateInteger(value, 5, 2);
+            day = CreateInteger(value, 8, 2);
+            hour = CreateInteger(value, 11, 2);
+            min = CreateInteger(value, 14, 2);
+            sec = CreateInteger(value, 17, 2);
+
+            if (value.Length > 21 && value[19] == '.')
+                ms = CreateInteger(value, 20, 3);
+            int p = 20;
+            if (ms > 0)
+                p = 24;
+            th = CreateInteger(value, p + 1, 2);
+            tm = CreateInteger(value, p + 1 + 2 + 1, 2);
+
+            if (value[p] == '-')
+                th = -th;
+
+            return new DateTimeOffset(year, month, day, hour, min, sec, ms, new TimeSpan(th,tm,0));
         }
 
         private bool IsNullable(Type t)
@@ -461,18 +514,34 @@ namespace fastJSON
         {
             Type[] gtypes = Reflection.Instance.GetGenericArguments(type);
             IList o = (IList)Reflection.Instance.FastCreateInstance(type);
+            DoParseList(parse, gtypes[0], o);
+            return o;
+        }
+
+        private void DoParseList(object parse, Type it, IList o)
+        {
             foreach (var k in (IList)parse)
             {
                 _usingglobals = false;
                 object v = k;
                 if (k is Dictionary<string, object>)
-                    v = ParseDictionary(k as Dictionary<string, object>, null, gtypes[0], null);
+                    v = ParseDictionary(k as Dictionary<string, object>, null, it, null);
                 else
-                    v = ChangeType(k, gtypes[0]);
+                    v = ChangeType(k, it);
 
                 o.Add(v);
             }
-            return o;
+        }
+
+        private object RootArray(object parse, Type type)
+        {
+            Type it = type.GetElementType();
+            IList o = (IList)Reflection.Instance.FastCreateInstance(typeof(List<>).MakeGenericType(it));
+            DoParseList(parse, it, o);
+            var array = Array.CreateInstance(it, o.Count);
+            o.CopyTo(array, 0);
+
+            return array;
         }
 
         private object RootDictionary(object parse, Type type)
@@ -498,7 +567,7 @@ namespace fastJSON
                     if (kv.Value is Dictionary<string, object>)
                         v = ParseDictionary(kv.Value as Dictionary<string, object>, null, t2, null);
 
-                    else if (t2.IsArray)
+                    else if (t2.IsArray && t2 != typeof(byte[]))
                         v = CreateArray((List<object>)kv.Value, t2, arraytype, null);
 
                     else if (kv.Value is IList)
@@ -581,7 +650,7 @@ namespace fastJSON
                 _cirrev.Add(circount, o);
             }
 
-            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, Reflection.Instance.IsTypeRegistered(type));
+            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename);//, Reflection.Instance.IsTypeRegistered(type));
             foreach (var kv in d)
             {
                 var n = kv.Key;

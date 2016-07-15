@@ -11,6 +11,9 @@ using System.Collections.Specialized;
 using System.Reflection.Emit;
 using System.Linq.Expressions;
 using System.Diagnostics;
+using System.Linq;
+using System.Dynamic;
+using System.IO;
 
 namespace UnitTests
 {
@@ -45,8 +48,8 @@ namespace UnitTests
     public class Tests
     {
         #region [  helpers  ]
-        static int count = 1000;
-        static int tcount = 5;
+        static int thousandtimes = 1000;
+        static int fivetimes = 5;
 #if !SILVERLIGHT
         static DataSet ds = new DataSet();
 #endif
@@ -584,20 +587,20 @@ namespace UnitTests
             Console.Write("fastjson deserialize");
             colclass c = CreateObject(false, false);
             double t = 0;
-            for (int pp = 0; pp < tcount; pp++)
+            for (int pp = 0; pp < fivetimes; pp++)
             {
                 DateTime st = DateTime.Now;
                 colclass deserializedStore;
                 string jsonText = JSON.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < thousandtimes; i++)
                 {
                     deserializedStore = (colclass)JSON.ToObject(jsonText);
                 }
                 t += DateTime.Now.Subtract(st).TotalMilliseconds;
                 Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
             }
-            Console.WriteLine("\tAVG = " + t / tcount);
+            Console.WriteLine("\tAVG = " + t / fivetimes);
         }
 
         [Test]
@@ -607,18 +610,18 @@ namespace UnitTests
             //fastJSON.JSON.Parameters.UsingGlobalTypes = false;
             colclass c = CreateObject(false, false);
             double t = 0;
-            for (int pp = 0; pp < tcount; pp++)
+            for (int pp = 0; pp < fivetimes; pp++)
             {
                 DateTime st = DateTime.Now;
                 string jsonText = null;
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < thousandtimes; i++)
                 {
                     jsonText = JSON.ToJSON(c);
                 }
                 t += DateTime.Now.Subtract(st).TotalMilliseconds;
                 Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
             }
-            Console.WriteLine("\tAVG = " + t / tcount);
+            Console.WriteLine("\tAVG = " + t / fivetimes);
         }
 
         [Test]
@@ -689,13 +692,13 @@ namespace UnitTests
             Console.WriteLine("Begin constructing the original objects. Please ignore trace information until I'm done.");
 
             // set all parameters to false to produce pure JSON
-            JSON.Parameters = new JSONParameters { EnableAnonymousTypes = false, IgnoreCaseOnDeserialize = false, SerializeNullValues = false, ShowReadOnlyProperties = false, UseExtensions = false, UseFastGuid = false, UseOptimizedDatasetSchema = false, UseUTCDateTime = false, UsingGlobalTypes = false };
+            JSON.Parameters = new JSONParameters { EnableAnonymousTypes = false, SerializeNullValues = false, UseExtensions = false, UseFastGuid = false, UseOptimizedDatasetSchema = false, UseUTCDateTime = false, UsingGlobalTypes = false };
 
             var a = new ConcurrentClassA { PayloadA = new PayloadA() };
             var b = new ConcurrentClassB { PayloadB = new PayloadB() };
 
             // A is serialized with extensions and global types
-            jsonA = JSON.ToJSON(a, new JSONParameters { EnableAnonymousTypes = false, IgnoreCaseOnDeserialize = false, SerializeNullValues = false, ShowReadOnlyProperties = false, UseExtensions = true, UseFastGuid = false, UseOptimizedDatasetSchema = false, UseUTCDateTime = false, UsingGlobalTypes = true });
+            jsonA = JSON.ToJSON(a, new JSONParameters { EnableAnonymousTypes = false, SerializeNullValues = false, UseExtensions = true, UseFastGuid = false, UseOptimizedDatasetSchema = false, UseUTCDateTime = false, UsingGlobalTypes = true });
             // B is serialized using the above defaults
             jsonB = JSON.ToJSON(b);
 
@@ -946,10 +949,8 @@ namespace UnitTests
 
             var p = new JSONParameters
             {
-                EnableAnonymousTypes = false,
-                IgnoreCaseOnDeserialize = false,
+                EnableAnonymousTypes = true,
                 SerializeNullValues = false,
-                ShowReadOnlyProperties = true,
                 UseExtensions = false,
                 UseFastGuid = true,
                 UseOptimizedDatasetSchema = true,
@@ -976,7 +977,6 @@ namespace UnitTests
             json = JSON.ToJSON(o4, p);
             Console.WriteLine(JSON.Beautify(json));
             Assert.AreEqual("{\"B\":\"foo\"}", json);
-
         }
 
         [Test]
@@ -1577,7 +1577,8 @@ namespace UnitTests
         public static void ReadonlyTest()
         {
             var s = JSON.ToJSON(new readonlyclass(), new JSONParameters { ShowReadOnlyProperties = true });
-            var o = JSON.ToObject(s);
+            var o = JSON.ToObject<readonlyclass>(s.Replace("aa","cc"));
+            Assert.AreEqual("aa", o.ROAddress);
         }
 
         public class container
@@ -1695,12 +1696,12 @@ namespace UnitTests
             a.ints = new int[] { 3, 1, 4 };
             a.strs = new string[] { "a", "b", "c" };
             a.int2d = new int[][] { new int[] { 1, 2, 3 }, new int[] { 2, 3, 4 } };
-            a.int3d = new int[][][] {        new int[][] { 
+            a.int3d = new int[][][] {        new int[][] {
             new int[] { 0, 0, 1 },
             new int[] { 0, 1, 0 }
         },
         null,
-        new int[][] { 
+        new int[][] {
             new int[] { 0, 0, 2 },
             new int[] { 0, 2, 0 },
             null
@@ -1767,9 +1768,9 @@ namespace UnitTests
         {
             Console.WriteLine();
             Console.Write("fastjson deserialize");
-            colclass c = CreateObject(true,true);
+            colclass c = CreateObject(true, true);
             var stopwatch = new Stopwatch();
-            for (int pp = 0; pp < tcount; pp++)
+            for (int pp = 0; pp < fivetimes; pp++)
             {
                 colclass deserializedStore;
                 string jsonText = null;
@@ -1777,7 +1778,7 @@ namespace UnitTests
                 stopwatch.Restart();
                 jsonText = JSON.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < thousandtimes; i++)
                 {
                     deserializedStore = (colclass)JSON.ToObject(jsonText);
                 }
@@ -1791,13 +1792,13 @@ namespace UnitTests
         {
             Console.WriteLine();
             Console.Write("fastjson serialize");
-            colclass c = CreateObject(true,true);
+            colclass c = CreateObject(true, true);
             var stopwatch = new Stopwatch();
-            for (int pp = 0; pp < tcount; pp++)
+            for (int pp = 0; pp < fivetimes; pp++)
             {
                 string jsonText = null;
                 stopwatch.Restart();
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < thousandtimes; i++)
                 {
                     jsonText = JSON.ToJSON(c);
                 }
@@ -1805,5 +1806,638 @@ namespace UnitTests
                 Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
-    }
+
+        [Test]
+        public static void BigData()
+        {
+            Console.WriteLine();
+            Console.Write("fastjson bigdata serialize");
+            colclass c = CreateBigdata();
+            Console.WriteLine("\r\ntest obj created");
+            var stopwatch = new Stopwatch();
+            for (int pp = 0; pp < fivetimes; pp++)
+            {
+                string jsonText = null;
+                stopwatch.Restart();
+
+                jsonText = JSON.ToJSON(c);
+
+                stopwatch.Stop();
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
+            }
+        }
+
+        private static colclass CreateBigdata()
+        {
+            colclass c = new colclass();
+            Random r = new Random((int)DateTime.Now.Ticks);
+
+            for (int i = 0; i < 200 * thousandtimes; i++)
+            {
+                c.items.Add(new class1(r.Next().ToString(), r.Next().ToString(), Guid.NewGuid()));
+            }
+            return c;
+        }
+
+        [Test]
+        public static void comments()
+        {
+            string s = @"
+{
+    // help
+    ""property"" : 2,
+    // comment
+    ""str"":""hello"" //hello
+}
+";
+            var o = JSON.Parse(s);
+            Assert.AreEqual(2, (o as IDictionary).Count);
+        }
+
+        public class ctype
+        {
+            public System.Net.IPAddress ip;
+        }
+        [Test]
+        public static void CustomTypes()
+        {
+            var ip = new ctype();
+            ip.ip = System.Net.IPAddress.Loopback;
+
+            JSON.RegisterCustomType(typeof(System.Net.IPAddress), 
+                (x) => { return x.ToString(); }, 
+                (x) => { return System.Net.IPAddress.Parse(x); });
+
+            var s = JSON.ToJSON(ip);
+
+            var o = JSON.ToObject<ctype>(s);
+            Assert.AreEqual(ip.ip, o.ip);
+        }
+
+        [Test]
+        public static void stringint()
+        {
+            var o = JSON.ToObject<long>("\"42\"");
+        }
+
+        [Test]
+        public static void anonymoustype()
+        {
+            var jsonParameters = new JSONParameters { EnableAnonymousTypes = true };
+            var data = new List<DateTimeOffset>();
+            data.Add(new DateTimeOffset(DateTime.Now));
+
+            var anonTypeWithDateTimeOffset = data.Select(entry => new { DateTimeOffset = entry }).ToList();
+            var json = JSON.ToJSON(anonTypeWithDateTimeOffset.First(), jsonParameters); // this will throw
+            
+            var obj = new
+            {
+                Name = "aa",
+                Age = 42,
+                Code = "007"
+            };
+
+            json = JSON.ToJSON(obj, jsonParameters);
+            Assert.True(json.Contains("\"Name\""));
+        }
+
+        [Test]
+        public static void Expando()
+        {
+            dynamic obj = new ExpandoObject();
+            obj.UserView = "10080";
+            obj.UserCatalog = "test";
+            obj.UserDate = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            obj.UserBase = "";
+
+            string s = JSON.ToJSON(obj);
+            Assert.True(s.Contains("UserView\":\"10080"));
+        }
+
+
+        public class item
+        {
+            public string name;
+            public int age;
+        }
+
+        [Test]
+        public static void array()
+        {
+            string j = @"
+[
+{""name"":""Tom"",""age"":1},
+{""name"":""Dick"",""age"":1},
+{""name"":""Harry"",""age"":3}
+]
+";
+
+            var o = JSON.ToObject<List<item>>(j);
+            Assert.AreEqual(3, o.Count);
+
+            var oo = JSON.ToObject<item[]>(j);
+            Assert.AreEqual(3, oo.Count());
+        }
+
+        [Test]
+        public static void NaN()
+        {
+            double d = double.NaN;
+            float f = float.NaN;
+            
+
+            var s = JSON.ToJSON(d);
+            var o = JSON.ToObject<double>(s);
+            Assert.AreEqual(d, o);
+
+            s = JSON.ToJSON(f);
+            var oo = JSON.ToObject<float>(s);
+            Assert.AreEqual(f, oo);
+
+            var pp = JSON.ToObject<Single>(s);
+        }
+
+        [Test]
+        public static void nonstandardkey()
+        {
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            dict["With \"Quotes\""] = "With \"Quotes\"";
+            JSONParameters p = new JSONParameters();
+            p.EnableAnonymousTypes = false;
+            p.SerializeNullValues = false;
+            p.UseExtensions = false;
+            var s = JSON.ToJSON(dict, p);
+            var d = JSON.ToObject<Dictionary<string,string>>(s);
+            Assert.AreEqual(1, d.Count);
+            Assert.AreEqual("With \"Quotes\"", d.Keys.First());
+        }
+
+        [Test]
+        public static void bytearrindic()
+        {
+            var s = JSON.ToJSON(new Dictionary<string, byte[]>
+                {
+                    { "Test", new byte[10] },
+                    { "Test 2", new byte[0] }
+                });
+
+            var d = JSON.ToObject<Dictionary<string, byte[]>>(s);
+        }
+
+        #region twitter
+        public class Twitter
+        {
+            public Query query { get; set; }
+            public Result result { get; set; }
+
+            public class Query
+            {
+                public Parameters @params { get; set; }
+                public string type { get; set; }
+                public string url { get; set; }
+            }
+
+            public class Parameters
+            {
+                public int accuracy { get; set; }
+                public bool autocomplete { get; set; }
+                public string granularity { get; set; }
+                public string query { get; set; }
+                public bool trim_place { get; set; }
+            }
+
+            public class Result
+            {
+                public Place[] places { get; set; }
+            }
+
+            public class Place
+            {
+                public Attributes attributes { get; set; }
+                public BoundingBox bounding_box { get; set; }
+                public Place[] contained_within { get; set; }
+
+                public string country { get; set; }
+                public string country_code { get; set; }
+                public string full_name { get; set; }
+                public string id { get; set; }
+                public string name { get; set; }
+                public string place_type { get; set; }
+                public string url { get; set; }
+            }
+
+            public class Attributes
+            {
+            }
+
+            public class BoundingBox
+            {
+                public double[][][] coordinates { get; set; }
+                public string type { get; set; }
+            }
+        }
+        #endregion
+        [Test]
+        public static void twitter()
+        {
+            #region tw data
+            string ss = @"{
+  ""query"": {
+    ""params"": {
+      ""accuracy"": 0,
+      ""autocomplete"": false,
+      ""granularity"": ""neighborhood"",
+      ""query"": ""Toronto"",
+      ""trim_place"": false
+    },
+    ""type"": ""search"",
+    ""url"": ""https://api.twitter.com/1.1/geo/search.json?accuracy=0&query=Toronto&granularity=neighborhood&autocomplete=false&trim_place=false""
+  },
+  ""result"": {
+    ""places"": [
+      {
+        ""attributes"": {},
+        ""bounding_box"": {
+          ""coordinates"": [
+            [
+              [
+                -96.647415,
+                44.566715
+              ],
+              [
+                -96.630435,
+                44.566715
+              ],
+              [
+                -96.630435,
+                44.578118
+              ],
+              [
+                -96.647415,
+                44.578118
+              ]
+            ]
+          ],
+          ""type"": ""Polygon""
+        },
+        ""contained_within"": [
+          {
+            ""attributes"": {},
+            ""bounding_box"": {
+              ""coordinates"": [
+                [
+                  [
+                    -104.057739,
+                    42.479686
+                  ],
+                  [
+                    -96.436472,
+                    42.479686
+                  ],
+                  [
+                    -96.436472,
+                    45.945716
+                  ],
+                  [
+                    -104.057739,
+                    45.945716
+                  ]
+                ]
+              ],
+              ""type"": ""Polygon""
+            },
+            ""country"": ""United States"",
+            ""country_code"": ""US"",
+            ""full_name"": ""South Dakota, US"",
+            ""id"": ""d06e595eb3733f42"",
+            ""name"": ""South Dakota"",
+            ""place_type"": ""admin"",
+            ""url"": ""https://api.twitter.com/1.1/geo/id/d06e595eb3733f42.json""
+          }
+        ],
+        ""country"": ""United States"",
+        ""country_code"": ""US"",
+        ""full_name"": ""Toronto, SD"",
+        ""id"": ""3e8542a1e9f82870"",
+        ""name"": ""Toronto"",
+        ""place_type"": ""city"",
+        ""url"": ""https://api.twitter.com/1.1/geo/id/3e8542a1e9f82870.json""
+      },
+      {
+        ""attributes"": {},
+        ""bounding_box"": {
+          ""coordinates"": [
+            [
+              [
+                -80.622815,
+                40.436469
+              ],
+              [
+                -80.596567,
+                40.436469
+              ],
+              [
+                -80.596567,
+                40.482566
+              ],
+              [
+                -80.622815,
+                40.482566
+              ]
+            ]
+          ],
+          ""type"": ""Polygon""
+        },
+        ""contained_within"": [
+          {
+            ""attributes"": {},
+            ""bounding_box"": {
+              ""coordinates"": [
+                [
+                  [
+                    -84.820305,
+                    38.403423
+                  ],
+                  [
+                    -80.518454,
+                    38.403423
+                  ],
+                  [
+                    -80.518454,
+                    42.327132
+                  ],
+                  [
+                    -84.820305,
+                    42.327132
+                  ]
+                ]
+              ],
+              ""type"": ""Polygon""
+            },
+            ""country"": ""United States"",
+            ""country_code"": ""US"",
+            ""full_name"": ""Ohio, US"",
+            ""id"": ""de599025180e2ee7"",
+            ""name"": ""Ohio"",
+            ""place_type"": ""admin"",
+            ""url"": ""https://api.twitter.com/1.1/geo/id/de599025180e2ee7.json""
+          }
+        ],
+        ""country"": ""United States"",
+        ""country_code"": ""US"",
+        ""full_name"": ""Toronto, OH"",
+        ""id"": ""53d949149e8cd438"",
+        ""name"": ""Toronto"",
+        ""place_type"": ""city"",
+        ""url"": ""https://api.twitter.com/1.1/geo/id/53d949149e8cd438.json""
+      },
+      {
+        ""attributes"": {},
+        ""bounding_box"": {
+          ""coordinates"": [
+            [
+              [
+                -79.639128,
+                43.403221
+              ],
+              [
+                -78.90582,
+                43.403221
+              ],
+              [
+                -78.90582,
+                43.855466
+              ],
+              [
+                -79.639128,
+                43.855466
+              ]
+            ]
+          ],
+          ""type"": ""Polygon""
+        },
+        ""contained_within"": [
+          {
+            ""attributes"": {},
+            ""bounding_box"": {
+              ""coordinates"": [
+                [
+                  [
+                    -95.155919,
+                    41.676329
+                  ],
+                  [
+                    -74.339383,
+                    41.676329
+                  ],
+                  [
+                    -74.339383,
+                    56.852398
+                  ],
+                  [
+                    -95.155919,
+                    56.852398
+                  ]
+                ]
+              ],
+              ""type"": ""Polygon""
+            },
+            ""country"": ""Canada"",
+            ""country_code"": ""CA"",
+            ""full_name"": ""Ontario, Canada"",
+            ""id"": ""89b2eb8b2b9847f7"",
+            ""name"": ""Ontario"",
+            ""place_type"": ""admin"",
+            ""url"": ""https://api.twitter.com/1.1/geo/id/89b2eb8b2b9847f7.json""
+          }
+        ],
+        ""country"": ""Canada"",
+        ""country_code"": ""CA"",
+        ""full_name"": ""Toronto, Ontario"",
+        ""id"": ""8f9664a8ccd89e5c"",
+        ""name"": ""Toronto"",
+        ""place_type"": ""city"",
+        ""url"": ""https://api.twitter.com/1.1/geo/id/8f9664a8ccd89e5c.json""
+      },
+      {
+        ""attributes"": {},
+        ""bounding_box"": {
+          ""coordinates"": [
+            [
+              [
+                -90.867234,
+                41.898723
+              ],
+              [
+                -90.859467,
+                41.898723
+              ],
+              [
+                -90.859467,
+                41.906811
+              ],
+              [
+                -90.867234,
+                41.906811
+              ]
+            ]
+          ],
+          ""type"": ""Polygon""
+        },
+        ""contained_within"": [
+          {
+            ""attributes"": {},
+            ""bounding_box"": {
+              ""coordinates"": [
+                [
+                  [
+                    -96.639485,
+                    40.375437
+                  ],
+                  [
+                    -90.140061,
+                    40.375437
+                  ],
+                  [
+                    -90.140061,
+                    43.501196
+                  ],
+                  [
+                    -96.639485,
+                    43.501196
+                  ]
+                ]
+              ],
+              ""type"": ""Polygon""
+            },
+            ""country"": ""United States"",
+            ""country_code"": ""US"",
+            ""full_name"": ""Iowa, US"",
+            ""id"": ""3cd4c18d3615bbc9"",
+            ""name"": ""Iowa"",
+            ""place_type"": ""admin"",
+            ""url"": ""https://api.twitter.com/1.1/geo/id/3cd4c18d3615bbc9.json""
+          }
+        ],
+        ""country"": ""United States"",
+        ""country_code"": ""US"",
+        ""full_name"": ""Toronto, IA"",
+        ""id"": ""173d6f9c3249b4fd"",
+        ""name"": ""Toronto"",
+        ""place_type"": ""city"",
+        ""url"": ""https://api.twitter.com/1.1/geo/id/173d6f9c3249b4fd.json""
+      },
+      {
+        ""attributes"": {},
+        ""bounding_box"": {
+          ""coordinates"": [
+            [
+              [
+                -95.956873,
+                37.792724
+              ],
+              [
+                -95.941288,
+                37.792724
+              ],
+              [
+                -95.941288,
+                37.803752
+              ],
+              [
+                -95.956873,
+                37.803752
+              ]
+            ]
+          ],
+          ""type"": ""Polygon""
+        },
+        ""contained_within"": [
+          {
+            ""attributes"": {},
+            ""bounding_box"": {
+              ""coordinates"": [
+                [
+                  [
+                    -102.051769,
+                    36.993016
+                  ],
+                  [
+                    -94.588387,
+                    36.993016
+                  ],
+                  [
+                    -94.588387,
+                    40.003166
+                  ],
+                  [
+                    -102.051769,
+                    40.003166
+                  ]
+                ]
+              ],
+              ""type"": ""Polygon""
+            },
+            ""country"": ""United States"",
+            ""country_code"": ""US"",
+            ""full_name"": ""Kansas, US"",
+            ""id"": ""27c45d804c777999"",
+            ""name"": ""Kansas"",
+            ""place_type"": ""admin"",
+            ""url"": ""https://api.twitter.com/1.1/geo/id/27c45d804c777999.json""
+          }
+        ],
+        ""country"": ""United States"",
+        ""country_code"": ""US"",
+        ""full_name"": ""Toronto, KS"",
+        ""id"": ""b90e4628bff4ad82"",
+        ""name"": ""Toronto"",
+        ""place_type"": ""city"",
+        ""url"": ""https://api.twitter.com/1.1/geo/id/b90e4628bff4ad82.json""
+      }
+    ]
+  }
+}";
+#endregion
+            var o = JSON.ToObject<Twitter>(ss);
+        }
+
+        [Test]
+        public static void datetimeoff()
+        {
+            DateTimeOffset dt = new DateTimeOffset(DateTime.Now);
+            //JSON.RegisterCustomType(typeof(DateTimeOffset), 
+            //    (x) => { return x.ToString(); },
+            //    (x) => { return DateTimeOffset.Parse(x); }
+            //);
+
+            var s = JSON.ToJSON(dt, new JSONParameters { DateTimeMilliseconds=true });
+            Console.WriteLine(s);
+            var d = JSON.ToObject<DateTimeOffset>(s);
+            //Assert.AreEqual(dt, d);
+        }
+
+        //[Test]
+        //public static void CanDeepCopyCustomOfGenericList()
+        //{
+        //    OwnList l = new OwnList()
+        //    {
+        //        new commaclass(){Name = "erik"},
+        //        new commaclass(){Name = "staffan"}
+        //    };
+
+
+        //    var str = JSON.ToJSON(l);
+
+        //    var o = JSON.ToObject(str);
+
+
+        //}
+
+        //public class OwnList : List<commaclass>
+        //{
+
+        //}
+
+    }//Tests
 }

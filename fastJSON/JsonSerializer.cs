@@ -70,16 +70,36 @@ namespace fastJSON
                 _output.Append(((bool)obj) ? "true" : "false"); // conform to standard
 
             else if (
-                obj is int || obj is long || obj is double ||
-                obj is decimal || obj is float ||
+                obj is int || obj is long ||
+                obj is decimal ||
                 obj is byte || obj is short ||
                 obj is sbyte || obj is ushort ||
                 obj is uint || obj is ulong
             )
                 _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
 
+            else if (obj is double || obj is Double)
+            {
+                double d = (double)obj;
+                if (double.IsNaN(d))
+                    _output.Append("\"NaN\"");
+                else
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+            }
+            else if (obj is float || obj is Single)
+            {
+                float d = (float)obj;
+                if (float.IsNaN(d))
+                    _output.Append("\"NaN\"");
+                else
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+            }
+
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
+
+            else if (obj is DateTimeOffset)
+                WriteDateTimeOffset((DateTimeOffset)obj);
 
             else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
                 obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
@@ -118,6 +138,21 @@ namespace fastJSON
 
             else
                 WriteObject(obj);
+        }
+
+        private void WriteDateTimeOffset(DateTimeOffset d)
+        {
+            write_date_value(d.DateTime);
+            _output.Append(" ");
+            if (d.Offset.Hours > 0)
+                _output.Append("+");
+            else
+                _output.Append("-");
+            _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
+            _output.Append(":");
+            _output.Append(d.Offset.Minutes);
+
+            _output.Append('\"');
         }
 
         private void WriteNV(NameValueCollection nameValueCollection)
@@ -210,6 +245,16 @@ namespace fastJSON
             if (_params.UseUTCDateTime)
                 dt = dateTime.ToUniversalTime();
 
+            write_date_value(dt);
+
+            if (_params.UseUTCDateTime)
+                _output.Append('Z');
+
+            _output.Append('\"');
+        }
+
+        private void write_date_value(DateTime dt)
+        {
             _output.Append('\"');
             _output.Append(dt.Year.ToString("0000", NumberFormatInfo.InvariantInfo));
             _output.Append('-');
@@ -227,10 +272,6 @@ namespace fastJSON
                 _output.Append('.');
                 _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
             }
-            if (_params.UseUTCDateTime)
-                _output.Append('Z');
-
-            _output.Append('\"');
         }
 
 #if !SILVERLIGHT
@@ -449,7 +490,7 @@ namespace fastJSON
 
         private void WritePair(string name, object value)
         {
-            WriteStringFast(name);
+            WriteString(name);
 
             _output.Append(':');
 

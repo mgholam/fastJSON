@@ -1,3 +1,18 @@
+2.1.17
+- add support for skipping line comments in json string on read (e.g. //comment)
+- fixed broken custom type handler (sorry to all)
+- added test for custom types
+- auto convert string to int or long if the receiving type expects one
+- auto convert byte[] if needed (thanks to Enrico Padovani)
+- bug fix DateTime in anonymous type InvalidProgramException (thanks to skottmckay)
+- ExpandoObject work correctly
+- JSON.ToObject<T[]>() works correctly
+- support for double.NaN float.NaN with test
+- property/field/key names with quotes etc. handled correctly
+- fixed byte[] in Dictionary values with test
+- add twitter data test
+- support for DateTimeOffset
+
 2.1.16
 - bug fix ToObject<Dictionary<string, List<X>>>() (thanks to sleiN13)
 - bug fix CreateStringKeyDictionary() (thanks to John Earnshaw)
