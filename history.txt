@@ -1,3 +1,9 @@
+2.1.18
+- bug fix read only properties to output
+- added test for readonly properties 
+- sync reflection.cs with fastBinaryJSON
+- added NonSerialized to the list of ignore default attributes
+
 2.1.17
 - add support for skipping line comments in json string on read (e.g. //comment)
 - fixed broken custom type handler (sorry to all)

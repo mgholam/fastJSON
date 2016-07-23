@@ -65,9 +65,9 @@ namespace fastJSON
         /// </summary>
         public bool UseValuesOfEnums = false;
         /// <summary>
-        /// Ignore attributes to check for (default : XmlIgnoreAttribute)
+        /// Ignore attributes to check for (default : XmlIgnoreAttribute, NonSerialized)
         /// </summary>
-        public List<Type> IgnoreAttributes = new List<Type> { typeof(System.Xml.Serialization.XmlIgnoreAttribute) };
+        public List<Type> IgnoreAttributes = new List<Type> { typeof(System.Xml.Serialization.XmlIgnoreAttribute), typeof(NonSerializedAttribute) };
         /// <summary>
         /// If you have parametric and no default constructor for you classes (default = False)
         /// 
@@ -128,7 +128,7 @@ namespace fastJSON
         /// <returns></returns>
         public static string ToJSON(object obj)
         {
-            return ToJSON(obj, JSON.Parameters);
+            return ToJSON(obj, Parameters);
         }
         /// <summary>
         /// Create a json representation for an object with parameter override on this call
@@ -447,15 +447,14 @@ namespace fastJSON
             if (IsNullable(conversionType))
             {
                 if (value == null)
-                {
                     return value;
-                }
                 conversionType = UnderlyingTypeOf(conversionType);
             }
 
             // 8-30-2014 - James Brooks - Nullable Guid is a special case so it was moved after the "IsNullable" check.
             if (conversionType == typeof(Guid))
                 return CreateGuid((string)value);
+
             // 2016-04-02 - Enrico Padovani - proper conversion of byte[] back from string
             if (conversionType == typeof(byte[]))
                 return Convert.FromBase64String((string)value);

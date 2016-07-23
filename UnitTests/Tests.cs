@@ -1577,7 +1577,7 @@ namespace UnitTests
         public static void ReadonlyTest()
         {
             var s = JSON.ToJSON(new readonlyclass(), new JSONParameters { ShowReadOnlyProperties = true });
-            var o = JSON.ToObject<readonlyclass>(s.Replace("aa","cc"));
+            var o = JSON.ToObject<readonlyclass>(s.Replace("aa", "cc"));
             Assert.AreEqual("aa", o.ROAddress);
         }
 
@@ -1864,8 +1864,8 @@ namespace UnitTests
             var ip = new ctype();
             ip.ip = System.Net.IPAddress.Loopback;
 
-            JSON.RegisterCustomType(typeof(System.Net.IPAddress), 
-                (x) => { return x.ToString(); }, 
+            JSON.RegisterCustomType(typeof(System.Net.IPAddress),
+                (x) => { return x.ToString(); },
                 (x) => { return System.Net.IPAddress.Parse(x); });
 
             var s = JSON.ToJSON(ip);
@@ -1889,7 +1889,7 @@ namespace UnitTests
 
             var anonTypeWithDateTimeOffset = data.Select(entry => new { DateTimeOffset = entry }).ToList();
             var json = JSON.ToJSON(anonTypeWithDateTimeOffset.First(), jsonParameters); // this will throw
-            
+
             var obj = new
             {
                 Name = "aa",
@@ -1944,7 +1944,7 @@ namespace UnitTests
         {
             double d = double.NaN;
             float f = float.NaN;
-            
+
 
             var s = JSON.ToJSON(d);
             var o = JSON.ToObject<double>(s);
@@ -1967,7 +1967,7 @@ namespace UnitTests
             p.SerializeNullValues = false;
             p.UseExtensions = false;
             var s = JSON.ToJSON(dict, p);
-            var d = JSON.ToObject<Dictionary<string,string>>(s);
+            var d = JSON.ToObject<Dictionary<string, string>>(s);
             Assert.AreEqual(1, d.Count);
             Assert.AreEqual("With \"Quotes\"", d.Keys.First());
         }
@@ -2398,7 +2398,7 @@ namespace UnitTests
     ]
   }
 }";
-#endregion
+            #endregion
             var o = JSON.ToObject<Twitter>(ss);
         }
 
@@ -2411,33 +2411,35 @@ namespace UnitTests
             //    (x) => { return DateTimeOffset.Parse(x); }
             //);
 
-            var s = JSON.ToJSON(dt, new JSONParameters { DateTimeMilliseconds=true });
+            var s = JSON.ToJSON(dt, new JSONParameters { DateTimeMilliseconds = true });
             Console.WriteLine(s);
             var d = JSON.ToObject<DateTimeOffset>(s);
             //Assert.AreEqual(dt, d);
         }
 
-        //[Test]
-        //public static void CanDeepCopyCustomOfGenericList()
+        public class X
+        {
+            private int i;
+            public X(int i) { this.i = i; }
+            public int I { get { return this.i; } }
+        }
+
+        [Test]
+        public static void ReadonlyProperty()
+        {
+            var x = new X(10);
+            string s = JSON.ToJSON(x, new JSONParameters { ShowReadOnlyProperties = true });
+            Assert.True(s.Contains("\"I\":"));
+            var o = JSON.ToObject<X>(s, new JSONParameters { ParametricConstructorOverride = true });
+            // no set available -> I = 0
+            Assert.AreEqual(0, o.I);
+        }
+
+        //public static void p()
         //{
-        //    OwnList l = new OwnList()
-        //    {
-        //        new commaclass(){Name = "erik"},
-        //        new commaclass(){Name = "staffan"}
-        //    };
-
-
-        //    var str = JSON.ToJSON(l);
-
-        //    var o = JSON.ToObject(str);
-
-
+        //    string s = JSON.ToJSON(DateTime.Now);
+        //    object o = JSON.ToObject<int>("\"42\"");
         //}
 
-        //public class OwnList : List<commaclass>
-        //{
-
-        //}
-
-    }//Tests
+    }// UnitTests.Tests
 }
