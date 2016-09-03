@@ -40,6 +40,7 @@ namespace consoletest
             fastjson_deserialize();
 
             Console.WriteLine();
+            Console.ReadKey();
             #region [ other tests]
 
             //			litjson_serialize();

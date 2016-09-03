@@ -576,7 +576,7 @@ namespace UnitTests
         public static void AnonymousTypes()
         {
             var q = new { Name = "asassa", Address = "asadasd", Age = 12 };
-            string sq = JSON.ToJSON(q, new fastJSON.JSONParameters { EnableAnonymousTypes = true });
+            string sq = JSON.ToJSON(q, new JSONParameters { EnableAnonymousTypes = true });
             Console.WriteLine(sq);
             Assert.AreEqual("{\"Name\":\"asassa\",\"Address\":\"asadasd\",\"Age\":12}", sq);
         }
@@ -585,11 +585,13 @@ namespace UnitTests
         public static void Speed_Test_Deserialize()
         {
             Console.Write("fastjson deserialize");
+            JSON.Parameters = new JSONParameters();
             colclass c = CreateObject(false, false);
             double t = 0;
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < fivetimes; pp++)
             {
-                DateTime st = DateTime.Now;
+                stopwatch.Restart();
                 colclass deserializedStore;
                 string jsonText = JSON.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
@@ -597,8 +599,9 @@ namespace UnitTests
                 {
                     deserializedStore = (colclass)JSON.ToObject(jsonText);
                 }
-                t += DateTime.Now.Subtract(st).TotalMilliseconds;
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+                stopwatch.Stop();
+                t += stopwatch.ElapsedMilliseconds;
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
             Console.WriteLine("\tAVG = " + t / fivetimes);
         }
@@ -607,19 +610,22 @@ namespace UnitTests
         public static void Speed_Test_Serialize()
         {
             Console.Write("fastjson serialize");
+            JSON.Parameters = new JSONParameters();
             //fastJSON.JSON.Parameters.UsingGlobalTypes = false;
             colclass c = CreateObject(false, false);
             double t = 0;
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < fivetimes; pp++)
             {
-                DateTime st = DateTime.Now;
+                stopwatch.Restart();
                 string jsonText = null;
                 for (int i = 0; i < thousandtimes; i++)
                 {
                     jsonText = JSON.ToJSON(c);
                 }
-                t += DateTime.Now.Subtract(st).TotalMilliseconds;
-                Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds);
+                stopwatch.Stop();
+                t += stopwatch.ElapsedMilliseconds;
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
             Console.WriteLine("\tAVG = " + t / fivetimes);
         }
@@ -1814,6 +1820,7 @@ namespace UnitTests
             Console.Write("fastjson bigdata serialize");
             colclass c = CreateBigdata();
             Console.WriteLine("\r\ntest obj created");
+            double t = 0;
             var stopwatch = new Stopwatch();
             for (int pp = 0; pp < fivetimes; pp++)
             {
@@ -1823,8 +1830,10 @@ namespace UnitTests
                 jsonText = JSON.ToJSON(c);
 
                 stopwatch.Stop();
+                t += stopwatch.ElapsedMilliseconds;
                 Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
+            Console.WriteLine("\tAVG = " + t / fivetimes);
         }
 
         private static colclass CreateBigdata()
@@ -2417,7 +2426,7 @@ namespace UnitTests
             //Assert.AreEqual(dt, d);
         }
 
-        public class X
+        class X
         {
             private int i;
             public X(int i) { this.i = i; }
@@ -2435,11 +2444,89 @@ namespace UnitTests
             Assert.AreEqual(0, o.I);
         }
 
-        //public static void p()
-        //{
-        //    string s = JSON.ToJSON(DateTime.Now);
-        //    object o = JSON.ToObject<int>("\"42\"");
-        //}
+
+        public class il
+        {
+            public IList list;
+            public string name;
+        }
+
+        [Test]
+        public static void ilist()
+        {
+            var i = new il();
+            i.list = new List<baseclass>();
+            i.list.Add(new class1("1", "1", Guid.NewGuid()));
+            i.list.Add(new class2("4","5", "hi"));
+            i.name = "hi";
+
+            var s = JSON.ToNiceJSON(i);//, new JSONParameters { UseExtensions = true });
+            Console.WriteLine(s);
+
+            var o = JSON.ToObject<il>(s);
+        }
+
+
+        public interface iintfc
+        {
+            string name { get; set; }
+            int age { get; set; }
+        }
+
+        public class intfc : iintfc
+        {
+            public string address = "fadfsdf";
+            private int _age;
+            public int age
+            {
+                get
+                {
+                    return _age;
+                }
+
+                set
+                {
+                    _age = value;
+                }
+            }
+            private string _name;
+            public string name
+            {
+                get
+                {
+                    return _name;
+                }
+
+                set
+                {
+                    _name = value;
+                }
+            }
+        }
+
+        public class it
+        {
+            public iintfc i { get; set; }
+            public string name = "bb";
+
+        }
+
+        [Test]
+        public static void interface_test()
+        {
+            var ii = new it();
+
+            var i = new intfc();
+            i.age = 10;
+            i.name = "aa";
+
+            ii.i = i;
+
+            var s = JSON.ToJSON(ii);
+
+            var o = JSON.ToObject(s);
+
+        }
 
     }// UnitTests.Tests
 }

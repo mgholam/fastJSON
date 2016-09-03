@@ -113,6 +113,17 @@ namespace fastJSON
         /// Create a formatted json string (beautified) from an object
         /// </summary>
         /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string ToNiceJSON(object obj)
+        {
+            string s = ToJSON(obj, Parameters); // use default params
+
+            return Beautify(s);
+        }
+        /// <summary>
+        /// Create a formatted json string (beautified) from an object
+        /// </summary>
+        /// <param name="obj"></param>
         /// <param name="param"></param>
         /// <returns></returns>
         public static string ToNiceJSON(object obj, JSONParameters param)
@@ -702,7 +713,7 @@ namespace fastJSON
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
                                         oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 
-                                    else if ((pi.IsClass || pi.IsStruct) && v is Dictionary<string, object>)
+                                    else if ((pi.IsClass || pi.IsStruct || pi.IsInterface) && v is Dictionary<string, object>)
                                         oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(o));
 
                                     else if (v is List<object>)

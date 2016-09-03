@@ -1,3 +1,7 @@
+2.1.19
+- added ToNiceJSON(obj) with default parameters
+- added support for interface object properties (thanks to DrDeadCrash)
+
 2.1.18
 - bug fix read only properties to output
 - added test for readonly properties 

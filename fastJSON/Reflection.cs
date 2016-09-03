@@ -59,6 +59,7 @@ namespace fastJSON
         public bool IsValueType;
         public bool IsGenericType;
         public bool IsStruct;
+        public bool IsInterface;
     }
 
     internal sealed class Reflection
@@ -160,13 +161,13 @@ namespace fastJSON
             else
             {
                 sd = new Dictionary<string, myPropInfo>();
-                PropertyInfo[] pr = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                var bf = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+                PropertyInfo[] pr = type.GetProperties(bf);
                 foreach (PropertyInfo p in pr)
                 {
-                    if (p.GetIndexParameters().Length > 0)
-                    {// Property is an indexer
+                    if (p.GetIndexParameters().Length > 0)// Property is an indexer
                         continue;
-                    }
+
                     myPropInfo d = CreateMyProp(p.PropertyType, p.Name);
                     d.setter = Reflection.CreateSetMethod(type, p);
                     if (d.setter != null)
@@ -174,7 +175,7 @@ namespace fastJSON
                     d.getter = Reflection.CreateGetMethod(type, p);
                     sd.Add(p.Name.ToLower(), d);
                 }
-                FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                FieldInfo[] fi = type.GetFields(bf);
                 foreach (FieldInfo f in fi)
                 {
                     myPropInfo d = CreateMyProp(f.FieldType, f.Name);
@@ -234,6 +235,7 @@ namespace fastJSON
             if (t.IsValueType && !t.IsPrimitive && !t.IsEnum && t != typeof(decimal))
                 d.IsStruct = true;
 
+            d.IsInterface = t.IsInterface;
             d.IsClass = t.IsClass;
             d.IsValueType = t.IsValueType;
             if (t.IsGenericType)
@@ -512,7 +514,10 @@ namespace fastJSON
 
             //bool isAnonymous = IsAnonymousType(type);
 
-            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+            var bf = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+            //if (ShowReadOnlyProperties)
+            //    bf |= BindingFlags.NonPublic;
+            PropertyInfo[] props = type.GetProperties(bf);
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
@@ -520,7 +525,7 @@ namespace fastJSON
                 {// Property is an indexer
                     continue;
                 }
-                if (!p.CanWrite && (ShowReadOnlyProperties == false ))//|| isAnonymous == false))
+                if (!p.CanWrite && (ShowReadOnlyProperties == false))//|| isAnonymous == false))
                     continue;
                 if (IgnoreAttributes != null)
                 {
@@ -541,7 +546,7 @@ namespace fastJSON
                     getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower() });
             }
 
-            FieldInfo[] fi = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
+            FieldInfo[] fi = type.GetFields(bf);
             foreach (var f in fi)
             {
                 if (IgnoreAttributes != null)
