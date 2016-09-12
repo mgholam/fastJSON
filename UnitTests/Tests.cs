@@ -2528,5 +2528,18 @@ namespace UnitTests
 
         }
 
+        [Test]
+        public static void nested_dictionary()
+        {
+            var dic = new Dictionary<int, Dictionary<string, double>>();
+            dic.Add(0, new Dictionary<string, double> { { "PX_LAST", 1.1 }, { "PX_LOW", 1.0 } });
+            dic.Add(1, new Dictionary<string, double> { { "PX_LAST", 2.1 }, { "PX_LOW", 2.0 } });
+
+            string s = JSON.ToJSON(dic);
+            var obj = JSON.ToObject<Dictionary<int, Dictionary<string, double>>>(s);
+            Assert.AreEqual(2, obj[0].Count());
+        }
+
+
     }// UnitTests.Tests
 }

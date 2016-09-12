@@ -1,3 +1,6 @@
+2.1.20
+- bug fix nested dictionary D<,D<,>>
+
 2.1.19
 - added ToNiceJSON(obj) with default parameters
 - added support for interface object properties (thanks to DrDeadCrash)
