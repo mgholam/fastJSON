@@ -2540,6 +2540,28 @@ namespace UnitTests
             Assert.AreEqual(2, obj[0].Count());
         }
 
+        [Test]
+        public static void DynamicEnumerate()
+        {
+            string j =
+            @"[
+   {
+      ""Prop1"" : ""Info 1"",
+      ""Prop2"" : ""More Info 1""
+   },
+   {
+      ""Prop1"" : ""Info 2"",
+      ""Prop2"" : ""More Info 2""
+   }
+]";
+
+            var testObject = JSON.ToDynamic(j);
+            foreach(var o in testObject)
+            {
+                Console.WriteLine(o.Prop1);
+                Assert.True( o.Prop1!="");
+            }
+        }
 
     }// UnitTests.Tests
 }

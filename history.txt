@@ -1,3 +1,6 @@
+2.1.21
+- bug fix enumerating dynamic objects 
+
 2.1.20
 - bug fix nested dictionary D<,D<,>>
 
