@@ -1,5 +1,5 @@
-fastJSON
-========
+#fastJSON
+
 
 Smallest, fastest polymorphic JSON serializer
 
