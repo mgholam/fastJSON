@@ -1,3 +1,8 @@
+2.1.22
+- bug fix ToObject<Dictionary<string,List<T>>() with extensions off (thanks to chunlizh)
+- added Howto.md (work in progress)
+- renamed solution file
+
 2.1.21
 - bug fix enumerating dynamic objects 
 

@@ -875,7 +875,7 @@ namespace fastJSON
                 foreach (object ob in data)
                 {
                     if (ob is IDictionary)
-                        col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
+                        col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, it, null));
 
                     else if (ob is List<object>)
                     {
