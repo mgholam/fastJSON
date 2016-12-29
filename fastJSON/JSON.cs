@@ -686,7 +686,7 @@ namespace fastJSON
                         {
                             case myPropInfoType.Int: oset = (int)((long)v); break;
                             case myPropInfoType.Long: oset = (long)v; break;
-                            case myPropInfoType.String: oset = (string)v; break;
+                            case myPropInfoType.String: oset = Convert.ToString(v); break;
                             case myPropInfoType.Bool: oset = (bool)v; break;
                             case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
                             case myPropInfoType.Enum: oset = CreateEnum(pi.pt, v); break;
