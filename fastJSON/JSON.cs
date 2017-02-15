@@ -470,6 +470,9 @@ namespace fastJSON
             if (conversionType == typeof(byte[]))
                 return Convert.FromBase64String((string)value);
 
+            if (conversionType == typeof(TimeSpan))
+                return new TimeSpan((long)value);
+
             return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
         }
 
@@ -505,7 +508,7 @@ namespace fastJSON
             if (value[p] == '-')
                 th = -th;
 
-            return new DateTimeOffset(year, month, day, hour, min, sec, ms, new TimeSpan(th,tm,0));
+            return new DateTimeOffset(year, month, day, hour, min, sec, ms, new TimeSpan(th, tm, 0));
         }
 
         private bool IsNullable(Type t)
@@ -684,8 +687,8 @@ namespace fastJSON
 
                         switch (pi.Type)
                         {
-                            case myPropInfoType.Int: oset = (int)((long)v); break;
-                            case myPropInfoType.Long: oset = (long)v; break;
+                            case myPropInfoType.Int: oset = (int)AutoConv(v); break;
+                            case myPropInfoType.Long: oset = AutoConv(v); break;
                             case myPropInfoType.String: oset = (string)v; break;
                             case myPropInfoType.Bool: oset = (bool)v; break;
                             case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
@@ -735,6 +738,23 @@ namespace fastJSON
             return o;
         }
 
+        private long AutoConv(object value)
+        {
+            //string s = value as string;
+            //if (s == null)
+            //    return (long)value;
+            //else
+            //    return CreateLong(s, 0, s.Length);
+
+            if (value is string)
+            {
+                string s = (string)value;
+                return CreateLong(s, 0, s.Length);
+            }
+            else
+                return (long)value;
+        }
+
         private StringDictionary CreateSD(Dictionary<string, object> d)
         {
             StringDictionary nv = new StringDictionary();
@@ -765,6 +785,29 @@ namespace fastJSON
                 if (t == typeof(Guid))
                     p.setter(obj, CreateGuid((string)o));
             }
+        }
+
+        private long CreateLong(string s, int index, int count)
+        {
+            long num = 0;
+            bool neg = false;
+            for (int x = 0; x < count; x++, index++)
+            {
+                char cc = s[index];
+
+                if (cc == '-')
+                    neg = true;
+                else if (cc == '+')
+                    neg = false;
+                else
+                {
+                    num *= 10;
+                    num += (int)(cc - '0');
+                }
+            }
+            if (neg) num = -num;
+
+            return num;
         }
 
         private int CreateInteger(string s, int index, int count)

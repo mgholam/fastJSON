@@ -769,7 +769,7 @@ public class tests
                                     {
                                         Console.WriteLine(Thread.CurrentThread.ManagedThreadId + " A begins deserialization");
                                         ax = JSON.ToObject(jsonA); // A has type information in JSON-extended
-                                            Console.WriteLine(Thread.CurrentThread.ManagedThreadId + " A is done");
+                                        Console.WriteLine(Thread.CurrentThread.ManagedThreadId + " A is done");
                                     }
                                     catch (Exception ex)
                                     {
@@ -2587,7 +2587,30 @@ public class tests
             foreach (var v in k.Value)
                 Console.WriteLine(":\tLo:{0}\tRatio:{1}", v.Lo, v.Ratio);
         }
+    }
 
+
+    public class ac<T>
+    {
+        public T age;
+    }
+    [Test]
+    public static void autoconvert()
+    {
+        long v = long.MaxValue;
+        //v = 42;
+        //byte v = 42;
+        var o = JSON.ToObject<ac<long>>("{\"age\":\"" + v + "\"}");
+        Assert.AreEqual(v, o.age);
+    }
+
+    [Test]
+    public static void timespan()
+    {
+        TimeSpan t = new TimeSpan(2, 2, 2, 2);
+        var s = JSON.ToJSON(t);
+        var o = JSON.ToObject<TimeSpan>(s);
+        Assert.AreEqual(o.Days, t.Days);
     }
 }// UnitTests.Tests
 //}

@@ -1,3 +1,8 @@
+2.1.23
+- added support for TimeSpan (equates to a long)
+- added auto convert string numbers "42" -> 42 
+- added more to Howto.md
+
 2.1.22
 - bug fix ToObject<Dictionary<string,List<T>>() with extensions off (thanks to chunlizh)
 - added Howto.md (work in progress)
