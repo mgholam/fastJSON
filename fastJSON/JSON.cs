@@ -853,6 +853,9 @@ namespace fastJSON
 
         private DateTime CreateDateTime(string value)
         {
+            if (value.Length < 19)
+                return DateTime.MinValue;
+
             bool utc = false;
             //                   0123456789012345678 9012 9/3
             // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  Z
