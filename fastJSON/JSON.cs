@@ -888,6 +888,12 @@ namespace fastJSON
 
         private DateTime CreateDateTime(string value)
         {
+            // This resolves the ms issue and the timezone issue brought up by bruce965 on Jan 13, 2015, 
+            // and it's faster that the previous method but it might only work on dotnet 4 and up
+            // - Voir "Tony" Hillaire (B9Tony) 4/12/2016
+#if net4
+            return DateTime.Parse(value, null, System.Globalization.DateTimeStyles.RoundtripKind);
+#else
             bool utc = false;
             //                   0123456789012345678 9012 9/3
             // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  Z
@@ -905,16 +911,22 @@ namespace fastJSON
             hour = CreateInteger(value, 11, 2);
             min = CreateInteger(value, 14, 2);
             sec = CreateInteger(value, 17, 2);
-            if (value.Length > 21 && value[19] == '.')
-                ms = CreateInteger(value, 20, 3);
-
+            // Moved so existence of 'Z' could be used in ms Length calculation - Voir "Tony" Hillaire(B9Tony) 4/12/2016
             if (value[value.Length - 1] == 'Z')
                 utc = true;
+            // changed ms Length calculation from fixed 3 to length-21 if utc Z is there or length-20 if it's not - Voir "Tony" Hillaire (B9Tony) 4/12/2016
+            // 2016-03-24T21:52:21.96Z, 2016-03-24T21:52:21.4Z, 2016-03-29T20:02:08.88, 2016-03-25T18:37:12.757Z
+            if (value.Length > 21 && value[19] == '.')
+                ms = CreateInteger(value, 20, (value.Length - (utc ? 21 : 20)));
+
+            // original location of 'Z' - utc line
 
             if (_params.UseUTCDateTime == false && utc == false)
                 return new DateTime(year, month, day, hour, min, sec, ms);
             else
                 return new DateTime(year, month, day, hour, min, sec, ms, DateTimeKind.Utc).ToLocalTime();
+#endif
+
         }
 
         private object CreateArray(List<object> data, Type pt, Type bt, Dictionary<string, object> globalTypes)
