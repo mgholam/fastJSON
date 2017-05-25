@@ -480,6 +480,11 @@ namespace fastJSON
         {
             //                   0123456789012345678 9012 9/3 0/4  1/5
             // datetime format = yyyy-MM-ddTHH:mm:ss .nnn  _   +   00:00
+
+            // ISO8601 roundtrip formats have 7 digits for ticks, and no space before the '+'
+            // datetime format = yyyy-MM-ddTHH:mm:ss .nnnnnnn  +   00:00  
+            // datetime format = yyyy-MM-ddTHH:mm:ss .nnnnnnn  Z  
+
             int year;
             int month;
             int day;
@@ -487,6 +492,7 @@ namespace fastJSON
             int min;
             int sec;
             int ms = 0;
+            int usTicks = 0; // ticks for xxx.x microseconds
             int th = 0;
             int tm = 0;
 
@@ -497,18 +503,47 @@ namespace fastJSON
             min = CreateInteger(value, 14, 2);
             sec = CreateInteger(value, 17, 2);
 
-            if (value.Length > 21 && value[19] == '.')
-                ms = CreateInteger(value, 20, 3);
             int p = 20;
-            if (ms > 0)
-                p = 24;
+
+            if (value.Length > 21 && value[19] == '.')
+            {
+                ms = CreateInteger(value, p, 3);
+                p = 23;
+
+                // handle 7 digit case
+                if (value.Length > 25 && char.IsDigit(value[p]))
+                {
+                    usTicks = CreateInteger(value, p, 4);
+                    p = 27;
+                }                
+            }
+
+            if (value[p] == 'Z')
+                // UTC
+                return CreateDateTimeOffset(year, month, day, hour, min, sec, ms, usTicks, TimeSpan.Zero);
+
+            if (value[p] == ' ')
+                ++p;
+
+            // +00:00
             th = CreateInteger(value, p + 1, 2);
             tm = CreateInteger(value, p + 1 + 2 + 1, 2);
 
             if (value[p] == '-')
                 th = -th;
 
-            return new DateTimeOffset(year, month, day, hour, min, sec, ms, new TimeSpan(th, tm, 0));
+            return CreateDateTimeOffset(year, month, day, hour, min, sec, ms, usTicks, new TimeSpan(th, tm, 0));
+        }
+
+        private static DateTimeOffset CreateDateTimeOffset(
+            int year, int month, int day, int hour, int min, int sec, int milli, int extraTicks, TimeSpan offset)
+        {
+            var dt = new DateTimeOffset(year, month, day, hour, min, sec, milli, offset);
+
+            if (extraTicks > 0)
+                dt += TimeSpan.FromTicks(extraTicks);
+
+            return dt;
         }
 
         private bool IsNullable(Type t)

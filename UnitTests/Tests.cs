@@ -2420,10 +2420,38 @@ public class tests
         //    (x) => { return DateTimeOffset.Parse(x); }
         //);
 
-        var s = JSON.ToJSON(dt, new JSONParameters { DateTimeMilliseconds = true });
+        // test with UTC format ('Z' in output rather than HH:MM timezone)
+        var s = JSON.ToJSON(dt, new JSONParameters { UseUTCDateTime = true });
         Console.WriteLine(s);
         var d = JSON.ToObject<DateTimeOffset>(s);
-        //Assert.AreEqual(dt, d);
+        // ticks will differ, so convert both to UTC and use ISO8601 roundtrip format to compare
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        s = JSON.ToJSON(dt, new JSONParameters { UseUTCDateTime = false });
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // test deserialize of output from DateTimeOffset.ToString()
+        // DateTimeOffset roundtrip format, UTC 
+        dt = new DateTimeOffset(DateTime.UtcNow);
+        s = '"' + dt.ToString("O") + '"';
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // DateTimeOffset roundtrip format, non-UTC
+        dt = new DateTimeOffset(new DateTime(2017, 5, 22, 10, 06, 53, 123, DateTimeKind.Unspecified), TimeSpan.FromHours(11.5));
+        s = '"' + dt.ToString("O") + '"';
+        Console.WriteLine(s);
+        d = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), d.ToUniversalTime().ToString("O"));
+
+        // previous fastJSON serialization format for DateTimeOffset. Millisecond resolution only.
+        s = '"' + dt.ToString("yyyy-MM-ddTHH:mm:ss.fff zzz") + '"';
+        Console.WriteLine(s);
+        var ld = JSON.ToObject<DateTimeOffset>(s);
+        Assert.AreEqual(dt.ToUniversalTime().ToString("O"), ld.ToUniversalTime().ToString("O"));
     }
 
     class X

@@ -148,15 +148,26 @@ namespace fastJSON
 
         private void WriteDateTimeOffset(DateTimeOffset d)
         {
-            write_date_value(d.DateTime);
-            _output.Append(" ");
-            if (d.Offset.Hours > 0)
-                _output.Append("+");
+            DateTime dt = _params.UseUTCDateTime ? d.UtcDateTime : d.DateTime;
+            
+            write_date_value(dt);
+
+            var ticks = dt.Ticks % TimeSpan.TicksPerSecond;
+            _output.Append('.');
+            _output.Append(ticks.ToString("0000000", NumberFormatInfo.InvariantInfo));
+
+            if (_params.UseUTCDateTime)
+                _output.Append('Z');
             else
-                _output.Append("-");
-            _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
-            _output.Append(":");
-            _output.Append(d.Offset.Minutes);
+            {
+                if (d.Offset.Hours > 0)
+                    _output.Append("+");
+                else
+                    _output.Append("-");
+                _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
+                _output.Append(":");
+                _output.Append(d.Offset.Minutes.ToString("00", NumberFormatInfo.InvariantInfo));
+            }
 
             _output.Append('\"');
         }
@@ -253,6 +264,12 @@ namespace fastJSON
 
             write_date_value(dt);
 
+            if (_params.DateTimeMilliseconds)
+            {
+                _output.Append('.');
+                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
+            }
+
             if (_params.UseUTCDateTime)
                 _output.Append('Z');
 
@@ -273,11 +290,6 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
-            if (_params.DateTimeMilliseconds)
-            {
-                _output.Append('.');
-                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
-            }
         }
 
 #if !SILVERLIGHT
