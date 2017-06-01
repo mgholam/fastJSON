@@ -1,5 +1,6 @@
-2.1.24*
-- 
+2.1.24
+- Support ISO8601 formatted DateTimeOffset (thanks to Scott McKay)
+- security warning for $type usage
 
 2.1.23
 - added support for TimeSpan (equates to a long)
