@@ -1094,42 +1094,51 @@ namespace fastJSON
         private void ReadDataTable(List<object> rows, DataTable dt)
         {
             dt.BeginInit();
-            dt.BeginLoadData();
-            List<int> guidcols = new List<int>();
-            List<int> datecol = new List<int>();
+			dt.BeginLoadData();
+			List<int> guidcols = new List<int>();
+			List<int> datecol = new List<int>();
+			List<int> bytearraycol = new List<int>();
 
-            foreach (DataColumn c in dt.Columns)
-            {
-                if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
-                    guidcols.Add(c.Ordinal);
-                if (_params.UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
-                    datecol.Add(c.Ordinal);
-            }
+			foreach (DataColumn c in dt.Columns)
+			{
+				if (c.DataType == typeof(Guid) || c.DataType == typeof(Guid?))
+					guidcols.Add(c.Ordinal);
+				if (c.DataType == typeof(byte[]))
+					bytearraycol.Add(c.Ordinal);
+				if (_params.UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
+					datecol.Add(c.Ordinal);
+			}
 
-            foreach (List<object> row in rows)
-            {
-                object[] v = new object[row.Count];
-                row.CopyTo(v, 0);
-                foreach (int i in guidcols)
-                {
-                    string s = (string)v[i];
-                    if (s != null && s.Length < 36)
-                        v[i] = new Guid(Convert.FromBase64String(s));
-                }
-                if (_params.UseUTCDateTime)
-                {
-                    foreach (int i in datecol)
-                    {
-                        string s = (string)v[i];
-                        if (s != null)
-                            v[i] = CreateDateTime(s);
-                    }
-                }
-                dt.Rows.Add(v);
-            }
+			foreach (List<object> row in rows)
+			{
+				object[] v = new object[row.Count];
+				row.CopyTo(v, 0);
+				foreach (int i in guidcols)
+				{
+					string s = (string)v[i];
+					if (s != null && s.Length < 36)
+						v[i] = new Guid(Convert.FromBase64String(s));
+				}
+				foreach (int i in bytearraycol)
+				{
+					string s = (string)v[i];
+					if (s != null)
+						v[i] = Convert.FromBase64String(s);
+				}
+				if (_params.UseUTCDateTime)
+				{
+					foreach (int i in datecol)
+					{
+						string s = (string)v[i];
+						if (s != null)
+							v[i] = CreateDateTime(s);
+					}
+				}
+				dt.Rows.Add(v);
+			}
 
-            dt.EndLoadData();
-            dt.EndInit();
+			dt.EndLoadData();
+			dt.EndInit();
         }
 
         DataTable CreateDataTable(Dictionary<string, object> reader, Dictionary<string, object> globalTypes)
