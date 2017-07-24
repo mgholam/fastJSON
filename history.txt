@@ -1,3 +1,7 @@
+2.1.25
+- support for DataMember[Name] attribute
+- handling \0 in strings as \u0000 even without extensions
+
 2.1.24
 - Support ISO8601 formatted DateTimeOffset (thanks to Scott McKay)
 - security warning for $type usage

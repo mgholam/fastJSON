@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>fastJSON</id>
-        <version>2.1.24.0</version>
+        <version>2.1.25.0</version>
         <title>fastJSON</title>
         <authors>mgholam</authors>
         <owners />
-        <projectUrl>http://fastjson.codeplex.com/</projectUrl>
+        <projectUrl>https://www.codeproject.com/Articles/159450/fastJSON</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>smallest, fastest polymorphic JSON serializer</description>
     </metadata>

@@ -475,7 +475,9 @@ namespace fastJSON
                 {
                     if (append)
                         _output.Append(',');
-                    if (_params.SerializeToLowerCaseNames)
+                    if (p.memberName != null)
+                        WritePair(p.memberName, o);
+                    else if (_params.SerializeToLowerCaseNames)
                         WritePair(p.lcName, o);
                     else
                         WritePair(p.Name, o);
@@ -631,7 +633,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\')// && c != ':' && c!=',')
+                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c!='\0')// && c != ':' && c!=',')
                     {
                         if (runIndex == -1)
                             runIndex = index;
@@ -653,6 +655,7 @@ namespace fastJSON
                     case '\n': _output.Append("\\n"); break;
                     case '"':
                     case '\\': _output.Append('\\'); _output.Append(c); break;
+                    case '\0': _output.Append("\\u0000"); break;
                     default:
                         if (_useEscapedUnicode)
                         {

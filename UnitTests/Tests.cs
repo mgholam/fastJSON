@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Dynamic;
 using System.IO;
+using System.Runtime.Serialization;
 
 //namespace UnitTests
 //{
@@ -2639,6 +2640,41 @@ public class tests
         var s = JSON.ToJSON(t);
         var o = JSON.ToObject<TimeSpan>(s);
         Assert.AreEqual(o.Days, t.Days);
+    }
+
+    public class dmember
+    {
+        [DataMember(Name = "prop")]
+        public string MyProperty;
+        [DataMember(Name = "id")]
+        public int docid;
+    }
+    [Test]
+    public static void DataMember()
+    {
+        var s = "{\"prop\":\"Date\",\"id\":42}";
+        Console.WriteLine(s);
+        var o = fastJSON.JSON.ToObject<dmember>(s);
+
+        Assert.AreEqual(42, o.docid);
+        Assert.AreEqual("Date", o.MyProperty);
+
+        var ss = fastJSON.JSON.ToJSON(o, new JSONParameters { UseExtensions = false });
+        Console.WriteLine(ss);
+        Assert.AreEqual(s, ss);
+    }
+
+    [Test]
+    public static void zerostring()
+    {
+        var t = "test\0test";
+        Console.WriteLine(t);
+        var s = fastJSON.JSON.ToJSON(t, new JSONParameters {UseEscapedUnicode= false });
+        Assert.True(s.Contains("\\u0000"));
+        Console.WriteLine(s);
+        var o = fastJSON.JSON.ToObject<string>(s);
+        Assert.True(o.Contains("\0"));
+        Console.WriteLine("" + o);
     }
 }// UnitTests.Tests
 //}
