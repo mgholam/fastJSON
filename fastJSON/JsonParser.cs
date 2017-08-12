@@ -307,7 +307,14 @@ namespace fastJSON
                 string s = json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            return JSON.CreateLong(json, startIndex, index - startIndex);
+            if (index - startIndex < 20 && json[startIndex] != '-')
+                return JSON.CreateLong(json, startIndex, index - startIndex);
+            else
+            {
+                string s = json.Substring(startIndex, index - startIndex);
+                //return s;
+                return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
+            }
         }
 
         private Token LookAhead()

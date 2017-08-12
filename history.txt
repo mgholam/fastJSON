@@ -1,3 +1,9 @@
+2.1.26
+- bug fix support for byte[] in DataTable columns (thanks to HKatura)
+- added JSONParameters.FormatterIndentSpaces
+- bug fix edge cases for float/decimal/double/long/ulong/int/uint
+  MinValue, MaxValue, NegativeInfinity, PositiveInfinity, Epsilon, NaN (thanks to qaqz111)
+
 2.1.25
 - support for DataMember[Name] attribute
 - handling \0 in strings as \u0000 even without extensions

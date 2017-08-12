@@ -83,6 +83,12 @@ namespace fastJSON
                 double d = (double)obj;
                 if (double.IsNaN(d))
                     _output.Append("\"NaN\"");
+                else if (double.IsInfinity(d))
+                {
+                    _output.Append("\"");
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+                    _output.Append("\"");
+                }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
             }
@@ -91,6 +97,12 @@ namespace fastJSON
                 float d = (float)obj;
                 if (float.IsNaN(d))
                     _output.Append("\"NaN\"");
+                else if (float.IsInfinity(d))
+                {
+                    _output.Append("\"");
+                    _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
+                    _output.Append("\"");
+                }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
             }

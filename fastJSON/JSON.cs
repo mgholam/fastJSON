@@ -90,6 +90,10 @@ namespace fastJSON
         /// Save property/field names as lowercase (default = false)
         /// </summary>
         public bool SerializeToLowerCaseNames = false;
+        /// <summary>
+        /// Formatter indent spaces (default = 3)
+        /// </summary>
+        public byte FormatterIndentSpaces = 3;
 
         public void FixValues()
         {
@@ -130,7 +134,7 @@ namespace fastJSON
         {
             string s = ToJSON(obj, param);
 
-            return Beautify(s);
+            return Beautify(s, param.FormatterIndentSpaces);
         }
         /// <summary>
         /// Create a json representation for an object
@@ -273,7 +277,19 @@ namespace fastJSON
         /// <returns></returns>
         public static string Beautify(string input)
         {
-            return Formatter.PrettyPrint(input);
+            var i = new string(' ', JSON.Parameters.FormatterIndentSpaces);
+            return Formatter.PrettyPrint(input, i);
+        }
+        /// <summary>
+        /// Create a human readable string from the json with specified indent spaces
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="spaces"></param>
+        /// <returns></returns>
+        public static string Beautify(string input, byte spaces)
+        {
+            var i = new string(' ', spaces);
+            return Formatter.PrettyPrint(input, i);
         }
         /// <summary>
         /// Register custom type handlers for your own types not natively handled by fastJSON
@@ -515,7 +531,7 @@ namespace fastJSON
                 {
                     usTicks = CreateInteger(value, p, 4);
                     p = 27;
-                }                
+                }
             }
 
             if (value[p] == 'Z')
@@ -786,8 +802,10 @@ namespace fastJSON
                 string s = (string)value;
                 return CreateLong(s, 0, s.Length);
             }
-            else
+            else if (value is long)
                 return (long)value;
+            else
+                return Convert.ToInt64(value);
         }
 
         private StringDictionary CreateSD(Dictionary<string, object> d)
@@ -1097,6 +1115,7 @@ namespace fastJSON
             dt.BeginLoadData();
             List<int> guidcols = new List<int>();
             List<int> datecol = new List<int>();
+            List<int> bytearraycol = new List<int>();
 
             foreach (DataColumn c in dt.Columns)
             {
@@ -1104,6 +1123,8 @@ namespace fastJSON
                     guidcols.Add(c.Ordinal);
                 if (_params.UseUTCDateTime && (c.DataType == typeof(DateTime) || c.DataType == typeof(DateTime?)))
                     datecol.Add(c.Ordinal);
+                if (c.DataType == typeof(byte[]))
+                    bytearraycol.Add(c.Ordinal);
             }
 
             foreach (List<object> row in rows)
@@ -1115,6 +1136,12 @@ namespace fastJSON
                     string s = (string)v[i];
                     if (s != null && s.Length < 36)
                         v[i] = new Guid(Convert.FromBase64String(s));
+                }
+                foreach (int i in bytearraycol)
+                {
+                    string s = (string)v[i];
+                    if (s != null)
+                        v[i] = Convert.FromBase64String(s);
                 }
                 if (_params.UseUTCDateTime)
                 {
