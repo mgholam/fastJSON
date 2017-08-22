@@ -177,7 +177,7 @@ namespace fastJSON
         {
             return new JsonParser(json).Decode();
         }
-#if net4
+#if !NET35
         /// <summary>
         /// Create a .net4 dynamic object from the json string
         /// </summary>

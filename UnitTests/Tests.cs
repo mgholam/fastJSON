@@ -15,9 +15,9 @@ using System.Linq;
 using System.Dynamic;
 using System.IO;
 using System.Runtime.Serialization;
+using NUnit.Compatibility;
 
-//namespace UnitTests
-//{
+
 #if SILVERLIGHT
 	public class TestAttribute : Attribute
 	{
@@ -291,7 +291,7 @@ public class tests
 
     #endregion
 
-    [TestFixtureSetUp]
+    [OneTimeSetUp]
     public static void setup()
     {
         //fastJSON.JSON.Parameters = new JSONParameters();
@@ -592,7 +592,7 @@ public class tests
         var stopwatch = new Stopwatch();
         for (int pp = 0; pp < fivetimes; pp++)
         {
-            stopwatch.Restart();
+            stopwatch.Reset();
             colclass deserializedStore;
             string jsonText = JSON.ToJSON(c);
             //Console.WriteLine(" size = " + jsonText.Length);
@@ -618,7 +618,7 @@ public class tests
         var stopwatch = new Stopwatch();
         for (int pp = 0; pp < fivetimes; pp++)
         {
-            stopwatch.Restart();
+            stopwatch.Reset();
             string jsonText = null;
             for (int i = 0; i < thousandtimes; i++)
             {
@@ -2791,5 +2791,4 @@ public class tests
         //Assert.AreEqual(d.MminDec, o.MminDec);
 
     }
-}// UnitTests.Tests
-//}
+}
