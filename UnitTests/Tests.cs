@@ -2735,23 +2735,23 @@ public class tests
         d.MminDec = -7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
         d.MmaxDec = +7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
 
-        d.Mmin = decimal.MinValue; 
-        d.Mmax = decimal.MaxValue; 
+        d.Mmin = decimal.MinValue;
+        d.Mmax = decimal.MaxValue;
         //d.Dmin = double.MinValue;
         //d.Dmax = double.MaxValue;
         d.DminDec = -double.Epsilon;
         d.DmaxDec = double.Epsilon;
-        d.Dni = double.NegativeInfinity; 
-        d.Dpi = double.PositiveInfinity; 
+        d.Dni = double.NegativeInfinity;
+        d.Dpi = double.PositiveInfinity;
         d.Dnan = double.NaN;
         d.FminDec = -float.Epsilon;
         d.FmaxDec = float.Epsilon;
-        d.Fni = float.NegativeInfinity; 
-        d.Fpi = float.PositiveInfinity; 
+        d.Fni = float.NegativeInfinity;
+        d.Fpi = float.PositiveInfinity;
         d.Fnan = float.NaN;
         d.Lmin = long.MinValue;
         d.Lmax = long.MaxValue;
-        d.ULmax = ulong.MaxValue; 
+        d.ULmax = ulong.MaxValue;
         d.Imin = int.MinValue;
         d.Imax = int.MaxValue;
         d.UImax = uint.MaxValue;
@@ -2789,7 +2789,35 @@ public class tests
         //Assert.AreEqual(d.Fmin, o.Fmin);
         //Assert.AreEqual(d.MmaxDec, o.MmaxDec);
         //Assert.AreEqual(d.MminDec, o.MminDec);
-
     }
+
+
+    public class TestData
+    {
+        [DataMember(Name = "foo")]
+        public string Foo { get; set; }
+
+        [DataMember(Name = "Bar")]
+        public string Bar { get; set; }
+    }
+    [Test]
+    public static void ConvertTest()
+    {
+        var data = new TestData
+        {
+            Foo = "foo_value",
+            Bar = "bar_value"
+        };
+        var jsonData = JSON.ToJSON(data);
+
+        var data2 = JSON.ToObject<TestData>(jsonData);
+
+        // OK, since data member name is "foo" which is all in lower case
+        Assert.AreEqual(data.Foo ,data2.Foo);
+
+        // Fails, since data member name is "Bar", but the library looks for "bar" when setting the value
+        Assert.AreEqual(data.Bar , data2.Bar);
+    }
+
 }// UnitTests.Tests
 //}

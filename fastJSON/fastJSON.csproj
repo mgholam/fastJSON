@@ -50,7 +50,7 @@
     <OutputPath>..\output\net40\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DefineConstants>net4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;net4</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>

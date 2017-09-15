@@ -54,7 +54,9 @@ namespace fastJSON
         public Reflection.GenericGetter getter;
         public Type[] GenericTypes;
         public string Name;
+#if net4
         public string memberName;
+#endif
         public myPropInfoType Type;
         public bool CanWrite;
 
@@ -176,6 +178,7 @@ namespace fastJSON
                     if (d.setter != null)
                         d.CanWrite = true;
                     d.getter = Reflection.CreateGetMethod(type, p);
+#if net4
                     var att = p.GetCustomAttributes(true);
                     foreach (var at in att)
                     {
@@ -189,6 +192,7 @@ namespace fastJSON
                     if (d.memberName != null)
                         sd.Add(d.memberName, d);
                     else
+#endif
                         sd.Add(p.Name.ToLower(), d);
                 }
                 FieldInfo[] fi = type.GetFields(bf);
@@ -201,6 +205,7 @@ namespace fastJSON
                         if (d.setter != null)
                             d.CanWrite = true;
                         d.getter = Reflection.CreateGetField(type, f);
+#if net4
                         var att = f.GetCustomAttributes(true);
                         foreach (var at in att)
                         {
@@ -214,6 +219,7 @@ namespace fastJSON
                         if (d.memberName != null)
                             sd.Add(d.memberName, d);
                         else
+#endif
                             sd.Add(f.Name.ToLower(), d);
                     }
                 }
@@ -289,7 +295,7 @@ namespace fastJSON
             return conversionType;
         }
 
-        #region [   PROPERTY GET SET   ]
+#region [   PROPERTY GET SET   ]
 
         internal string GetTypeAssemblyName(Type t)
         {
@@ -569,9 +575,9 @@ namespace fastJSON
                     if (found)
                         continue;
                 }
-                //#if net4
-                var att = p.GetCustomAttributes(true);
                 string mName = null;
+                #if net4
+                var att = p.GetCustomAttributes(true);
                 foreach (var at in att)
                 {
                     if (at is DataMemberAttribute)
@@ -583,7 +589,7 @@ namespace fastJSON
                         }
                     }
                 }
-                //#endif
+                #endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
                     getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), memberName = mName });
@@ -606,8 +612,9 @@ namespace fastJSON
                     if (found)
                         continue;
                 }
-                var att = f.GetCustomAttributes(true);
                 string mName = null;
+#if net4
+                var att = f.GetCustomAttributes(true);
                 foreach (var at in att)
                 {
                     if (at is DataMemberAttribute)
@@ -619,6 +626,7 @@ namespace fastJSON
                         }
                     }
                 }
+#endif
                 if (f.IsLiteral == false)
                 {
                     GenericGetter g = CreateGetField(type, f);
@@ -647,7 +655,7 @@ namespace fastJSON
 
         //    return false;
         //}
-        #endregion
+#endregion
 
         internal void ResetPropertyCache()
         {

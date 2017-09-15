@@ -239,6 +239,17 @@ namespace fastJSON
             return new deserializer(Parameters).ToObject(json, type);
         }
         /// <summary>
+        /// Create an object of type from the json with parameter override on this call
+        /// </summary>
+        /// <param name="json"></param>
+        /// <param name="type"></param>
+        /// <param name="par"></param>
+        /// <returns></returns>
+        public static object ToObject(string json, Type type, JSONParameters par)
+        {
+            return new deserializer(par).ToObject(json, type);
+        }
+        /// <summary>
         /// Fill a given object with the json represenation
         /// </summary>
         /// <param name="input"></param>
@@ -714,24 +725,25 @@ namespace fastJSON
                 _cirrev.Add(circount, o);
             }
 
-            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename);//, Reflection.Instance.IsTypeRegistered(type));
+            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename);
             foreach (var kv in d)
             {
                 var n = kv.Key;
                 var v = kv.Value;
-                string name = n.ToLower();
+
+                string name = n;//.ToLower();
                 if (name == "$map")
                 {
                     ProcessMap(o, props, (Dictionary<string, object>)d[name]);
                     continue;
                 }
                 myPropInfo pi;
-                if (props.TryGetValue(name, out pi) == false)
-                    continue;
+                if (props.TryGetValue(name.ToLower(), out pi) == false)
+                    if (props.TryGetValue(name, out pi) == false)
+                        continue;
+
                 if (pi.CanWrite)
                 {
-                    //object v = d[n];
-
                     if (v != null)
                     {
                         object oset = null;
@@ -791,12 +803,6 @@ namespace fastJSON
 
         private long AutoConv(object value)
         {
-            //string s = value as string;
-            //if (s == null)
-            //    return (long)value;
-            //else
-            //    return CreateLong(s, 0, s.Length);
-
             if (value is string)
             {
                 string s = (string)value;
