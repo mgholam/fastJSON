@@ -1,3 +1,8 @@
+2.1.27
+- bug fix case in DataMember attributes (thanks to Elvis Lam)
+- added ToObject(string json, Type type, JSONParameters par) 
+- bug fix .net v2.0+ build with conditional compilation 
+
 2.1.26
 - bug fix support for byte[] in DataTable columns (thanks to HKatura)
 - added JSONParameters.FormatterIndentSpaces
