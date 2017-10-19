@@ -16,6 +16,7 @@ namespace fastJSON
     {
         public string Name;
         public string lcName;
+        public string ccName;
         public string memberName;
         public Reflection.GenericGetter Getter;
     }
@@ -92,6 +93,7 @@ namespace fastJSON
         private SafeDictionary<string, Dictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
         private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>();
         private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>();
+        private readonly nameHandler _ccNameHandler = new nameHandler(NamingStyles.CamelCase);
 
         #region bjson custom types
         internal UnicodeEncoding unicode = new UnicodeEncoding();
@@ -592,7 +594,7 @@ namespace fastJSON
                 #endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), memberName = mName });
+                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), ccName = _ccNameHandler.Handle(p.Name), memberName = mName });
             }
 
             FieldInfo[] fi = type.GetFields(bf);
@@ -631,7 +633,7 @@ namespace fastJSON
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower(), memberName = mName });
+                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower(), ccName = _ccNameHandler.Handle(f.Name), memberName = mName });
                 }
             }
             val = getters.ToArray();
