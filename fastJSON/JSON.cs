@@ -1266,7 +1266,18 @@ namespace fastJSON
                     _handle = (s) =>
                     {
                         var chars = s.ToCharArray();
-                        chars[0] = Char.ToLowerInvariant(chars[0]);
+                        var isAllUpper = true;
+                        for (var ci = 0; ci < chars.Length; ci++)
+                        {
+                            if (!Char.IsUpper(chars[ci]))
+                            {
+                                isAllUpper = false;
+                                break;
+                            }
+                        }
+                        if (isAllUpper)
+                            return s.ToLower();
+                        chars[0] = Char.ToLower(chars[0]);
                         return new string(chars);
                     };
                     break;

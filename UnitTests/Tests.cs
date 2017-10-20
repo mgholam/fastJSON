@@ -1733,10 +1733,10 @@ public class tests
     [Test]
     public static void PropertyName_CamelCase()
     {
-        var obj = new { NameProperty = "Test" };
+        var obj = new { NameProperty = "Test", CRC = "1234" };
         var s = JSON.ToJSON(obj, new JSONParameters { NamingStyle = NamingStyles.CamelCase, EnableAnonymousTypes = true });
         Console.WriteLine(s);
-        Assert.AreEqual("{\"nameProperty\":\"Test\"}",s);
+        Assert.AreEqual("{\"nameProperty\":\"Test\",\"crc\":\"1234\"}", s);
     }
 
     public class nulltest
