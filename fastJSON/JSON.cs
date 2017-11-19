@@ -10,8 +10,7 @@ using System.Collections.Specialized;
 
 namespace fastJSON
 {
-    public delegate string Serialize(object data);
-    public delegate object Deserialize(string data);
+    public delegate T2 ConvertDelegate<T1, T2>(T1 t1);
 
     public sealed class JSONParameters
     {
@@ -308,9 +307,9 @@ namespace fastJSON
         /// <param name="type"></param>
         /// <param name="serializer"></param>
         /// <param name="deserializer"></param>
-        public static void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
+        public static void RegisterCustomType<T1, T2>(ConvertDelegate<T1, T2> serializer, ConvertDelegate<T2, T1> deserializer)
         {
-            Reflection.Instance.RegisterCustomType(type, serializer, deserializer);
+            Reflection.Instance.RegisterCustomType(typeof(T1), typeof(T2), a => serializer((T1)a), a => deserializer((T2)a));
         }
         /// <summary>
         /// Clear the internal reflection cache so you can start from new (you will loose performance)
@@ -450,6 +449,7 @@ namespace fastJSON
 
         private object ChangeType(object value, Type conversionType)
         {
+            CustomConverter cc;
             if (conversionType == typeof(int))
             {
                 string s = value as string;
@@ -478,8 +478,9 @@ namespace fastJSON
             else if (conversionType == typeof(DateTimeOffset))
                 return CreateDateTimeOffset((string)value);
 
-            else if (Reflection.Instance.IsTypeRegistered(conversionType))
-                return Reflection.Instance.CreateCustom((string)value, conversionType);
+            else if (Reflection.Instance.customTypes.TryGetValue(conversionType, out cc))
+                return cc.deserialize(value);
+
 
             // 8-30-2014 - James Brooks - Added code for nullable types.
             if (IsNullable(conversionType))
@@ -773,7 +774,6 @@ namespace fastJSON
                             case myPropInfoType.StringKeyDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
                             case myPropInfoType.NameValue: oset = CreateNV((Dictionary<string, object>)v); break;
                             case myPropInfoType.StringDictionary: oset = CreateSD((Dictionary<string, object>)v); break;
-                            case myPropInfoType.Custom: oset = Reflection.Instance.CreateCustom((string)v, pi.pt); break;
                             default:
                                 {
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
@@ -793,6 +793,9 @@ namespace fastJSON
                                 }
                                 break;
                         }
+                        CustomConverter cc;
+                        if (Reflection.Instance.customTypes.TryGetValue(pi.pt, out cc))
+                            oset = cc.deserialize(oset);
 
                         o = pi.setter(o, oset);
                     }

@@ -41,7 +41,7 @@ namespace fastJSON
         DataSet,
         DataTable,
 #endif
-        Custom,
+        //Custom,
         Unknown,
     }
 
@@ -65,6 +65,14 @@ namespace fastJSON
         public bool IsGenericType;
         public bool IsStruct;
         public bool IsInterface;
+    }
+    //public delegate object Serialize(object data);
+    //public delegate object Deserialize(object data);
+    public class CustomConverter
+    {
+        public Type t;
+        public ConvertDelegate<object,object> serialize;
+        public ConvertDelegate<object, object> deserialize;
     }
 
     internal sealed class Reflection
@@ -100,22 +108,15 @@ namespace fastJSON
 
         #region json custom types
         // JSON custom
-        internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
-        internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
+        //internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
+        //internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
+        internal Dictionary<Type, CustomConverter> customTypes = new Dictionary<Type, CustomConverter>();
 
-        internal object CreateCustom(string v, Type type)
-        {
-            Deserialize d;
-            _customDeserializer.TryGetValue(type, out d);
-            return d(v);
-        }
-
-        internal void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
+        internal void RegisterCustomType(Type type, Type t, ConvertDelegate<object, object> serializer, ConvertDelegate<object, object> deserializer)
         {
             if (type != null && serializer != null && deserializer != null)
             {
-                _customSerializer.Add(type, serializer);
-                _customDeserializer.Add(type, deserializer);
+                customTypes.Add(type, new CustomConverter() { deserialize = deserializer, serialize = serializer, t = t });
                 // reset property cache
                 Instance.ResetPropertyCache();
             }
@@ -123,10 +124,10 @@ namespace fastJSON
 
         internal bool IsTypeRegistered(Type t)
         {
-            if (_customSerializer.Count == 0)
+            if (customTypes.Count == 0)
                 return false;
-            Serialize s;
-            return _customSerializer.TryGetValue(t, out s);
+            CustomConverter s;
+            return customTypes.TryGetValue(t, out s);
         }
         #endregion
 
@@ -234,6 +235,11 @@ namespace fastJSON
             myPropInfo d = new myPropInfo();
             myPropInfoType d_type = myPropInfoType.Unknown;
 
+            d.pt = t;
+            CustomConverter cc;
+            if (customTypes.TryGetValue(t, out cc))
+                t = cc.t;
+
             if (t == typeof(int) || t == typeof(int?)) d_type = myPropInfoType.Int;
             else if (t == typeof(long) || t == typeof(long?)) d_type = myPropInfoType.Long;
             else if (t == typeof(string)) d_type = myPropInfoType.String;
@@ -264,8 +270,7 @@ namespace fastJSON
             else if (t == typeof(DataSet)) d_type = myPropInfoType.DataSet;
             else if (t == typeof(DataTable)) d_type = myPropInfoType.DataTable;
 #endif
-            else if (IsTypeRegistered(t))
-                d_type = myPropInfoType.Custom;
+
 
             if (t.IsValueType && !t.IsPrimitive && !t.IsEnum && t != typeof(decimal))
                 d.IsStruct = true;
@@ -279,7 +284,6 @@ namespace fastJSON
                 d.bt = t.GetGenericArguments()[0];
             }
 
-            d.pt = t;
             d.Name = name;
             d.changeType = GetChangeType(t);
             d.Type = d_type;
