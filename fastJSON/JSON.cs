@@ -418,8 +418,20 @@ namespace fastJSON
                     return RootArray(o, type);
                 else if (type == typeof(Hashtable))
                     return RootHashTable((List<object>)o);
-                else
-                    return (o as List<object>).ToArray();
+                else if (type == null)
+                {
+                    List<object> l = (List<object>)o;
+                    if (l.Count > 0 && l[0].GetType() == typeof(Dictionary<string, object>))
+                    {
+                        Dictionary<string, object> globals = new Dictionary<string, object>();
+                        List<object> op = new List<object>();
+                        // try to get $types 
+                        foreach (var i in l)
+                            op.Add(ParseDictionary((Dictionary<string, object>)i, globals, null, null));
+                        return op;
+                    }
+                    return l.ToArray();
+                }
             }
             else if (type != null && o.GetType() != type)
                 return ChangeType(o, type);
@@ -595,12 +607,13 @@ namespace fastJSON
 
         private void DoParseList(object parse, Type it, IList o)
         {
+            Dictionary<string, object> globals = new Dictionary<string, object>();
             foreach (var k in (IList)parse)
             {
                 _usingglobals = false;
                 object v = k;
                 if (k is Dictionary<string, object>)
-                    v = ParseDictionary(k as Dictionary<string, object>, null, it, null);
+                    v = ParseDictionary(k as Dictionary<string, object>, globals, it, null);
                 else
                     v = ChangeType(k, it);
 
@@ -680,12 +693,15 @@ namespace fastJSON
             if (d.TryGetValue("$types", out tn))
             {
                 _usingglobals = true;
-                globaltypes = new Dictionary<string, object>();
+                if (globaltypes == null)
+                    globaltypes = new Dictionary<string, object>();
                 foreach (var kv in (Dictionary<string, object>)tn)
                 {
                     globaltypes.Add((string)kv.Value, kv.Key);
                 }
             }
+            if (globaltypes != null)
+                _usingglobals = true;
 
             bool found = d.TryGetValue("$type", out tn);
 #if !SILVERLIGHT

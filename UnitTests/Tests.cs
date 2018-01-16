@@ -2819,5 +2819,33 @@ public class tests
         Assert.AreEqual(data.Bar , data2.Bar);
     }
 
+
+    public class test {   }
+    [Test]
+    public static void ArrayOfObjectExtOff()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters { UseExtensions = false});
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithoutTypeInfoToObjectTyped()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithTypeInfoToObject()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject(s);
+        Console.WriteLine(o.GetType().ToString());
+        var i = o as List<object>;
+        Assert.AreEqual(typeof(test), i[0].GetType());
+    }
+
 }// UnitTests.Tests
 //}

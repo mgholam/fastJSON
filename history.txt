@@ -1,3 +1,8 @@
+2.1.28
+- bug fix deserializing array of objects with type information
+- test for above 
+- support for .net core and netstandard2.0 via separate project
+
 2.1.27
 - bug fix case in DataMember attributes (thanks to Elvis Lam)
 - added ToObject(string json, Type type, JSONParameters par) 

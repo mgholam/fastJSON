@@ -17,8 +17,21 @@ namespace consoletest
         static bool exotic = false;
         static bool dsser = false;
 
+        //public class test
+        //{
+        //    //public int i = 0;
+        //}
+
         public static void Main(string[] args)
         {
+            //string s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
+            //var oo = JSON.ToDynamic(s);
+
+            //var o = fastJSON.JSON.ToObject<Dictionary<string, Dictionary<string, string>>>(s);
+
+            //var s = JSON.ToJSON(new test[] { new test(), new test() });//, new JSONParameters { UseExtensions = false});
+            //var o = JSON.ToObject(s);
+
             Console.WriteLine(".net version = " + Environment.Version);
             Console.WriteLine("press key : (E)xotic ");
             if (Console.ReadKey().Key == ConsoleKey.E)
@@ -173,21 +186,21 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("fastjson deserialize");
             colclass c = CreateObject();
-			var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
                 colclass deserializedStore;
                 string jsonText = null;
 
-				stopwatch.Restart();
+                stopwatch.Restart();
                 jsonText = fastJSON.JSON.ToJSON(c);
                 //Console.WriteLine(" size = " + jsonText.Length);
                 for (int i = 0; i < count; i++)
                 {
                     deserializedStore = (colclass)fastJSON.JSON.ToObject(jsonText);
                 }
-				stopwatch.Stop();
-				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
+                stopwatch.Stop();
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -196,17 +209,17 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("fastjson serialize");
             colclass c = CreateObject();
-			var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
                 string jsonText = null;
-				stopwatch.Restart();
+                stopwatch.Restart();
                 for (int i = 0; i < count; i++)
                 {
                     jsonText = fastJSON.JSON.ToJSON(c);
                 }
-				stopwatch.Stop();
-				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
+                stopwatch.Stop();
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -215,24 +228,24 @@ namespace consoletest
             Console.WriteLine();
             Console.Write("bin deserialize");
             colclass c = CreateObject();
-			var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 MemoryStream ms = new MemoryStream();
-				colclass deserializedStore = null;
-				stopwatch.Restart();
+                colclass deserializedStore = null;
+                stopwatch.Restart();
                 bf.Serialize(ms, c);
                 //Console.WriteLine(" size = " +ms.Length);
                 for (int i = 0; i < count; i++)
                 {
-					stopwatch.Stop(); // we stop then resume the stopwatch here so we don't factor in Seek()'s execution
+                    stopwatch.Stop(); // we stop then resume the stopwatch here so we don't factor in Seek()'s execution
                     ms.Seek(0L, SeekOrigin.Begin);
-					stopwatch.Start();
+                    stopwatch.Start();
                     deserializedStore = (colclass)bf.Deserialize(ms);
                 }
-				stopwatch.Stop();
-				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
+                stopwatch.Stop();
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -240,21 +253,21 @@ namespace consoletest
         {
             Console.Write("\r\nbin serialize");
             colclass c = CreateObject();
-			var stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 MemoryStream ms = new MemoryStream();
-				stopwatch.Restart();
+                stopwatch.Restart();
                 for (int i = 0; i < count; i++)
                 {
-					stopwatch.Stop(); // we stop then resume the stop watch here so we don't factor in the MemoryStream()'s execution
+                    stopwatch.Stop(); // we stop then resume the stop watch here so we don't factor in the MemoryStream()'s execution
                     ms = new MemoryStream();
-					stopwatch.Start();
+                    stopwatch.Start();
                     bf.Serialize(ms, c);
                 }
-				stopwatch.Stop();
-				Console.Write("\t" + stopwatch.ElapsedMilliseconds);
+                stopwatch.Stop();
+                Console.Write("\t" + stopwatch.ElapsedMilliseconds);
             }
         }
 
