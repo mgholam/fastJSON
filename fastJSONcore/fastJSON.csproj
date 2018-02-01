@@ -9,11 +9,13 @@
     <Copyright>2010-2018</Copyright>
     <Authors>M. Gholam</Authors>
     <PackageProjectUrl>https://www.codeproject.com/Articles/159450/fastJSON</PackageProjectUrl>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\fastJSON\fastJSON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0 net4</DefineConstants>
-    <OutputPath>D:\My Documents\code project\04. fastJSON\output</OutputPath>
+    <OutputPath>..\output\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
   </PropertyGroup>

@@ -2843,7 +2843,7 @@ public class tests
         var s = JSON.ToJSON(new test[] { new test(), new test() });
         var o = JSON.ToObject(s);
         Console.WriteLine(o.GetType().ToString());
-        var i = o as List<object>;
+        var i = o as test[];
         Assert.AreEqual(typeof(test), i[0].GetType());
     }
 
