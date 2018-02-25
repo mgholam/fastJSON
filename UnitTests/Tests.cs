@@ -291,7 +291,7 @@ public class tests
 
     #endregion
 
-    [TestFixtureSetUp]
+    [OneTimeSetUp]
     public static void setup()
     {
         //fastJSON.JSON.Parameters = new JSONParameters();
@@ -1864,24 +1864,76 @@ public class tests
         Assert.AreEqual(2, (o as IDictionary).Count);
     }
 
-    public class ctype
+    public struct Point
     {
-        public System.Net.IPAddress ip;
+        public int x;
+        public float y;
+    }
+    public class Complex
+    {
+        public int i;
+        public List<Point[]> l;
     }
     [Test]
     public static void CustomTypes()
     {
-        var ip = new ctype();
-        ip.ip = System.Net.IPAddress.Loopback;
+        JSON.RegisterCustomType(typeof(Point),
+            (o) => {
+              var pt = (Point)o;
+              return string.Format("[{0},{1}]", pt.x, pt.y);
+            },
+            (o, cb) => {
+              var l = o as List<object>;
+              return new Point() { x = Convert.ToInt32(l[0]), y = Convert.ToSingle(l[1]) };
+            });
+        JSON.RegisterCustomType(typeof(Complex),
+            (o) => {
+              var c = (Complex)o;
+              return string.Format("[{0},{1}]", c.i, JSON.ToJSON(c.l));
+            },
+            (o, cb) => {
+              var l = o as List<object>;
+              return new Complex() { i = Convert.ToInt32(l[0]), l = (List<Point[]>)cb(l[1], typeof(List<Point[]>)) };
+            });
 
-        JSON.RegisterCustomType(typeof(System.Net.IPAddress),
-            (x) => { return x.ToString(); },
-            (x) => { return System.Net.IPAddress.Parse(x); });
+        var pt1 = new Point() { x = 1, y = 2.3f };
+        var s = JSON.ToJSON(pt1);
+        Console.WriteLine(s);
+        var pt2 = JSON.ToObject<Point>(s);
+        Assert.AreEqual(pt1, pt2);
 
-        var s = JSON.ToJSON(ip);
+        var c1 = new Complex() {
+          i = 9,
+          l = new List<Point[]>() {
+            new Point[] {
+              new Point() { x = 1, y = 2.3f },
+              new Point() { x = 2, y = 3.4f },
+            },
+            new Point[] {
+              new Point() { x = 5, y = 6.7f },
+            },
+          }
+        };
+        s = JSON.ToJSON(c1);
+        Console.WriteLine(s);
+        var c2 = JSON.ToObject<Complex>(s);
+        Assert.AreEqual(s, JSON.ToJSON(c2));
 
-        var o = JSON.ToObject<ctype>(s);
-        Assert.AreEqual(ip.ip, o.ip);
+        var d1 = new Dictionary<string, List<List<Point>>>() {
+          {"a", new List<List<Point>> {
+            new List<Point> {
+              new Point() { x = 1, y = 2.3f },
+              new Point() { x = 2, y = 3.4f },
+            },
+            new List<Point> {
+              new Point() { x = 5, y = 6.7f },
+            },
+          }}
+        };
+        s = JSON.ToJSON(d1);
+        Console.WriteLine(s);
+        var d2 = JSON.ToObject(s, d1.GetType());
+        Assert.AreEqual(s, JSON.ToJSON(d2));
     }
 
     [Test]

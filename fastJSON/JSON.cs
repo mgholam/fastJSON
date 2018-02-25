@@ -10,8 +10,9 @@ using System.Collections.Specialized;
 
 namespace fastJSON
 {
+    public delegate object DeserializeCallback(object data, Type type);
     public delegate string Serialize(object data);
-    public delegate object Deserialize(string data);
+    public delegate object Deserialize(object data, DeserializeCallback cb);
 
     public sealed class JSONParameters
     {
@@ -383,6 +384,12 @@ namespace fastJSON
 
         public object ToObject(string json, Type type)
         {
+            object o = new JsonParser(json).Decode();
+            return ToTyped(o, type);
+        }
+
+        public object ToTyped(object o, Type type)
+        {
             //_params = Parameters;
             _params.FixValues();
             Type t = null;
@@ -392,7 +399,9 @@ namespace fastJSON
                 _params.UsingGlobalTypes = false;
             _usingglobals = _params.UsingGlobalTypes;
 
-            object o = new JsonParser(json).Decode();
+            if ((type != null) && Reflection.Instance.IsTypeRegistered(type))
+                return Reflection.Instance.CreateCustom(o, type, ToTyped);
+
             if (o == null)
                 return null;
 #if !SILVERLIGHT
@@ -489,9 +498,6 @@ namespace fastJSON
 
             else if (conversionType == typeof(DateTimeOffset))
                 return CreateDateTimeOffset((string)value);
-
-            else if (Reflection.Instance.IsTypeRegistered(conversionType))
-                return Reflection.Instance.CreateCustom((string)value, conversionType);
 
             // 8-30-2014 - James Brooks - Added code for nullable types.
             if (IsNullable(conversionType))
@@ -612,8 +618,17 @@ namespace fastJSON
             {
                 _usingglobals = false;
                 object v = k;
-                if (k is Dictionary<string, object>)
+                if ((it != null) && Reflection.Instance.IsTypeRegistered(it))
+                    v = Reflection.Instance.CreateCustom(k, it, ToTyped);
+                else if (k is Dictionary<string, object>)
                     v = ParseDictionary(k as Dictionary<string, object>, globals, it, null);
+                else if (k is List<object>)
+                {
+                    if (it != null && it.IsArray)
+                        v = RootArray(k, it);
+                    else
+                        v = RootList(k, it);
+                }
                 else
                     v = ChangeType(k, it);
 
@@ -682,6 +697,8 @@ namespace fastJSON
                 return CreateNV(d);
             if (type == typeof(StringDictionary))
                 return CreateSD(d);
+            if ((type != null) && type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                return RootDictionary(d, type);
 
             if (d.TryGetValue("$i", out tn))
             {
@@ -789,7 +806,7 @@ namespace fastJSON
                             case myPropInfoType.StringKeyDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
                             case myPropInfoType.NameValue: oset = CreateNV((Dictionary<string, object>)v); break;
                             case myPropInfoType.StringDictionary: oset = CreateSD((Dictionary<string, object>)v); break;
-                            case myPropInfoType.Custom: oset = Reflection.Instance.CreateCustom((string)v, pi.pt); break;
+                            case myPropInfoType.Custom: oset = Reflection.Instance.CreateCustom(v, pi.pt, ToTyped); break;
                             default:
                                 {
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
@@ -997,13 +1014,12 @@ namespace fastJSON
                 {
                     if (ob is IDictionary)
                         col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, it, null));
-
                     else if (ob is List<object>)
                     {
-                        if (bt.IsGenericType)
-                            col.Add((List<object>)ob);//).ToArray());
+                        if (it.IsArray)
+                            col.Add(RootArray(ob, it));
                         else
-                            col.Add(((List<object>)ob).ToArray());
+                            col.Add(RootList(ob, it));
                     }
                     else
                         col.Add(ChangeType(ob, it));
