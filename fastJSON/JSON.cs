@@ -12,6 +12,40 @@ namespace fastJSON
 {
     public delegate string Serialize(object data);
     public delegate object Deserialize(string data);
+    public delegate string TextHandler(string name);
+    public delegate void InvalidObjectHandler(object obj);
+
+    public enum NamingStyles
+    {
+        /// <summary>
+        /// Leave name as is
+        /// </summary>
+        Normal = 0,
+        /// <summary>
+        /// Transform to lower case
+        /// </summary>
+        LowerCase = 1,
+        /// <summary>
+        /// Transform to camel case (Lowers the first char)
+        /// </summary>
+        CamelCase = 2
+    }
+
+    public enum InvalidObjectActions
+    {
+        /// <summary>
+        /// Throws an exception
+        /// </summary>
+        Throw = 0,
+        /// <summary>
+        /// Inserts a "null"
+        /// </summary>
+        InsertNull = 1,
+        /// <summary>
+        /// Inserts an empty object "{}"
+        /// </summary>
+        InsertEmpty = 2
+    }
 
     public sealed class JSONParameters
     {
@@ -83,13 +117,22 @@ namespace fastJSON
         /// </summary>
         public byte SerializerMaxDepth = 20;
         /// <summary>
+        /// Default action for when the <see cref="SerializerMaxDepth"/> limit is hit.
+        /// </summary>
+        public InvalidObjectActions SerializerMaxDepthHandling = InvalidObjectActions.Throw;
+        /// <summary>
         /// Inline circular or already seen objects instead of replacement with $i (default = False) 
         /// </summary>
         public bool InlineCircularReferences = false;
         /// <summary>
         /// Save property/field names as lowercase (default = false)
         /// </summary>
+        [Obsolete("Use the NamingStyle property instead")]
         public bool SerializeToLowerCaseNames = false;
+        /// <summary>
+        /// Naming style for property/field name (default = normal, leave as is)
+        /// </summary>
+        public NamingStyles NamingStyle = NamingStyles.Normal;
         /// <summary>
         /// Formatter indent spaces (default = 3)
         /// </summary>
@@ -1222,6 +1265,50 @@ namespace fastJSON
         }
 #endif
         #endregion
+    }
+
+    internal class nameHandler
+    {
+        private readonly TextHandler _handle;
+
+        internal nameHandler(NamingStyles style)
+        {
+            switch (style)
+            {
+                case NamingStyles.LowerCase:
+                    _handle = (s) => s.ToLower();
+                    break;
+                case NamingStyles.CamelCase:
+                    _handle = (s) =>
+                    {
+                        var chars = s.ToCharArray();
+                        var isAllUpper = true;
+                        for (var ci = 0; ci < chars.Length; ci++)
+                        {
+                            if (!Char.IsUpper(chars[ci]))
+                            {
+                                isAllUpper = false;
+                                break;
+                            }
+                        }
+                        if (isAllUpper)
+                            return s.ToLower();
+                        chars[0] = Char.ToLower(chars[0]);
+                        return new string(chars);
+                    };
+                    break;
+                case NamingStyles.Normal:
+                default:
+                    _handle = (s) => s;
+                    break;
+            }
+        }
+
+        internal string Handle(string name)
+        {
+            return _handle(name);
+        }
+
     }
 
 }

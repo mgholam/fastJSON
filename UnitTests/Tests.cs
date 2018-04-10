@@ -1386,6 +1386,85 @@ public class tests
         Assert.AreEqual(p.o2obj, p.child.child);
     }
 
+
+    class Circular
+    {
+        public Guid Id;
+        public Circular Parent;
+        public Circular Child;
+
+        public Circular()
+        {
+            Id = Guid.NewGuid();
+        }
+
+        public static Circular Create()
+        {
+            var a = new Circular();
+            var b = new Circular() { Parent = a };
+            a.Child = b;
+            var c = new Circular() { Parent = b };
+            b.Child = c;
+            var d = new Circular() { Parent = c };
+            c.Child = d;
+            return a;
+        }
+
+    }
+
+    [Test]
+    public static void CircularReferencesThrows()
+    {
+        var obj = Circular.Create();
+
+        Assert.That(() =>
+            {
+                JSON.ToJSON(obj,
+                    new JSONParameters()
+                    {
+                        SerializerMaxDepth = 2,
+                        SerializerMaxDepthHandling = InvalidObjectActions.Throw,
+                        InlineCircularReferences = true
+                    });
+            },
+            Throws.TypeOf<Exception>());
+    }
+
+    [Test]
+    public static void CircularReferencesNull()
+    {
+        var obj = Circular.Create();
+
+        var s = JSON.ToJSON(obj,
+            new JSONParameters()
+            {
+                SerializeNullValues = false,
+                SerializerMaxDepth = 3,
+                SerializerMaxDepthHandling = InvalidObjectActions.InsertNull,
+                InlineCircularReferences = true
+            });
+        Console.WriteLine(JSON.Beautify(s));
+        StringAssert.Contains("null", s);
+    }
+
+    [Test]
+    public static void CircularReferencesEmpty()
+    {
+        var obj = Circular.Create();
+
+        var s = JSON.ToJSON(obj,
+            new JSONParameters()
+            {
+                SerializeNullValues = false,
+                SerializerMaxDepth = 4,
+                SerializerMaxDepthHandling = InvalidObjectActions.InsertEmpty,
+                InlineCircularReferences = true
+            });
+        Console.WriteLine(s);
+        Console.WriteLine(JSON.Beautify(s));
+        StringAssert.Contains("{}", s);
+    }
+
     public class lol
     {
         public List<List<object>> r;
@@ -1625,7 +1704,7 @@ public class tests
         r.Field1 = "dsasdF";
         r.Field2 = 2312;
         r.date = DateTime.Now;
-        var s = JSON.ToNiceJSON(r, new JSONParameters { SerializeToLowerCaseNames = true });
+        var s = JSON.ToNiceJSON(r, new JSONParameters { NamingStyle = NamingStyles.LowerCase });
         Console.WriteLine(s);
         var o = JSON.ToObject(s);
         Assert.IsNotNull(o);
@@ -1633,6 +1712,32 @@ public class tests
         Assert.AreEqual(2312, (o as Retclass).Field2);
     }
 
+    [Test]
+    public static void PropertyName_Normal()
+    {
+        var obj = new { NameProperty = "Test" };
+        var s = JSON.ToJSON(obj, new JSONParameters { NamingStyle = NamingStyles.Normal, EnableAnonymousTypes = true });
+        Console.WriteLine(s);
+        Assert.AreEqual("{\"NameProperty\":\"Test\"}", s);
+    }
+
+    [Test]
+    public static void PropertyName_LowerCase()
+    {
+        var obj = new { NameProperty = "Test" };
+        var s = JSON.ToJSON(obj, new JSONParameters { NamingStyle = NamingStyles.LowerCase, EnableAnonymousTypes = true });
+        Console.WriteLine(s);
+        Assert.AreEqual("{\"nameproperty\":\"Test\"}", s);
+    }
+
+    [Test]
+    public static void PropertyName_CamelCase()
+    {
+        var obj = new { NameProperty = "Test", CRC = "1234" };
+        var s = JSON.ToJSON(obj, new JSONParameters { NamingStyle = NamingStyles.CamelCase, EnableAnonymousTypes = true });
+        Console.WriteLine(s);
+        Assert.AreEqual("{\"nameProperty\":\"Test\",\"crc\":\"1234\"}", s);
+    }
 
     public class nulltest
     {

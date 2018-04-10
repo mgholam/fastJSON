@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Collections.Specialized;
+using System.Runtime.Remoting.Messaging;
 
 namespace fastJSON
 {
@@ -22,12 +23,34 @@ namespace fastJSON
         private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private JSONParameters _params;
         private bool _useEscapedUnicode = false;
+        private List<object> _skipObjects = new List<object>();
+        private readonly nameHandler _nameHandler;
+        private InvalidObjectHandler _handleInvalidObject;
 
         internal JSONSerializer(JSONParameters param)
         {
             _params = param;
             _useEscapedUnicode = _params.UseEscapedUnicode;
             _MAX_DEPTH = _params.SerializerMaxDepth;
+            _nameHandler = new nameHandler(param.NamingStyle);
+            assignInvalidObjectHandler();
+        }
+
+        private void assignInvalidObjectHandler()
+        {
+            switch (_params.SerializerMaxDepthHandling)
+            {
+                case InvalidObjectActions.InsertEmpty:
+                    _handleInvalidObject = (obj) => { _output.Append("{}"); };
+                    break;
+                case InvalidObjectActions.InsertNull:
+                    _handleInvalidObject = (obj) => { _output.Append("null"); };
+                    break;
+                case InvalidObjectActions.Throw:
+                default:
+                    _handleInvalidObject = (obj) => { throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH); };
+                    break;
+            }
         }
 
         internal string ConvertToJSON(object obj)
@@ -55,8 +78,15 @@ namespace fastJSON
             return _output.ToString();
         }
 
-        private void WriteValue(object obj)
+        private bool WriteValue(object obj)
         {
+            // Check for object reference limitation
+            if (obj != null && _skipObjects.Contains(obj))
+            {
+                _handleInvalidObject(obj);
+                return false;
+            }
+
             if (obj == null || obj is DBNull)
                 _output.Append("null");
 
@@ -124,7 +154,7 @@ namespace fastJSON
 #endif
 
             else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
-                obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+                     obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
 
                 WriteStringDictionary((IDictionary)obj);
             else if (obj is IDictionary)
@@ -156,12 +186,14 @@ namespace fastJSON
 
             else
                 WriteObject(obj);
+
+            return true;
         }
 
         private void WriteDateTimeOffset(DateTimeOffset d)
         {
             DateTime dt = _params.UseUTCDateTime ? d.UtcDateTime : d.DateTime;
-            
+
             write_date_value(dt);
 
             var ticks = dt.Ticks % TimeSpan.TicksPerSecond;
@@ -198,10 +230,7 @@ namespace fastJSON
                 else
                 {
                     if (pendingSeparator) _output.Append(',');
-                    if (_params.SerializeToLowerCaseNames)
-                        WritePair(key.ToLower(), nameValueCollection[key]);
-                    else
-                        WritePair(key, nameValueCollection[key]);
+                    WritePair(_nameHandler.Handle(key), nameValueCollection[key]);
                     pendingSeparator = true;
                 }
             }
@@ -224,10 +253,7 @@ namespace fastJSON
                     if (pendingSeparator) _output.Append(',');
 
                     string k = (string)entry.Key;
-                    if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
-                    else
-                        WritePair(k, entry.Value);
+                    WritePair(_nameHandler.Handle(k), entry.Value);
                     pendingSeparator = true;
                 }
             }
@@ -433,6 +459,15 @@ namespace fastJSON
                     return;
                 }
             }
+
+            // Ban the object for further serialization
+            if (_current_depth >= _MAX_DEPTH)
+            {
+                _handleInvalidObject(obj);
+                _skipObjects.Add(obj);
+                return;
+            }
+
             if (_params.UsingGlobalTypes == false)
                 _output.Append('{');
             else
@@ -448,9 +483,6 @@ namespace fastJSON
             }
             _TypesWritten = true;
             _current_depth++;
-            if (_current_depth > _MAX_DEPTH)
-                throw new Exception("Serializer encountered maximum depth of " + _MAX_DEPTH);
-
 
             Dictionary<string, string> map = new Dictionary<string, string>();
             Type t = obj.GetType();
@@ -489,8 +521,10 @@ namespace fastJSON
                         _output.Append(',');
                     if (p.memberName != null)
                         WritePair(p.memberName, o);
-                    else if (_params.SerializeToLowerCaseNames)
+                    else if (_params.NamingStyle == NamingStyles.LowerCase)
                         WritePair(p.lcName, o);
+                    else if (_params.NamingStyle == NamingStyles.CamelCase)
+                        WritePair(p.ccName, o);
                     else
                         WritePair(p.Name, o);
                     if (o != null && _params.UseExtensions)
@@ -533,15 +567,31 @@ namespace fastJSON
         {
             _output.Append('[');
 
+            // Get the index before any additions, in case of a recovery is needed
+            var recoveryLength = _output.Length;
+            var needsRecovery = false;
+
             bool pendingSeperator = false;
 
             foreach (object obj in array)
             {
                 if (pendingSeperator) _output.Append(',');
 
-                WriteValue(obj);
+                if (!WriteValue(obj))
+                {
+                    // Object did not serialize (Probably hit the circular reference limit)
+                    needsRecovery = true;
+                    break;
+                }
 
                 pendingSeperator = true;
+            }
+
+            // Serialization error, rollback the entire array (Better empty than incomplete data)
+            if (needsRecovery)
+            {
+                var toRemove = _output.Length - recoveryLength;
+                _output.Remove(recoveryLength, toRemove);
             }
             _output.Append(']');
         }
@@ -562,10 +612,7 @@ namespace fastJSON
                     if (pendingSeparator) _output.Append(',');
 
                     string k = (string)entry.Key;
-                    if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
-                    else
-                        WritePair(k, entry.Value);
+                    WritePair(_nameHandler.Handle(k), entry.Value);
                     pendingSeparator = true;
                 }
             }
@@ -584,12 +631,9 @@ namespace fastJSON
                 else
                 {
                     if (pendingSeparator) _output.Append(',');
-                    string k = entry.Key;
 
-                    if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
-                    else
-                        WritePair(k, entry.Value);
+                    string k = entry.Key;
+                    WritePair(_nameHandler.Handle(k), entry.Value);
                     pendingSeparator = true;
                 }
             }
@@ -645,7 +689,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c!='\0')// && c != ':' && c!=',')
+                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c != '\0')// && c != ':' && c!=',')
                     {
                         if (runIndex == -1)
                             runIndex = index;
