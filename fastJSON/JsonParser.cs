@@ -43,7 +43,7 @@ namespace fastJSON
 
         public object Decode()
         {
-            return ParseValue();
+            return ParseValue(false);
         }
 
         private Dictionary<string, object> ParseObject()
@@ -68,17 +68,17 @@ namespace fastJSON
                     default:
                         {
                             // name
-                            string name = ParseString();
+                            string name = ParseString(false);
 
                             var n = NextToken();
                             // :
-                            if ( n!= Token.Colon)
+                            if (n != Token.Colon)
                             {
                                 throw new Exception("Expected colon at index " + index);
                             }
 
                             // value
-                            object value = ParseValue();
+                            object value = ParseValue(true);
 
                             table[name] = value;
                         }
@@ -105,13 +105,13 @@ namespace fastJSON
                         return array;
 
                     default:
-                        array.Add(ParseValue());
+                        array.Add(ParseValue(false));
                         break;
                 }
             }
         }
 
-        private object ParseValue()
+        private object ParseValue(bool val)
         {
             switch (LookAhead())
             {
@@ -119,7 +119,7 @@ namespace fastJSON
                     return ParseNumber();
 
                 case Token.String:
-                    return ParseString();
+                    return ParseString(val);
 
                 case Token.Curly_Open:
                     return ParseObject();
@@ -143,12 +143,12 @@ namespace fastJSON
             throw new Exception("Unrecognized token at index" + index);
         }
 
-        private string ParseString()
+        private string ParseString(bool val)
         {
             ConsumeToken(); // "
 
             s.Length = 0;
-
+            bool instr = val;
             int runIndex = -1;
             int l = json.Length;
             //fixed (char* p = json)
@@ -157,11 +157,13 @@ namespace fastJSON
                 while (index < l)
                 {
                     var c = p[index++];
+                    if (c == '"')
+                        instr = true;
 
-                    if (c == '"' || (allownonquotedkey && (c == ':' || c==' ')))
+                    if (c == '"' || (allownonquotedkey && (c == ':' || c == ' ' || c == '\t' ) && instr == false))
                     {
                         int len = 1;
-                        if (allownonquotedkey && c != '"')
+                        if (allownonquotedkey && c != '"' && instr == false)
                         {
                             index--;
                             //index--;

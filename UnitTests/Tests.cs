@@ -2856,13 +2856,17 @@ public class tests
     [Test]
     public static void NonStandardKey()
     {
-        var s = "{name:\"me\", age:42, \"address\":\"here\"}";
+        //var s = "{\"name\":\"m:e\", \"age\":42, \"address\":\"here\"}";
+        //var o = JSON.ToObject<nskeys>(s);
+
+
+        var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
         var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
-        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("m:e", o.name);
         Assert.AreEqual("here", o.address);
         Assert.AreEqual(42, o.age);
 
-        s = "{name:\"me\", age : 42, address  :\"here\"}";
+        s = "{name  \t  :\"me\", age : 42, address  :\"here\"}";
         o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
         Assert.AreEqual("me", o.name);
         Assert.AreEqual("here", o.address);
