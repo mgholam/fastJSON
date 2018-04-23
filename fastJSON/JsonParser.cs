@@ -25,16 +25,19 @@ namespace fastJSON
             Number,
             True,
             False,
-            Null
+            Null//, 
+            //Key
         }
 
         readonly string json;
         readonly StringBuilder s = new StringBuilder(); // used for inner string parsing " \"\r\n\u1234\'\t " 
         Token lookAheadToken = Token.None;
         int index;
+        bool allownonquotedkey = false;
 
-        internal JsonParser(string json)
+        internal JsonParser(string json, bool AllowNonQuotedKeys)
         {
+            this.allownonquotedkey = AllowNonQuotedKeys;
             this.json = json;
         }
 
@@ -67,8 +70,9 @@ namespace fastJSON
                             // name
                             string name = ParseString();
 
+                            var n = NextToken();
                             // :
-                            if (NextToken() != Token.Colon)
+                            if ( n!= Token.Colon)
                             {
                                 throw new Exception("Expected colon at index " + index);
                             }
@@ -154,12 +158,21 @@ namespace fastJSON
                 {
                     var c = p[index++];
 
-                    if (c == '"')
+                    if (c == '"' || (allownonquotedkey && (c == ':' || c==' ')))
                     {
+                        int len = 1;
+                        if (allownonquotedkey && c != '"')
+                        {
+                            index--;
+                            //index--;
+                            len = 0;
+                            //runIndex--;
+                        }
+
                         if (runIndex != -1)
                         {
                             if (s.Length == 0)
-                                return json.Substring(runIndex, index - runIndex - 1);
+                                return json.Substring(runIndex, index - runIndex - len);
 
                             s.Append(json, runIndex, index - runIndex - 1);
                         }
@@ -444,7 +457,13 @@ namespace fastJSON
                     }
                     break;
             }
-            throw new Exception("Could not find token at index " + --index);
+            if (allownonquotedkey)
+            {
+                index--;
+                return Token.String;
+            }
+            else
+                throw new Exception("Could not find token at index " + --index);
         }
     }
 }

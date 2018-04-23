@@ -83,7 +83,7 @@ namespace fastJSON
         /// </summary>
         public byte SerializerMaxDepth = 20;
         /// <summary>
-        /// Inline circular or already seen objects instead of replacement with $i (default = False) 
+        /// Inline circular or already seen objects instead of replacement with $i (default = false) 
         /// </summary>
         public bool InlineCircularReferences = false;
         /// <summary>
@@ -94,6 +94,10 @@ namespace fastJSON
         /// Formatter indent spaces (default = 3)
         /// </summary>
         public byte FormatterIndentSpaces = 3;
+        /// <summary>
+        /// TESTING - allow non quoted keys in the json like javascript (default = false)
+        /// </summary>
+        public bool AllowNonQuotedKeys = false;
 
         public void FixValues()
         {
@@ -175,7 +179,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object Parse(string json)
         {
-            return new JsonParser(json).Decode();
+            return new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode();
         }
 #if net4
         /// <summary>
@@ -257,7 +261,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object FillObject(object input, string json)
         {
-            Dictionary<string, object> ht = new JsonParser(json).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode() as Dictionary<string, object>;
             if (ht == null) return null;
             return new deserializer(Parameters).ParseDictionary(ht, null, input.GetType(), input);
         }
@@ -392,7 +396,7 @@ namespace fastJSON
                 _params.UsingGlobalTypes = false;
             _usingglobals = _params.UsingGlobalTypes;
 
-            object o = new JsonParser(json).Decode();
+            object o = new JsonParser(json, _params.AllowNonQuotedKeys).Decode();
             if (o == null)
                 return null;
 #if !SILVERLIGHT

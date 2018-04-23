@@ -2820,7 +2820,7 @@ public class tests
     }
 
 
-    public class test {   }
+    public class test { public string name = "me"; }
     [Test]
     public static void ArrayOfObjectExtOff()
     {
@@ -2843,9 +2843,36 @@ public class tests
         var s = JSON.ToJSON(new test[] { new test(), new test() });
         var o = JSON.ToObject(s);
         Console.WriteLine(o.GetType().ToString());
-        var i = o as test[];
+        var i = o as List<object>;
         Assert.AreEqual(typeof(test), i[0].GetType());
     }
 
+    public class nskeys
+    {
+        public string name;
+        public int age;
+        public string address;
+    }
+    [Test]
+    public static void NonStandardKey()
+    {
+        var s = "{name:\"me\", age:42, \"address\":\"here\"}";
+        var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+
+        s = "{name:\"me\", age : 42, address  :\"here\"}";
+        o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+
+        s = "{    name   :\"me\", age : 42, address :    \"here\"}";
+        o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+    }
 }// UnitTests.Tests
 //}
