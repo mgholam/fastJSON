@@ -161,7 +161,7 @@ namespace fastJSON
         private void WriteDateTimeOffset(DateTimeOffset d)
         {
             DateTime dt = _params.UseUTCDateTime ? d.UtcDateTime : d.DateTime;
-            
+
             write_date_value(dt);
 
             var ticks = dt.Ticks % TimeSpan.TicksPerSecond;
@@ -236,9 +236,9 @@ namespace fastJSON
 
         private void WriteCustom(object obj)
         {
-            Serialize s;
-            Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
-            WriteRaw(s(obj));
+            Reflection.MySerializer ser;
+            Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out ser);
+            WriteRaw(ser.Invoke(obj));
         }
 
         private void WriteEnum(Enum e)
@@ -645,7 +645,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c!='\0')// && c != ':' && c!=',')
+                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c != '\0')// && c != ':' && c!=',')
                     {
                         if (runIndex == -1)
                             runIndex = index;

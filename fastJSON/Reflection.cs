@@ -100,32 +100,118 @@ namespace fastJSON
 
         #region json custom types
         // JSON custom
-        internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
-        internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
+        internal SafeDictionary<Type, MySerializer> _customSerializer = new SafeDictionary<Type, MySerializer>();
+        internal SafeDictionary<Type, MyDeserializer> _customDeserializer = new SafeDictionary<Type, MyDeserializer>();
+
+
+        internal class MySerializer
+        {
+            Serialize _ser;
+            public MySerializer(Serialize ser)
+            {
+                _ser = ser;
+            }
+            public virtual string Invoke(object obj)
+            {
+                return _ser(obj);
+            }
+
+        }
+        internal class MySerializer<T> : MySerializer
+        {
+            Serialize2<T> _ser;
+            public MySerializer(Serialize2<T> ser)
+                : base(null)
+            {
+                this._ser = ser;
+            }
+            public override string Invoke(object obj)
+            {
+                return _ser((T)obj);
+            }
+        }
+
+        internal class MyDeserializer
+        {
+            Deserialize _deser;
+            public MyDeserializer(Deserialize deser)
+            {
+                this._deser = deser;
+            }
+            public virtual object Invoke(object data, DeserializeCallback cb)
+            {
+                return _deser(data, cb);
+            }
+        }
+        internal class MyDeserializer<T> : MyDeserializer
+        {
+            Deserialize2<T> _deser;
+            public MyDeserializer(Deserialize2<T> deser)
+                : base(null)
+            {
+                this._deser = deser;
+            }
+            public override object Invoke(object data, DeserializeCallback cb)
+            {
+                return _deser(data, cb);
+            }
+        }
+        internal class MyDeserializer<T, U> : MyDeserializer
+        {
+            Deserialize3<T, U> _deser;
+            public MyDeserializer(Deserialize3<T, U> deser)
+                : base(null)
+            {
+                this._deser = deser;
+            }
+            public override object Invoke(object data, DeserializeCallback cb)
+            {
+                return _deser((U)data, cb);
+            }
+        }
 
         internal object CreateCustom(object v, Type type, DeserializeCallback cb)
         {
-            Deserialize d;
+            MyDeserializer d;
             _customDeserializer.TryGetValue(type, out d);
-            return d(v, cb);
+            return d.Invoke(v, cb);
         }
 
         internal void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
         {
             if (type != null && serializer != null && deserializer != null)
             {
-                _customSerializer.Add(type, serializer);
-                _customDeserializer.Add(type, deserializer);
+                _customSerializer.Add(type, new MySerializer(serializer));
+                _customDeserializer.Add(type, new MyDeserializer(deserializer));
                 // reset property cache
                 Instance.ResetPropertyCache();
             }
         }
-
+        internal void RegisterCustomType<T>(Type type, Serialize2<T> serializer, Deserialize2<T> deserializer)
+        {
+            if (type != null && serializer != null && deserializer != null)
+            {
+                _customSerializer.Add(type, new MySerializer<T>(serializer));
+                _customDeserializer.Add(type, new MyDeserializer<T>(deserializer));
+                // reset property cache
+                Instance.ResetPropertyCache();
+            }
+        }
+        internal void RegisterCustomType<T, U>(Type type, Serialize2<T> serializer, Deserialize3<T, U> deserializer)
+        {
+            if (type != null && serializer != null && deserializer != null)
+            {
+                _customSerializer.Add(type, new MySerializer<T>(serializer));
+                _customDeserializer.Add(type, new MyDeserializer<T, U>(deserializer));
+                // reset property cache
+                Instance.ResetPropertyCache();
+            }
+        }
         internal bool IsTypeRegistered(Type t)
         {
             if (_customSerializer.Count == 0)
                 return false;
-            Serialize s;
+            MySerializer s;
             return _customSerializer.TryGetValue(t, out s);
         }
         #endregion
@@ -295,7 +381,7 @@ namespace fastJSON
             return conversionType;
         }
 
-#region [   PROPERTY GET SET   ]
+        #region [   PROPERTY GET SET   ]
 
         internal string GetTypeAssemblyName(Type t)
         {
@@ -576,7 +662,7 @@ namespace fastJSON
                         continue;
                 }
                 string mName = null;
-                #if net4
+#if net4
                 var att = p.GetCustomAttributes(true);
                 foreach (var at in att)
                 {
@@ -589,7 +675,7 @@ namespace fastJSON
                         }
                     }
                 }
-                #endif
+#endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
                     getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), memberName = mName });
@@ -655,7 +741,7 @@ namespace fastJSON
 
         //    return false;
         //}
-#endregion
+        #endregion
 
         internal void ResetPropertyCache()
         {

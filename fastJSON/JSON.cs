@@ -14,6 +14,11 @@ namespace fastJSON
     public delegate string Serialize(object data);
     public delegate object Deserialize(object data, DeserializeCallback cb);
 
+    //
+    public delegate string Serialize2<T>(T data);
+    public delegate T Deserialize2<T>(object data, DeserializeCallback cb);
+    public delegate T Deserialize3<T, U>(U data, DeserializeCallback cb);
+
     public sealed class JSONParameters
     {
         /// <summary>
@@ -312,6 +317,15 @@ namespace fastJSON
         public static void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
         {
             Reflection.Instance.RegisterCustomType(type, serializer, deserializer);
+        }
+
+        public static void RegisterCustomType<T>(Serialize2<T> serializer, Deserialize2<T> deserializer)
+        {
+            Reflection.Instance.RegisterCustomType(typeof(T), serializer, deserializer);
+        }
+        public static void RegisterCustomType<T, U>(Serialize2<T> serializer, Deserialize3<T, U> deserializer)
+        {
+            Reflection.Instance.RegisterCustomType(typeof(T), serializer, deserializer);
         }
         /// <summary>
         /// Clear the internal reflection cache so you can start from new (you will loose performance)
