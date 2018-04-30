@@ -1939,7 +1939,7 @@ public class tests
     public static void CustomTypes_Generic2()
     {
         JSON.RegisterCustomType<Point, List<object>>(
-             //since we know that our point will be serialized to list of object
+             //since we know that our point will be serialized to list of objects
              pt => string.Format("[{0},{1}]", pt.x, pt.y),
              (l, cb) =>
              {
@@ -1947,12 +1947,14 @@ public class tests
              });
         //
         JSON.RegisterCustomType<Complex, List<object>>(
-             c => string.Format("[{0},{1}]", c.i, JSON.ToJSON(c.l)),
+            //since we know that our complex type will be serialized to list of objects
+            c => string.Format("[{0},{1}]", c.i, JSON.ToJSON(c.l)),
             (l, cb) =>
             {
-                return new Complex() { i = Convert.ToInt32(l[0]), l = (List<Point[]>) cb(l[1], typeof(List<Point[]>)) };
+                return new Complex() { i = Convert.ToInt32(l[0]), l = (List<Point[]>)cb(l[1], typeof(List<Point[]>)) };
             });
 
+        //----------------
         var pt1 = new Point() { x = 1, y = 2.3f };
         var s = JSON.ToJSON(pt1);
         Console.WriteLine(s);
