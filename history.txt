@@ -1,3 +1,7 @@
+2.1.29
+- added JSONParameters.AllowNonQuotedKeys for non standard javascript like json
+- signed .net core and standard assembly
+
 2.1.28
 - bug fix deserializing array of objects with type information
 - test for above 
