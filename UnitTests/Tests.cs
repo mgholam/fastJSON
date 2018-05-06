@@ -2878,5 +2878,17 @@ public class tests
         Assert.AreEqual("here", o.address);
         Assert.AreEqual(42, o.age);
     }
+
+    public class cis
+    {
+        public string age;
+    }
+
+    [Test]
+    public static void ConvertInt2String()
+    {
+        var s = "{\"age\":42}";
+        var o = JSON.ToObject<cis>(s);
+    }
 }// UnitTests.Tests
 //}

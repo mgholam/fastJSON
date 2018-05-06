@@ -772,7 +772,7 @@ namespace fastJSON
                         {
                             case myPropInfoType.Int: oset = (int)AutoConv(v); break;
                             case myPropInfoType.Long: oset = AutoConv(v); break;
-                            case myPropInfoType.String: oset = (string)v; break;
+                            case myPropInfoType.String: oset = v.ToString(); break;
                             case myPropInfoType.Bool: oset = (bool)v; break;
                             case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
                             case myPropInfoType.Enum: oset = CreateEnum(pi.pt, v); break;

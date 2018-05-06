@@ -1,3 +1,6 @@
+2.1.30
+- auto convert to string on deserialize if the object property is string and the json is not
+
 2.1.29
 - added JSONParameters.AllowNonQuotedKeys for non standard javascript like json
 - signed .net core and standard assembly
