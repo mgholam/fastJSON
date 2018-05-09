@@ -160,7 +160,7 @@ namespace fastJSON
                     if (c == '"')
                         instr = true;
 
-                    if (c == '"' || (allownonquotedkey && (c == ':' || c == ' ' || c == '\t' ) && instr == false))
+                    if (c == '"' || (allownonquotedkey && (c == ':' || c == ' ' || c == '\t'  ) && instr == false))
                     {
                         int len = 1;
                         if (allownonquotedkey && c != '"' && instr == false)
@@ -327,7 +327,6 @@ namespace fastJSON
             else
             {
                 string s = json.Substring(startIndex, index - startIndex);
-                //return s;
                 return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
             }
         }

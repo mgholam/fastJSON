@@ -109,6 +109,33 @@ namespace fastJSON
             if (EnableAnonymousTypes)
                 ShowReadOnlyProperties = true;
         }
+
+        internal JSONParameters MakeCopy()
+        {
+            return new JSONParameters
+            {
+                AllowNonQuotedKeys = AllowNonQuotedKeys,
+                DateTimeMilliseconds = DateTimeMilliseconds,
+                EnableAnonymousTypes = EnableAnonymousTypes,
+                FormatterIndentSpaces = FormatterIndentSpaces,
+                IgnoreAttributes = new List<Type>(IgnoreAttributes),
+                //IgnoreCaseOnDeserialize = IgnoreCaseOnDeserialize,
+                InlineCircularReferences = InlineCircularReferences,
+                KVStyleStringDictionary = KVStyleStringDictionary,
+                ParametricConstructorOverride = ParametricConstructorOverride,
+                SerializeNullValues = SerializeNullValues,
+                SerializerMaxDepth = SerializerMaxDepth,
+                SerializeToLowerCaseNames = SerializeToLowerCaseNames,
+                ShowReadOnlyProperties = ShowReadOnlyProperties,
+                UseEscapedUnicode = UseEscapedUnicode,
+                UseExtensions = UseExtensions,
+                UseFastGuid = UseFastGuid,
+                UseOptimizedDatasetSchema = UseOptimizedDatasetSchema,
+                UseUTCDateTime = UseUTCDateTime,
+                UseValuesOfEnums = UseValuesOfEnums,
+                UsingGlobalTypes = UsingGlobalTypes
+            };
+        }
     }
 
     public static class JSON
@@ -158,6 +185,7 @@ namespace fastJSON
         public static string ToJSON(object obj, JSONParameters param)
         {
             param.FixValues();
+            param = param.MakeCopy();
             Type t = null;
 
             if (obj == null)
@@ -352,7 +380,8 @@ namespace fastJSON
     {
         public deserializer(JSONParameters param)
         {
-            _params = param;
+            param.FixValues();
+            _params = param.MakeCopy();
         }
 
         private JSONParameters _params;
@@ -387,14 +416,13 @@ namespace fastJSON
 
         public object ToObject(string json, Type type)
         {
-            //_params = Parameters;
-            _params.FixValues();
+            //_params.FixValues();
             Type t = null;
             if (type != null && type.IsGenericType)
                 t = Reflection.Instance.GetGenericTypeDefinition(type);
-            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
-                _params.UsingGlobalTypes = false;
             _usingglobals = _params.UsingGlobalTypes;
+            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
+                _usingglobals = false;
 
             object o = new JsonParser(json, _params.AllowNonQuotedKeys).Decode();
             if (o == null)
@@ -646,6 +674,7 @@ namespace fastJSON
                 t1 = gtypes[0];
                 t2 = gtypes[1];
             }
+
             var arraytype = t2.GetElementType();
             if (parse is Dictionary<string, object>)
             {
@@ -656,7 +685,10 @@ namespace fastJSON
                     object v;
                     object k = ChangeType(kv.Key, t1);
 
-                    if (kv.Value is Dictionary<string, object>)
+                    if (t2.Name.StartsWith("Dictionary")) // deserialize a dictionary
+                        v = RootDictionary(kv.Value, t2);
+
+                    else if (kv.Value is Dictionary<string, object>)
                         v = ParseDictionary(kv.Value as Dictionary<string, object>, null, t2, null);
 
                     else if (t2.IsArray && t2 != typeof(byte[]))

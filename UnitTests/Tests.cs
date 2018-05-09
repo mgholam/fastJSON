@@ -2890,5 +2890,16 @@ public class tests
         var s = "{\"age\":42}";
         var o = JSON.ToObject<cis>(s);
     }
+
+    [Test]
+    public static void dicofdic()
+    {
+        var s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
+        var o = JSON.ToObject<Dictionary<string, Dictionary<string, string>>>(s);
+        var v = o["Section1"];
+        
+        Assert.AreEqual(5, v.Count);
+        Assert.AreEqual("Value2", v["Key2"]);
+    }
 }// UnitTests.Tests
 //}
