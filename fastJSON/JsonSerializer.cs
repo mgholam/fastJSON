@@ -116,7 +116,7 @@ namespace fastJSON
             else if (obj is TimeSpan)
                 _output.Append(((TimeSpan)obj).Ticks);
 
-#if net4
+#if NET4
             else if (_params.KVStyleStringDictionary == false &&
                 obj is IEnumerable<KeyValuePair<string, object>>)
 

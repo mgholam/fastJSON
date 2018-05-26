@@ -209,7 +209,7 @@ namespace fastJSON
         {
             return new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode();
         }
-#if net4
+#if NET4
         /// <summary>
         /// Create a .net4 dynamic object from the json string
         /// </summary>
@@ -777,7 +777,7 @@ namespace fastJSON
                 _cirrev.Add(circount, o);
             }
 
-            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename);
+            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, _params.ShowReadOnlyProperties);
             foreach (var kv in d)
             {
                 var n = kv.Key;

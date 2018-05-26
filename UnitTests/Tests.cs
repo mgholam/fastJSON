@@ -900,7 +900,7 @@ public class tests
     public static void DynamicTest()
     {
         string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30},\"arr\":[1,{\"a\":2},3,4,5,6]}";
-        dynamic d = fastJSON.JSON.ToDynamic(s);
+        dynamic d = JSON.ToDynamic(s);
         var ss = d.Name;
         var oo = d.Age;
         var dob = d.dob;
@@ -914,12 +914,12 @@ public class tests
 
         s = "{\"ints\":[1,2,3,4,5]}";
 
-        d = fastJSON.JSON.ToDynamic(s);
+        d = JSON.ToDynamic(s);
         var o = d.ints[0];
         Assert.AreEqual(1, o);
 
         s = "[1,2,3,4,5,{\"key\":90}]";
-        d = fastJSON.JSON.ToDynamic(s);
+        d = JSON.ToDynamic(s);
         o = d[2];
         Assert.AreEqual(3, o);
         var p = d[5].key;
@@ -2900,6 +2900,33 @@ public class tests
         
         Assert.AreEqual(5, v.Count);
         Assert.AreEqual("Value2", v["Key2"]);
+    }
+
+    public class readonlyProps
+    {
+        public List<string> Collection { get; }
+
+        public readonlyProps(List<string> collection)
+        {
+            Collection = collection;
+        }
+
+        public readonlyProps()
+        {
+        }
+    }
+
+    [Test]
+    public static void ReadOnlyProperty() // rbeurskens 
+    {
+        var dto = new readonlyProps(new List<string> { "test", "test2" });
+
+        JSON.Parameters.ShowReadOnlyProperties = true;
+        var s = JSON.ToJSON(dto);
+        var o = JSON.ToObject<readonlyProps>(s);
+
+        Assert.IsNotNull(o);
+        CollectionAssert.AreEqual(dto.Collection, o.Collection);
     }
 }// UnitTests.Tests
 //}

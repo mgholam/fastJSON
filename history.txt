@@ -1,3 +1,7 @@
+2.1.32
+- Non public setter / readonly property support (thanks to rbeurskens)
+- unify reflection.cs with fastBinaryJSON
+
 2.1.31
 - auto convert to string on deserialize if the object property is string and the json value is not
 - fixed side effect of changing JSONParameters.UsingGlobalTypes inside classes and affecting the original value
