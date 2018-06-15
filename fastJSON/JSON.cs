@@ -948,7 +948,7 @@ namespace fastJSON
         {
             // FEATURE : optimize create enum
 #if !SILVERLIGHT
-            return Enum.Parse(pt, v.ToString());
+            return Enum.Parse(pt, v.ToString(), true);
 #else
             return Enum.Parse(pt, v, true);
 #endif
