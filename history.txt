@@ -1,3 +1,7 @@
+2.1.33
+- case insensitive enum (thanks to AgentFire)
+- auto covert to boolean (number >0 , string : 1, true, yes, on)
+
 2.1.32
 - Non public setter / readonly property support (thanks to rbeurskens)
 - unify reflection.cs with fastBinaryJSON

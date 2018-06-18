@@ -2894,7 +2894,7 @@ public class tests
     [Test]
     public static void dicofdic()
     {
-        var s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
+        var s = "{ 'Section1' : { 'Key1' : 'Value1', 'Key2' : 'Value2', 'Key3' : 'Value3', 'Key4' : 'Value4', 'Key5' : 'Value5' } }".Replace("\'", "\"");
         var o = JSON.ToObject<Dictionary<string, Dictionary<string, string>>>(s);
         var v = o["Section1"];
         
@@ -2927,6 +2927,27 @@ public class tests
 
         Assert.IsNotNull(o);
         CollectionAssert.AreEqual(dto.Collection, o.Collection);
+    }
+
+    public class nsb
+    {
+        public bool one = false; // number 1
+        public bool two = false; // string 1
+        public bool three = false; // string true
+        public bool four = false; // string on
+        public bool five = false; // string yes
+    }
+    [Test]
+    public static void NonStrictBoolean()
+    {
+        var s = "{'one':1,'two':'1','three':'true','four':'on','five':'yes'}".Replace("\'","\"");
+
+        var o = JSON.ToObject<nsb>(s);
+        Assert.AreEqual(true, o.one);
+        Assert.AreEqual(true, o.two);
+        Assert.AreEqual(true, o.three);
+        Assert.AreEqual(true, o.four);
+        Assert.AreEqual(true, o.five);
     }
 }// UnitTests.Tests
 //}

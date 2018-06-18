@@ -805,7 +805,20 @@ namespace fastJSON
                             case myPropInfoType.Int: oset = (int)AutoConv(v); break;
                             case myPropInfoType.Long: oset = AutoConv(v); break;
                             case myPropInfoType.String: oset = v.ToString(); break;
-                            case myPropInfoType.Bool: oset = (bool)v; break;
+                            case myPropInfoType.Bool:
+                                oset = false;
+                                if (v is bool)
+                                    oset = (bool)v;
+                                else if (v is long)
+                                    oset = (long)v > 0 ? true : false;
+                                else if (v is string)
+                                {
+                                    var s = (string)v;
+                                    s = s.ToLower();
+                                    if (s == "1" || s == "true" || s == "yes" || s == "on")
+                                        oset = true;
+                                }
+                                break;
                             case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
                             case myPropInfoType.Enum: oset = CreateEnum(pi.pt, v); break;
                             case myPropInfoType.Guid: oset = CreateGuid((string)v); break;
@@ -948,7 +961,7 @@ namespace fastJSON
         {
             // FEATURE : optimize create enum
 #if !SILVERLIGHT
-            return Enum.Parse(pt, v.ToString());
+            return Enum.Parse(pt, v.ToString(), true);
 #else
             return Enum.Parse(pt, v, true);
 #endif

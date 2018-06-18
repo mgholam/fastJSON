@@ -10,9 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{F4BFF0D2-45F6-413B-B1E7-BC4A0D6596FC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON net35", "fastJSON\fastJSON net35.csproj", "{FDAF5695-E651-4D4D-8E15-0BD9FBEF5069}"
-	ProjectSection(ProjectDependencies) = postProject
-		{207E91B1-C9F8-4913-88E1-3549EF5F3273} = {207E91B1-C9F8-4913-88E1-3549EF5F3273}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
