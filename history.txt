@@ -1,6 +1,10 @@
+2.1.34
+- ability to create internal/private objects (removed the public access restriction on classes)
+
 2.1.33
 - case insensitive enum (thanks to AgentFire)
 - auto covert to boolean (number >0 , string : 1, true, yes, on)
+- fixed .net 3.5 project output framework version
 
 2.1.32
 - Non public setter / readonly property support (thanks to rbeurskens)

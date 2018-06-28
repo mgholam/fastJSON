@@ -359,7 +359,7 @@ namespace fastJSON
                 {
                     if (objtype.IsClass)
                     {
-                        DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
+                        DynamicMethod dynMethod = new DynamicMethod("_", objtype, null, true);
                         ILGenerator ilGen = dynMethod.GetILGenerator();
                         ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
                         ilGen.Emit(OpCodes.Ret);
@@ -368,7 +368,7 @@ namespace fastJSON
                     }
                     else // structs
                     {
-                        DynamicMethod dynMethod = new DynamicMethod("_", typeof(object), null);
+                        DynamicMethod dynMethod = new DynamicMethod("_", typeof(object), null, true);
                         ILGenerator ilGen = dynMethod.GetILGenerator();
                         var lv = ilGen.DeclareLocal(objtype);
                         ilGen.Emit(OpCodes.Ldloca_S, lv);

@@ -2813,10 +2813,10 @@ public class tests
         var data2 = JSON.ToObject<TestData>(jsonData);
 
         // OK, since data member name is "foo" which is all in lower case
-        Assert.AreEqual(data.Foo ,data2.Foo);
+        Assert.AreEqual(data.Foo, data2.Foo);
 
         // Fails, since data member name is "Bar", but the library looks for "bar" when setting the value
-        Assert.AreEqual(data.Bar , data2.Bar);
+        Assert.AreEqual(data.Bar, data2.Bar);
     }
 
 
@@ -2824,7 +2824,7 @@ public class tests
     [Test]
     public static void ArrayOfObjectExtOff()
     {
-        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters { UseExtensions = false});
+        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters { UseExtensions = false });
         var o = JSON.ToObject<test[]>(s);
         Console.WriteLine(o.GetType().ToString());
         Assert.AreEqual(typeof(test[]), o.GetType());
@@ -2897,7 +2897,7 @@ public class tests
         var s = "{ 'Section1' : { 'Key1' : 'Value1', 'Key2' : 'Value2', 'Key3' : 'Value3', 'Key4' : 'Value4', 'Key5' : 'Value5' } }".Replace("\'", "\"");
         var o = JSON.ToObject<Dictionary<string, Dictionary<string, string>>>(s);
         var v = o["Section1"];
-        
+
         Assert.AreEqual(5, v.Count);
         Assert.AreEqual("Value2", v["Key2"]);
     }
@@ -2940,7 +2940,7 @@ public class tests
     [Test]
     public static void NonStrictBoolean()
     {
-        var s = "{'one':1,'two':'1','three':'true','four':'on','five':'yes'}".Replace("\'","\"");
+        var s = "{'one':1,'two':'1','three':'true','four':'on','five':'yes'}".Replace("\'", "\"");
 
         var o = JSON.ToObject<nsb>(s);
         Assert.AreEqual(true, o.one);
@@ -2949,5 +2949,24 @@ public class tests
         Assert.AreEqual(true, o.four);
         Assert.AreEqual(true, o.five);
     }
+
+    private class npc
+    {
+        public int a = 1;
+        public int b = 2;
+    }
+    [Test]
+    public static void NonPublicClass()
+    {
+        var p = new npc();
+        p.a = 10;
+        p.b = 20;
+        var s = JSON.ToJSON(p);
+        var o = (npc)JSON.ToObject(s);
+        Assert.AreEqual(10, o.a);
+        Assert.AreEqual(20, o.b);
+    }
+
+
 }// UnitTests.Tests
 //}
