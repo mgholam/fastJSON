@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="testCustomType.cs" />
     <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>
