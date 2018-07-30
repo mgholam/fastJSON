@@ -291,7 +291,7 @@ public class tests
 
     #endregion
 
-    [TestFixtureSetUp]
+    [OneTimeSetUp]
     public static void setup()
     {
         //fastJSON.JSON.Parameters = new JSONParameters();
