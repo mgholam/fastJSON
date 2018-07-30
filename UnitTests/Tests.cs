@@ -1876,7 +1876,7 @@ public class tests
 
         JSON.RegisterCustomType(typeof(System.Net.IPAddress),
             (x) => { return x.ToString(); },
-            (x) => { return System.Net.IPAddress.Parse(x); });
+            (x) => { return System.Net.IPAddress.Parse(x.ToString()); });
 
         var s = JSON.ToJSON(ip);
 

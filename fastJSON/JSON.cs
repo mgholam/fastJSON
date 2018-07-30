@@ -11,7 +11,7 @@ using System.Collections.Specialized;
 namespace fastJSON
 {
     public delegate string Serialize(object data);
-    public delegate object Deserialize(string data);
+    public delegate object Deserialize(object data);
 
     public sealed class JSONParameters
     {
@@ -523,7 +523,7 @@ namespace fastJSON
                 return CreateDateTimeOffset((string)value);
 
             else if (Reflection.Instance.IsTypeRegistered(conversionType))
-                return Reflection.Instance.CreateCustom((string)value, conversionType);
+                return Reflection.Instance.CreateCustom(value, conversionType);
 
             // 8-30-2014 - James Brooks - Added code for nullable types.
             if (IsNullable(conversionType))
@@ -838,7 +838,7 @@ namespace fastJSON
                             case myPropInfoType.StringKeyDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
                             case myPropInfoType.NameValue: oset = CreateNV((Dictionary<string, object>)v); break;
                             case myPropInfoType.StringDictionary: oset = CreateSD((Dictionary<string, object>)v); break;
-                            case myPropInfoType.Custom: oset = Reflection.Instance.CreateCustom((string)v, pi.pt); break;
+                            case myPropInfoType.Custom: oset = Reflection.Instance.CreateCustom(v, pi.pt); break;
                             default:
                                 {
                                     if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
@@ -1045,7 +1045,10 @@ namespace fastJSON
                 foreach (object ob in data)
                 {
                     if (ob is IDictionary)
-                        col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, it, null));
+                        if (Reflection.Instance.IsTypeRegistered(bt))
+                            col.Add(Reflection.Instance.CreateCustom(ob, bt));
+                        else
+                            col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
 
                     else if (ob is List<object>)
                     {

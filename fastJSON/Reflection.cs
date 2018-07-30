@@ -120,7 +120,7 @@ namespace fastJSON
         internal SafeDictionary<Type, Serialize> _customSerializer = new SafeDictionary<Type, Serialize>();
         internal SafeDictionary<Type, Deserialize> _customDeserializer = new SafeDictionary<Type, Deserialize>();
 
-        internal object CreateCustom(string v, Type type)
+        internal object CreateCustom(object v, Type type)
         {
             Deserialize d;
             _customDeserializer.TryGetValue(type, out d);
