@@ -1048,7 +1048,7 @@ namespace fastJSON
                         if (Reflection.Instance.IsTypeRegistered(bt))
                             col.Add(Reflection.Instance.CreateCustom(ob, bt));
                         else
-                            col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, bt, null));
+                            col.Add(ParseDictionary((Dictionary<string, object>)ob, globalTypes, it, null));
 
                     else if (ob is List<object>)
                     {
