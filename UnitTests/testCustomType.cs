@@ -10,6 +10,41 @@ namespace UnitTests
     class testCustomType
     {
         [Test]
+        public static void ParseIntToStringTest()
+        {
+
+            fastJSON.JSONParameters param = new JSONParameters();
+            param.SerializeNullValues = false;
+            param.UseExtensions = false;
+            param.UseFastGuid = false;
+            string jsonString = "{\"stringid\" : \"1234\", \"longid\" : 456}";
+            TestClass01 newJson = JSON.ToObject<TestClass01>(jsonString);
+            Assert.True(newJson.stringid.Equals("1234"), "wrong string id ");
+            Assert.True(newJson.longid.Equals(456), "wrong long id ");
+
+            jsonString = "{\"stringid\" : \"1\", \"longid\" : 456}";
+            newJson = JSON.ToObject<TestClass01>(jsonString);
+            Assert.True(newJson.stringid.Equals("1"), "wrong string id ");
+            Assert.True(newJson.longid.Equals(456), "wrong long id ");
+        }
+
+        [Test]
+        public static void ObjectWithNullPropertyTest()
+        {
+            var ds = new MultiValue();
+            ds.keys = new List<object>() { 1, 2, 3, 4, 5 };
+            ds.values = new List<string>() { "1", "2", "3", "4", "5" };
+            ds.keySel = 3;
+            ds.refId = new Guid();
+            fastJSON.JSONParameters param = new JSONParameters();
+            param.SerializeNullValues = false;
+            param.UseExtensions = false;
+            param.UseFastGuid = false;
+            var newJson = fastJSON.JSON.ToJSON(ds, param);
+            Assert.AreEqual(newJson, "{\"values\":[\"1\",\"2\",\"3\",\"4\",\"5\"],\"keys\":[1,2,3,4,5],\"keySel\":3,\"refId\":\"00000000-0000-0000-0000-000000000000\"}");
+        }
+
+        [Test]
         public static void FeatureTest()
         {
             string reqPt =
@@ -55,8 +90,53 @@ namespace UnitTests
 
     }
 
-        #region helper classes
-        public class Features
+    #region helper classes
+
+    public class TestClass01
+    {
+        public string stringid { get; set; }
+
+        public long longid { get; set; }
+    }
+
+    public class SingleValue
+    {
+        public SingleValue()
+        {
+        }
+
+        public SingleValue(string value, Guid refId)
+        {
+            this.value = value;
+            this.refId = refId;
+        }
+
+        public string value { get; set; }
+
+        public Guid refId { get; set; }
+    }
+
+    public class MultiValue : SingleValue
+    {
+        public MultiValue()
+        { }
+
+        public MultiValue(List<string> values, List<object> keys, object keySel, Guid refId)
+        {
+            this.values = values;
+            this.keys = keys;
+            this.keySel = keySel;
+            this.refId = refId;
+        }
+
+        public List<string> values { get; set; }
+
+        public List<object> keys { get; set; }
+
+        public object keySel { get; set; }
+    }
+
+    public class Features
     {
         public Features()
         {
