@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>2.1.0.0</Version>
     <FileVersion>2.1.34.0</FileVersion>
-    <Description>smallest fastest polymorphic json serializer. This is a fork of the fastJson from M. Gholam (https://www.codeproject.com/Articles/159450/fastJSON)</Description>
+    <Description>smallest fastest polymorphic json serializer. This is a fork of the fastJson from M. Gholam.</Description>
     <Copyright>2010-2018</Copyright>
     <Authors>Geocom Informatik AG</Authors>
     <PackageProjectUrl>https://www.codeproject.com/Articles/159450/fastJSON</PackageProjectUrl>
