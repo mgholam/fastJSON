@@ -85,13 +85,13 @@ namespace fastJSON
         internal delegate object GenericGetter(object obj);
         private delegate object CreateObject();
 
-        private SafeDictionary<Type, string> _tyname = new SafeDictionary<Type, string>();
-        private SafeDictionary<string, Type> _typecache = new SafeDictionary<string, Type>();
-        private SafeDictionary<Type, CreateObject> _constrcache = new SafeDictionary<Type, CreateObject>();
-        private SafeDictionary<Type, Getters[]> _getterscache = new SafeDictionary<Type, Getters[]>();
-        private SafeDictionary<string, Dictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
-        private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>();
-        private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>();
+        private SafeDictionary<Type, string> _tyname = new SafeDictionary<Type, string>(10);
+        private SafeDictionary<string, Type> _typecache = new SafeDictionary<string, Type>(10);
+        private SafeDictionary<Type, CreateObject> _constrcache = new SafeDictionary<Type, CreateObject>(10);
+        private SafeDictionary<Type, Getters[]> _getterscache = new SafeDictionary<Type, Getters[]>(10);
+        private SafeDictionary<string, Dictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>(10);
+        private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>(10);
+        private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>(10);
         private static SafeDictionary<short, OpCode> _opCodes;
 
         private static bool TryGetOpCode(short code, out OpCode opCode)
@@ -182,7 +182,7 @@ namespace fastJSON
             }
             else
             {
-                sd = new Dictionary<string, myPropInfo>();
+                sd = new Dictionary<string, myPropInfo>(10);
                 var bf = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
                 PropertyInfo[] pr = type.GetProperties(bf);
                 foreach (PropertyInfo p in pr)
@@ -293,7 +293,7 @@ namespace fastJSON
             if (t.IsGenericType)
             {
                 d.IsGenericType = true;
-                d.bt = t.GetGenericArguments()[0];
+                d.bt = Reflection.Instance.GetGenericArguments(t)[0];
             }
 
             d.pt = t;
@@ -359,7 +359,7 @@ namespace fastJSON
                 {
                     if (objtype.IsClass)
                     {
-                        DynamicMethod dynMethod = new DynamicMethod("_", objtype, null, true);
+                        DynamicMethod dynMethod = new DynamicMethod("_fcic", objtype, null, true);
                         ILGenerator ilGen = dynMethod.GetILGenerator();
                         ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
                         ilGen.Emit(OpCodes.Ret);
@@ -368,7 +368,7 @@ namespace fastJSON
                     }
                     else // structs
                     {
-                        DynamicMethod dynMethod = new DynamicMethod("_", typeof(object), null, true);
+                        DynamicMethod dynMethod = new DynamicMethod("_fcis", typeof(object), null, true);
                         ILGenerator ilGen = dynMethod.GetILGenerator();
                         var lv = ilGen.DeclareLocal(objtype);
                         ilGen.Emit(OpCodes.Ldloca_S, lv);
@@ -394,7 +394,7 @@ namespace fastJSON
             Type[] arguments = new Type[2];
             arguments[0] = arguments[1] = typeof(object);
 
-            DynamicMethod dynamicSet = new DynamicMethod("_", typeof(object), arguments, type);
+            DynamicMethod dynamicSet = new DynamicMethod("_csf", typeof(object), arguments, type, true);
 
             ILGenerator il = dynamicSet.GetILGenerator();
 
@@ -435,6 +435,7 @@ namespace fastJSON
             if (!getMethod.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), false)) return null;
 
             var byteCode = getMethod.GetMethodBody()?.GetILAsByteArray() ?? new byte[0];
+            //var byteCode = getMethod.GetMethodBody().GetILAsByteArray();
             int pos = 0;
             // Find the first LdFld instruction and parse its operand to a FieldInfo object.
             while (pos < byteCode.Length)
@@ -481,7 +482,7 @@ namespace fastJSON
             Type[] arguments = new Type[2];
             arguments[0] = arguments[1] = typeof(object);
 
-            DynamicMethod setter = new DynamicMethod("_", typeof(object), arguments, !setMethod.IsPublic);
+            DynamicMethod setter = new DynamicMethod("_csm", typeof(object), arguments, true);// !setMethod.IsPublic); // fix: skipverify
             ILGenerator il = setter.GetILGenerator();
 
             if (!type.IsClass) // structs
@@ -533,7 +534,7 @@ namespace fastJSON
 
         internal static GenericGetter CreateGetField(Type type, FieldInfo fieldInfo)
         {
-            DynamicMethod dynamicGet = new DynamicMethod("_", typeof(object), new Type[] { typeof(object) }, type);
+            DynamicMethod dynamicGet = new DynamicMethod("_cgf", typeof(object), new Type[] { typeof(object) }, type, true);
 
             ILGenerator il = dynamicGet.GetILGenerator();
 
@@ -567,7 +568,7 @@ namespace fastJSON
             if (getMethod == null)
                 return null;
 
-            DynamicMethod getter = new DynamicMethod("_", typeof(object), new Type[] { typeof(object) }, type);
+            DynamicMethod getter = new DynamicMethod("_cgm", typeof(object), new Type[] { typeof(object) }, type, true);
 
             ILGenerator il = getter.GetILGenerator();
 
@@ -724,13 +725,13 @@ namespace fastJSON
 
         internal void ClearReflectionCache()
         {
-            _tyname = new SafeDictionary<Type, string>();
-            _typecache = new SafeDictionary<string, Type>();
-            _constrcache = new SafeDictionary<Type, CreateObject>();
-            _getterscache = new SafeDictionary<Type, Getters[]>();
-            _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>();
-            _genericTypes = new SafeDictionary<Type, Type[]>();
-            _genericTypeDef = new SafeDictionary<Type, Type>();
+            _tyname = new SafeDictionary<Type, string>(10);
+            _typecache = new SafeDictionary<string, Type>(10);
+            _constrcache = new SafeDictionary<Type, CreateObject>(10);
+            _getterscache = new SafeDictionary<Type, Getters[]>(10);
+            _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>(10);
+            _genericTypes = new SafeDictionary<Type, Type[]>(10);
+            _genericTypeDef = new SafeDictionary<Type, Type>(10);
         }
     }
 }

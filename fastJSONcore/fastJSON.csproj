@@ -24,6 +24,7 @@
     <Compile Include="..\fastJSON\dynamic.cs" Link="dynamic.cs" />
     <Compile Include="..\fastJSON\Formatter.cs" Link="Formatter.cs" />
     <Compile Include="..\fastJSON\Getters.cs" Link="Getters.cs" />
+    <Compile Include="..\fastJSON\Helper.cs" Link="Helper.cs" />
     <Compile Include="..\fastJSON\JSON.cs" Link="JSON.cs" />
     <Compile Include="..\fastJSON\JsonParser.cs" Link="JsonParser.cs" />
     <Compile Include="..\fastJSON\JsonSerializer.cs" Link="JsonSerializer.cs" />

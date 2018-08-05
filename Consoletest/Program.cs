@@ -5,10 +5,44 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace consoletest
 {
+    public class TestClass
+    {
+        public string Channel { get; set; }
+        public string Start { get; set; }
+        public string Stop { get; set; }
+        public string Eventid { get; set; }
+        public string Charset { get; set; }
+
+        public List<string> Titles { get; set; } = new List<string>();
+        public List<string> Events { get; set; } = new List<string>();
+        public List<string> Descriptions { get; set; } = new List<string>();
+
+        public static List<TestClass> CreateList(int count)
+        {
+            List<TestClass> lst = new List<TestClass>();
+            foreach (int i in Enumerable.Range(1, count))
+            {
+                TestClass t = new TestClass
+                {
+                    Channel = $"Channel-{i % 10}",
+                    Start = $"{i * 1000}",
+                    Stop = $"{i * 1000 + 10}",
+                    Charset = "255"
+                };
+                t.Descriptions.Add($"Description Description Description Description Description Description Description {i} ");
+                t.Events.Add($"Event {i} ");
+                t.Titles.Add($"The Title {i} ");
+                lst.Add(t);
+            }
+            return lst;
+        }
+    }
+
     public class Program
     {
         static int count = 1000;
@@ -22,8 +56,94 @@ namespace consoletest
         //    //public int i = 0;
         //}
 
+        private static void fastjson_deserialize(int count)
+        {
+            Console.WriteLine();
+            Console.WriteLine("fastjson deserialize");
+            List<double> times = new List<double>();
+            var data = TestClass.CreateList(20000);
+            string jsonText = JSON.ToJSON(data, new fastJSON.JSONParameters { UseExtensions = false });
+            //File.WriteAllText("FastJson.json", jsonText);
+            for (int tests = 0; tests < count; tests++)
+            {
+                DateTime st = DateTime.Now;
+                var result = JSON.ToObject<List<TestClass>>(jsonText);
+                times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
+                if (tests % 10 == 0)
+                    Console.Write(".");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+
+        }
+
+        private static void newton_deserialize(int count)
+        {
+            Console.WriteLine();
+            Console.WriteLine("newton deserialize");
+            List<double> times = new List<double>();
+            var data = TestClass.CreateList(20000);
+            string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+            //File.WriteAllText("Newton.json", jsonText);
+            for (int tests = 0; tests < count; tests++)
+            {
+                DateTime st = DateTime.Now;
+                var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TestClass>>(jsonText);
+                times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
+                if (tests % 10 == 0)
+                    Console.Write(".");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+        }
+
+
+        private static void fastjson_serialize(int count)
+        {
+            Console.WriteLine();
+            Console.WriteLine("fastjson serialize");
+            List<double> times = new List<double>();
+            var data = TestClass.CreateList(20000);
+            for (int tests = 0; tests < count; tests++)
+            {
+                DateTime st = DateTime.Now;
+                string jsonText = JSON.ToJSON(data, new fastJSON.JSONParameters { UseExtensions = false });
+
+                times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
+                if (tests % 10 == 0)
+                    Console.Write(".");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+
+        }
+
+        private static void newton_serialize(int count)
+        {
+            Console.WriteLine();
+            Console.WriteLine("newton serialize");
+            List<double> times = new List<double>();
+            var data = TestClass.CreateList(20000);
+            for (int tests = 0; tests < count; tests++)
+            {
+                DateTime st = DateTime.Now;
+                string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+                times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
+                if (tests % 10 == 0)
+                    Console.Write(".");
+            }
+            Console.WriteLine();
+            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+        }
+
+
         public static void Main(string[] args)
         {
+            //fastjson_serialize(100);
+            //newton_serialize(100);
+            fastjson_deserialize(10);
+            //newton_deserialize(10);
+            return;
             //string s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
             //var oo = JSON.ToDynamic(s);
 
