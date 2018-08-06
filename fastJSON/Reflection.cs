@@ -45,7 +45,7 @@ namespace fastJSON
         Unknown,
     }
 
-    internal struct myPropInfo
+    internal class myPropInfo
     {
         public Type pt;
         public Type bt;
