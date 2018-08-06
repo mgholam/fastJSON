@@ -84,10 +84,12 @@ namespace fastJSON
         internal delegate object GenericSetter(object target, object value);
         internal delegate object GenericGetter(object obj);
         private delegate object CreateObject();
+        private delegate object CreateList(int capacity);
 
         private SafeDictionary<Type, string> _tyname = new SafeDictionary<Type, string>(10);
         private SafeDictionary<string, Type> _typecache = new SafeDictionary<string, Type>(10);
         private SafeDictionary<Type, CreateObject> _constrcache = new SafeDictionary<Type, CreateObject>(10);
+        private SafeDictionary<Type, CreateList> _conlistcache = new SafeDictionary<Type, CreateList>(10);
         private SafeDictionary<Type, Getters[]> _getterscache = new SafeDictionary<Type, Getters[]>(10);
         private SafeDictionary<string, Dictionary<string, myPropInfo>> _propertycache = new SafeDictionary<string, Dictionary<string, myPropInfo>>(10);
         private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>(10);
@@ -343,6 +345,50 @@ namespace fastJSON
                 //}
                 _typecache.Add(typename, t);
                 return t;
+            }
+        }
+
+        internal object FastCreateList(Type objtype, int capacity)
+        {
+            try
+            {
+                CreateList c = null;
+                if (_conlistcache.TryGetValue(objtype, out c))
+                {
+                    return c(capacity);
+                }
+                else
+                {
+                    if (objtype.IsClass)
+                    {
+                        DynamicMethod dynMethod = new DynamicMethod("_fcic", objtype, new Type[] { typeof(int)}, true);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
+                        ilGen.Emit(OpCodes.Ldarg_0);
+                        ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
+                        ilGen.Emit(OpCodes.Ret);
+                        c = (CreateList)dynMethod.CreateDelegate(typeof(CreateList));
+                        _conlistcache.Add(objtype, c);
+                    }
+                    //else // structs
+                    //{
+                    //    DynamicMethod dynMethod = new DynamicMethod("_fcis", typeof(object), null, true);
+                    //    ILGenerator ilGen = dynMethod.GetILGenerator();
+                    //    var lv = ilGen.DeclareLocal(objtype);
+                    //    ilGen.Emit(OpCodes.Ldloca_S, lv);
+                    //    ilGen.Emit(OpCodes.Initobj, objtype);
+                    //    ilGen.Emit(OpCodes.Ldloc_0);
+                    //    ilGen.Emit(OpCodes.Box, objtype);
+                    //    ilGen.Emit(OpCodes.Ret);
+                    //    c = (CreateObject)dynMethod.CreateDelegate(typeof(CreateObject));
+                    //    _conlistcache.Add(objtype, c);
+                    //}
+                    return c(capacity);
+                }
+            }
+            catch (Exception exc)
+            {
+                throw new Exception(string.Format("Failed to fast create instance for type '{0}' from assembly '{1}'",
+                    objtype.FullName, objtype.AssemblyQualifiedName), exc);
             }
         }
 

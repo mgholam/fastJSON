@@ -34,11 +34,13 @@ namespace fastJSON
         Token lookAheadToken = Token.None;
         int index;
         bool allownonquotedkey = false;
+        int _len = 0;
 
         internal JsonParser(string json, bool AllowNonQuotedKeys)
         {
             this.allownonquotedkey = AllowNonQuotedKeys;
             this.json = json.ToCharArray();
+            _len = json.Length;
         }
 
         public object Decode()
@@ -149,9 +151,10 @@ namespace fastJSON
             ConsumeToken(); // "
 
             s.Length = 0;
+            //s.Clear();
             bool instr = val;
             int runIndex = -1;
-            int l = json.Length;
+            int l = _len;
             fixed (char* p = json)
             //char[] p = json;
             {
@@ -281,7 +284,7 @@ namespace fastJSON
             bool dec = false;
             do
             {
-                if (index == json.Length)
+                if (index == _len)
                     break;
                 var c = json[index];
 
@@ -289,7 +292,7 @@ namespace fastJSON
                 {
                     if (c == '.' || c == 'e' || c == 'E')
                         dec = true;
-                    if (++index == json.Length)
+                    if (++index == _len)
                         break;//throw new Exception("Unexpected end of string whilst parsing number");
                     continue;
                 }
@@ -334,7 +337,7 @@ namespace fastJSON
         private unsafe Token NextTokenCore()
         {
             char c;
-            int len = json.Length;
+            int len = _len;
 
             // Skip past whitespace
             do
@@ -454,8 +457,8 @@ namespace fastJSON
 
         private static unsafe string UnsafeSubstring(char[] source, int startIndex, int length)
         {
-            fixed (char* chars = source)
-                return new string(chars, startIndex, length);
+            fixed (char* c = source)
+                return new string(c, startIndex, length);
         }
     }
 }

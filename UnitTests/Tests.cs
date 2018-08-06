@@ -2966,7 +2966,5 @@ public class tests
         Assert.AreEqual(10, o.a);
         Assert.AreEqual(20, o.b);
     }
-
-
 }// UnitTests.Tests
 //}

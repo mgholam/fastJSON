@@ -535,7 +535,7 @@ namespace fastJSON
         private object RootList(object parse, Type type)
         {
             Type[] gtypes = Reflection.Instance.GetGenericArguments(type);
-            var o = (IList)Reflection.Instance.FastCreateInstance(type);
+            var o = (IList)Reflection.Instance.FastCreateList(type, ((IList)parse).Count);
             DoParseList((IList)parse, gtypes[0], o);
             return o;
         }
@@ -543,6 +543,7 @@ namespace fastJSON
         private void DoParseList(IList parse, Type it, IList o)
         {
             Dictionary<string, object> globals = new Dictionary<string, object>();
+            
             foreach (var k in parse)
             {
                 _usingglobals = false;
@@ -799,7 +800,7 @@ namespace fastJSON
         {
             if (pt != typeof(object))
             {
-                IList col = (IList)Reflection.Instance.FastCreateInstance(pt);
+                IList col = (IList)Reflection.Instance.FastCreateList(pt, data.Count);
                 var it = Reflection.Instance.GetGenericArguments(pt)[0];// pt.GetGenericArguments()[0];
                 // create an array of objects
                 foreach (object ob in data)
