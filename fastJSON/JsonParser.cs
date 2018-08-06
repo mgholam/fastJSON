@@ -43,12 +43,13 @@ namespace fastJSON
             _len = json.Length;
         }
 
-        public object Decode()
+        public unsafe object Decode()
         {
-            return ParseValue(false);
+            fixed(char* p = json)
+                return ParseValue(p, false);
         }
 
-        private Dictionary<string, object> ParseObject()
+        private unsafe Dictionary<string, object> ParseObject(char* p)
         {
             Dictionary<string, object> table = new Dictionary<string, object>(10);
 
@@ -56,7 +57,7 @@ namespace fastJSON
 
             while (true)
             {
-                switch (LookAhead())
+                switch (LookAhead(p))
                 {
 
                     case Token.Comma:
@@ -70,9 +71,9 @@ namespace fastJSON
                     default:
                         {
                             // name
-                            string name = ParseString(false);
+                            string name = ParseString(p, false);
 
-                            var n = NextToken();
+                            var n = NextToken(p);
                             // :
                             if (n != Token.Colon)
                             {
@@ -80,7 +81,7 @@ namespace fastJSON
                             }
 
                             // value
-                            object value = ParseValue(true);
+                            object value = ParseValue(p, true);
 
                             //table.Add(name, value);
                             table[name] = value;
@@ -90,14 +91,14 @@ namespace fastJSON
             }
         }
 
-        private List<object> ParseArray()
+        private unsafe List<object> ParseArray(char* p)
         {
             List<object> array = new List<object>(10);
             ConsumeToken(); // [
 
             while (true)
             {
-                switch (LookAhead())
+                switch (LookAhead(p))
                 {
                     case Token.Comma:
                         ConsumeToken();
@@ -108,27 +109,27 @@ namespace fastJSON
                         return array;
 
                     default:
-                        array.Add(ParseValue(false));
+                        array.Add(ParseValue(p, false));
                         break;
                 }
             }
         }
 
-        private object ParseValue(bool val)
+        private unsafe object ParseValue(char* p, bool val)
         {
-            switch (LookAhead())
+            switch (LookAhead(p))
             {
                 case Token.Number:
-                    return ParseNumber();
+                    return ParseNumber(p);
 
                 case Token.String:
-                    return ParseString(val);
+                    return ParseString(p, val);
 
                 case Token.Curly_Open:
-                    return ParseObject();
+                    return ParseObject(p);
 
                 case Token.Squared_Open:
-                    return ParseArray();
+                    return ParseArray(p);
 
                 case Token.True:
                     ConsumeToken();
@@ -146,7 +147,7 @@ namespace fastJSON
             throw new Exception("Unrecognized token at index" + index);
         }
 
-        private unsafe string ParseString(bool val)
+        private unsafe string ParseString(char* p, bool val)
         {
             ConsumeToken(); // "
 
@@ -156,7 +157,7 @@ namespace fastJSON
             bool instr = val;
             int runIndex = -1;
             int l = _len;
-            fixed (char* p = json)
+            //fixed (char* p = json)
             //char[] p = json;
             {
                 while (index < l)
@@ -177,7 +178,7 @@ namespace fastJSON
                         if (runIndex != -1)
                         {
                             if (s.Length == 0)
-                                return UnsafeSubstring(json, runIndex, index - runIndex - len);
+                                return UnsafeSubstring(p, runIndex, index - runIndex - len);
 
                             s.Append(json, runIndex, index - runIndex - 1);
                         }
@@ -276,7 +277,7 @@ namespace fastJSON
             return p1 + p2 + p3 + p4;
         }
 
-        private object ParseNumber()
+        private unsafe object ParseNumber(char* p)
         {
             ConsumeToken();
 
@@ -302,23 +303,23 @@ namespace fastJSON
 
             if (dec)
             {
-                string s = UnsafeSubstring(json, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
+                string s = UnsafeSubstring(p, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
             if (index - startIndex < 20 && json[startIndex] != '-')
                 return Helper.CreateLong(json, startIndex, index - startIndex);
             else
             {
-                string s = UnsafeSubstring(json, startIndex, index - startIndex);//json.Substring(startIndex, index - startIndex);
+                string s = UnsafeSubstring(p, startIndex, index - startIndex);//json.Substring(startIndex, index - startIndex);
                 return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
             }
         }
 
-        private Token LookAhead()
+        private unsafe Token LookAhead(char* p)
         {
             if (lookAheadToken != Token.None) return lookAheadToken;
 
-            return lookAheadToken = NextTokenCore();
+            return lookAheadToken = NextTokenCore(p);
         }
 
         private void ConsumeToken()
@@ -326,16 +327,16 @@ namespace fastJSON
             lookAheadToken = Token.None;
         }
 
-        private Token NextToken()
+        private unsafe Token NextToken(char* p)
         {
-            var result = lookAheadToken != Token.None ? lookAheadToken : NextTokenCore();
+            var result = lookAheadToken != Token.None ? lookAheadToken : NextTokenCore(p);
 
             lookAheadToken = Token.None;
 
             return result;
         }
 
-        private unsafe Token NextTokenCore()
+        private unsafe Token NextTokenCore(char* p)
         {
             char c;
             int len = _len;
@@ -343,7 +344,7 @@ namespace fastJSON
             // Skip past whitespace
             do
             {
-                fixed (char* p = json)
+                //fixed (char* p = json)
                 {
                     c = p[index];
 
@@ -368,7 +369,7 @@ namespace fastJSON
                 throw new Exception("Reached end of string unexpectedly");
             }
 
-            fixed (char* p = json)
+            //fixed (char* p = json)
             {
                 c = p[index];
 
@@ -456,10 +457,11 @@ namespace fastJSON
                 throw new Exception("Could not find token at index " + --index);
         }
 
-        private static unsafe string UnsafeSubstring(char[] source, int startIndex, int length)
+        private static unsafe string UnsafeSubstring(//char[] source, 
+            char* p, int startIndex, int length)
         {
-            fixed (char* c = source)
-                return new string(c, startIndex, length);
+            //fixed (char* c = source)
+                return new string(p, startIndex, length);
         }
     }
 }

@@ -76,7 +76,11 @@ namespace consoletest
                     Console.Write(".");
             }
             Console.WriteLine();
-            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+
+            var min = times.Min();
+            var max = times.Max();
+            var tot = (times.Sum() - max - min) / (count - 2);
+            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()} avg: {tot}");
 
         }
 
@@ -173,10 +177,10 @@ namespace consoletest
         {
             //fastjson_serialize(100);
             //newton_serialize(100);
-        //    fastjson_deserialize(10);
+            fastjson_deserialize(10);
             //peta_deserialize(10);
             //newton_deserialize(10);
-          //  return;
+            return;
             //string s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
             //var oo = JSON.ToDynamic(s);
 
