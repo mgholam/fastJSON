@@ -150,7 +150,8 @@ namespace fastJSON
         {
             ConsumeToken(); // "
 
-            s.Length = 0;
+            if (s.Length > 0)
+                s.Length = 0;
             //s.Clear();
             bool instr = val;
             int runIndex = -1;
@@ -164,7 +165,7 @@ namespace fastJSON
                     if (c == '"')
                         instr = true;
 
-                    if (c == '"' || (allownonquotedkey && instr == false && (c == ':' || c == ' ' || c == '\t'  )))
+                    if (c == '"' || (allownonquotedkey && instr == false && (c == ':' || c == ' ' || c == '\t')))
                     {
                         int len = 1;
                         if (allownonquotedkey && c != '"' && instr == false)

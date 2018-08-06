@@ -352,37 +352,24 @@ namespace fastJSON
         {
             try
             {
+                int count = 10;
+                if (capacity > 10)
+                    count = capacity;
                 CreateList c = null;
                 if (_conlistcache.TryGetValue(objtype, out c))
                 {
-                    return c(capacity);
+                    return c(count);
                 }
                 else
                 {
-                    if (objtype.IsClass)
-                    {
-                        DynamicMethod dynMethod = new DynamicMethod("_fcic", objtype, new Type[] { typeof(int)}, true);
-                        ILGenerator ilGen = dynMethod.GetILGenerator();
-                        ilGen.Emit(OpCodes.Ldarg_0);
-                        ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
-                        ilGen.Emit(OpCodes.Ret);
-                        c = (CreateList)dynMethod.CreateDelegate(typeof(CreateList));
-                        _conlistcache.Add(objtype, c);
-                    }
-                    //else // structs
-                    //{
-                    //    DynamicMethod dynMethod = new DynamicMethod("_fcis", typeof(object), null, true);
-                    //    ILGenerator ilGen = dynMethod.GetILGenerator();
-                    //    var lv = ilGen.DeclareLocal(objtype);
-                    //    ilGen.Emit(OpCodes.Ldloca_S, lv);
-                    //    ilGen.Emit(OpCodes.Initobj, objtype);
-                    //    ilGen.Emit(OpCodes.Ldloc_0);
-                    //    ilGen.Emit(OpCodes.Box, objtype);
-                    //    ilGen.Emit(OpCodes.Ret);
-                    //    c = (CreateObject)dynMethod.CreateDelegate(typeof(CreateObject));
-                    //    _conlistcache.Add(objtype, c);
-                    //}
-                    return c(capacity);
+                    DynamicMethod dynMethod = new DynamicMethod("_fcic", objtype, new Type[] { typeof(int) }, true);
+                    ILGenerator ilGen = dynMethod.GetILGenerator();
+                    ilGen.Emit(OpCodes.Ldarg_0);
+                    ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
+                    ilGen.Emit(OpCodes.Ret);
+                    c = (CreateList)dynMethod.CreateDelegate(typeof(CreateList));
+                    _conlistcache.Add(objtype, c);
+                    return c(count);
                 }
             }
             catch (Exception exc)

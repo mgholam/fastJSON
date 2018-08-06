@@ -1,3 +1,6 @@
+2.1.36*
+- minor optimization tweaks
+
 2.1.35
 - moved .net 3.5 project to own folder to mitigate conflicting obj builds
 - 
