@@ -199,7 +199,7 @@ namespace fastJSON
                 {
                     if (pendingSeparator) _output.Append(',');
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(key.ToLower(), nameValueCollection[key]);
+                        WritePair(key.ToLowerInvariant(), nameValueCollection[key]);
                     else
                         WritePair(key, nameValueCollection[key]);
                     pendingSeparator = true;
@@ -225,7 +225,7 @@ namespace fastJSON
 
                     string k = (string)entry.Key;
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;
@@ -563,7 +563,7 @@ namespace fastJSON
 
                     string k = (string)entry.Key;
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;
@@ -587,7 +587,7 @@ namespace fastJSON
                     string k = entry.Key;
 
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;

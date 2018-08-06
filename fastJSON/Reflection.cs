@@ -212,7 +212,7 @@ namespace fastJSON
                         sd.Add(d.memberName, d);
                     else
 #endif
-                        sd.Add(p.Name.ToLower(), d);
+                        sd.Add(p.Name.ToLowerInvariant(), d);
                 }
                 FieldInfo[] fi = type.GetFields(bf);
                 foreach (FieldInfo f in fi)
@@ -239,7 +239,7 @@ namespace fastJSON
                             sd.Add(d.memberName, d);
                         else
 #endif
-                            sd.Add(f.Name.ToLower(), d);
+                            sd.Add(f.Name.ToLowerInvariant(), d);
                     }
                 }
 
@@ -686,7 +686,7 @@ namespace fastJSON
 #endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLower(), memberName = mName });
+                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName });
             }
 
             FieldInfo[] fi = type.GetFields(bf);
@@ -725,7 +725,7 @@ namespace fastJSON
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLower(), memberName = mName });
+                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLowerInvariant(), memberName = mName });
                 }
             }
             val = getters.ToArray();

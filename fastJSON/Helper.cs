@@ -43,7 +43,7 @@ namespace fastJSON
             else if (v is string)
             {
                 var s = (string)v;
-                s = s.ToLower();
+                s = s.ToLowerInvariant();
                 if (s == "1" || s == "true" || s == "yes" || s == "on")
                     oset = true;
             }

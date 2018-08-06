@@ -52,7 +52,7 @@ namespace fastJSON
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
             if (_dictionary.TryGetValue(binder.Name, out result) == false)
-                if (_dictionary.TryGetValue(binder.Name.ToLower(), out result) == false)
+                if (_dictionary.TryGetValue(binder.Name.ToLowerInvariant(), out result) == false)
                     return false;// throw new Exception("property not found " + binder.Name);
 
             if (result is IDictionary<string, object>)

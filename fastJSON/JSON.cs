@@ -682,7 +682,7 @@ namespace fastJSON
                 _cirrev.Add(circount, o);
             }
 
-            Dictionary<string, myPropInfo> props = Reflection.Instance.Getproperties(type, typename, _params.ShowReadOnlyProperties);
+            var props = Reflection.Instance.Getproperties(type, typename, _params.ShowReadOnlyProperties);
             foreach (var kv in d)
             {
                 var n = kv.Key;
@@ -695,8 +695,8 @@ namespace fastJSON
                     continue;
                 }
                 myPropInfo pi;
-                if (props.TryGetValue(name.ToLower(), out pi) == false)
-                    if (props.TryGetValue(name, out pi) == false)
+                if (props.TryGetValue(name, out pi) == false)
+                    if (props.TryGetValue(name.ToLowerInvariant(), out pi) == false)
                         continue;
 
                 if (pi.CanWrite)

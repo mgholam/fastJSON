@@ -173,10 +173,10 @@ namespace consoletest
         {
             //fastjson_serialize(100);
             //newton_serialize(100);
-            fastjson_deserialize(10);
+        //    fastjson_deserialize(10);
             //peta_deserialize(10);
             //newton_deserialize(10);
-            return;
+          //  return;
             //string s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
             //var oo = JSON.ToDynamic(s);
 
@@ -195,10 +195,10 @@ namespace consoletest
             dsser = false;
             //bin_serialize();
             fastjson_serialize();
+            jsonnet4_serialize();
+
             //bin_deserialize();
             fastjson_deserialize();
-
-            jsonnet4_serialize();
             jsonnet4_deserialize();
 
             dsser = true;
@@ -206,14 +206,14 @@ namespace consoletest
             Console.WriteLine("+dataset");
             //bin_serialize();
             fastjson_serialize();
+            jsonnet4_serialize();
+            
             //bin_deserialize();
             fastjson_deserialize();
-
-            jsonnet4_serialize();
             jsonnet4_deserialize();
 
             Console.WriteLine();
-            Console.ReadKey();
+            //Console.ReadKey();
             #region [ other tests]
 
             //			litjson_serialize();
