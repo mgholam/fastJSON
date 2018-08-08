@@ -1,9 +1,8 @@
-2.1.36*
+2.1.36
 - optimization tweaks ~30% boost on deserialize
 - changed internal tolower to tolowerinvariant 
 - internal json parser fixed char pointer
 - internal reflection struct to class
--
 
 2.1.35
 - moved .net 3.5 project to own folder to mitigate conflicting obj builds
