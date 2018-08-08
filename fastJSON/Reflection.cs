@@ -12,7 +12,7 @@ using System.Collections.Specialized;
 
 namespace fastJSON
 {
-    internal struct Getters
+    public struct Getters
     {
         public string Name;
         public string lcName;
@@ -20,7 +20,7 @@ namespace fastJSON
         public Reflection.GenericGetter Getter;
     }
 
-    internal enum myPropInfoType
+    public enum myPropInfoType
     {
         Int,
         Long,
@@ -45,7 +45,7 @@ namespace fastJSON
         Unknown,
     }
 
-    internal class myPropInfo
+    public class myPropInfo
     {
         public Type pt;
         public Type bt;
@@ -67,7 +67,7 @@ namespace fastJSON
         public bool IsInterface;
     }
 
-    internal sealed class Reflection
+    public sealed class Reflection
     {
         // Singleton pattern 4 from : http://csharpindepth.com/articles/general/singleton.aspx
         private static readonly Reflection instance = new Reflection();
@@ -81,8 +81,8 @@ namespace fastJSON
         }
         public static Reflection Instance { get { return instance; } }
 
-        internal delegate object GenericSetter(object target, object value);
-        internal delegate object GenericGetter(object obj);
+        public delegate object GenericSetter(object target, object value);
+        public delegate object GenericGetter(object obj);
         private delegate object CreateObject();
         private delegate object CreateList(int capacity);
 
@@ -113,8 +113,41 @@ namespace fastJSON
         }
 
         #region bjson custom types
-        internal UnicodeEncoding unicode = new UnicodeEncoding();
-        internal UTF8Encoding utf8 = new UTF8Encoding();
+        //internal UnicodeEncoding unicode = new UnicodeEncoding();
+        private static UTF8Encoding utf8 = new UTF8Encoding();
+
+        // TODO : optimize utf8 
+        public static byte[] UTF8GetBytes(string str)
+        {
+            return utf8.GetBytes(str);
+        }
+
+        public static string UTF8GetString(byte[] bytes, int offset, int len)
+        {
+            return utf8.GetString(bytes, offset, len);
+        }
+
+        public unsafe static byte[] UnicodeGetBytes(string str)
+        {
+            int len = str.Length * 2;
+            byte[] b = new byte[len];
+            fixed (void* ptr = str)
+            {
+                System.Runtime.InteropServices.Marshal.Copy(new IntPtr(ptr), b, 0, len);
+            }
+            return b;
+        }
+
+        public unsafe static string UnicodeGetString(byte[] bytes, int offset, int buflen)
+        {
+            string str = "";
+            fixed (byte* bptr = bytes)
+            {
+                char* cptr = (char*)(bptr + offset);
+                str = new string(cptr, 0, buflen / 2);
+            }
+            return str;
+        }
         #endregion
 
         #region json custom types
@@ -316,7 +349,7 @@ namespace fastJSON
 
         #region [   PROPERTY GET SET   ]
 
-        internal string GetTypeAssemblyName(Type t)
+        public string GetTypeAssemblyName(Type t)
         {
             string val = "";
             if (_tyname.TryGetValue(t, out val))
@@ -362,7 +395,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    DynamicMethod dynMethod = new DynamicMethod("_fcic", objtype, new Type[] { typeof(int) }, true);
+                    DynamicMethod dynMethod = new DynamicMethod("_fcil", objtype, new Type[] { typeof(int) }, true);
                     ILGenerator ilGen = dynMethod.GetILGenerator();
                     ilGen.Emit(OpCodes.Ldarg_0);
                     ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
@@ -636,7 +669,7 @@ namespace fastJSON
             return (GenericGetter)getter.CreateDelegate(typeof(GenericGetter));
         }
 
-        internal Getters[] GetGetters(Type type, bool ShowReadOnlyProperties, List<Type> IgnoreAttributes)
+        public Getters[] GetGetters(Type type, bool ShowReadOnlyProperties, List<Type> IgnoreAttributes)
         {
             Getters[] val = null;
             if (_getterscache.TryGetValue(type, out val))

@@ -77,35 +77,35 @@ namespace consoletest
             }
             Console.WriteLine();
 
-            var min = times.Min();
-            var max = times.Max();
-            var tot = (times.Sum() - max - min) / (count - 2);
-            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()} avg: {tot}");
-
-        }
-
-        private static void newton_deserialize(int count)
-        {
-            Console.WriteLine();
-            Console.WriteLine("newton deserialize");
-            List<double> times = new List<double>();
-            var data = TestClass.CreateList(20000);
-            string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-            //File.WriteAllText("Newton.json", jsonText);
-            Stopwatch s = new Stopwatch();
-            for (int tests = 0; tests < count; tests++)
-            {
-                s.Start();
-                var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TestClass>>(jsonText);
-                s.Stop();
-                times.Add(s.ElapsedMilliseconds);// DateTime.Now.Subtract(st).TotalMilliseconds);
-                s.Reset();
-                if (tests % 10 == 0)
-                    Console.Write(".");
-            }
-            Console.WriteLine();
+            //var min = times.Min();
+            //var max = times.Max();
+            //var tot = (times.Sum() - max - min) / (count - 2);
+            //Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()} avg: {tot}");
             Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
         }
+
+        //private static void newton_deserialize(int count)
+        //{
+        //    Console.WriteLine();
+        //    Console.WriteLine("newton deserialize");
+        //    List<double> times = new List<double>();
+        //    var data = TestClass.CreateList(20000);
+        //    string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+        //    //File.WriteAllText("Newton.json", jsonText);
+        //    Stopwatch s = new Stopwatch();
+        //    for (int tests = 0; tests < count; tests++)
+        //    {
+        //        s.Start();
+        //        var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TestClass>>(jsonText);
+        //        s.Stop();
+        //        times.Add(s.ElapsedMilliseconds);// DateTime.Now.Subtract(st).TotalMilliseconds);
+        //        s.Reset();
+        //        if (tests % 10 == 0)
+        //            Console.Write(".");
+        //    }
+        //    Console.WriteLine();
+        //    Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+        //}
 
 
         private static void fastjson_serialize(int count)
@@ -128,23 +128,23 @@ namespace consoletest
 
         }
 
-        private static void newton_serialize(int count)
-        {
-            Console.WriteLine();
-            Console.WriteLine("newton serialize");
-            List<double> times = new List<double>();
-            var data = TestClass.CreateList(20000);
-            for (int tests = 0; tests < count; tests++)
-            {
-                DateTime st = DateTime.Now;
-                string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-                times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
-                if (tests % 10 == 0)
-                    Console.Write(".");
-            }
-            Console.WriteLine();
-            Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
-        }
+        //private static void newton_serialize(int count)
+        //{
+        //    Console.WriteLine();
+        //    Console.WriteLine("newton serialize");
+        //    List<double> times = new List<double>();
+        //    var data = TestClass.CreateList(20000);
+        //    for (int tests = 0; tests < count; tests++)
+        //    {
+        //        DateTime st = DateTime.Now;
+        //        string jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+        //        times.Add(DateTime.Now.Subtract(st).TotalMilliseconds);
+        //        if (tests % 10 == 0)
+        //            Console.Write(".");
+        //    }
+        //    Console.WriteLine();
+        //    Console.WriteLine($"Min: {times.Min()} Max: {times.Max()} Average: {times.Average()}");
+        //}
 
         //private static void peta_deserialize(int count)
         //{
@@ -177,10 +177,9 @@ namespace consoletest
         {
             //fastjson_serialize(100);
             //newton_serialize(100);
-            fastjson_deserialize(10);
-            //peta_deserialize(10);
+            //fastjson_deserialize(10);
             //newton_deserialize(10);
-            return;
+            //return;
             //string s = "{ \"Section1\" : { \"Key1\" : \"Value1\", \"Key2\" : \"Value2\", \"Key3\" : \"Value3\", \"Key4\" : \"Value4\", \"Key5\" : \"Value5\" } }";
             //var oo = JSON.ToDynamic(s);
 
@@ -199,22 +198,22 @@ namespace consoletest
             dsser = false;
             //bin_serialize();
             fastjson_serialize();
-            jsonnet4_serialize();
+            //jsonnet4_serialize();
 
             //bin_deserialize();
             fastjson_deserialize();
-            jsonnet4_deserialize();
+            //jsonnet4_deserialize();
 
             dsser = true;
             Console.WriteLine();
             Console.WriteLine("+dataset");
             //bin_serialize();
             fastjson_serialize();
-            jsonnet4_serialize();
+            //jsonnet4_serialize();
             
             //bin_deserialize();
             fastjson_deserialize();
-            jsonnet4_deserialize();
+            //jsonnet4_deserialize();
 
             Console.WriteLine();
             //Console.ReadKey();
@@ -499,48 +498,48 @@ namespace consoletest
 //			}
 //		}
 
-		private static void jsonnet4_deserialize()
-		{
-			Console.WriteLine();
-			Console.Write("json.net4 deserialize");
-			for (int pp = 0; pp < 5; pp++)
-			{
-				DateTime st = DateTime.Now;
-				colclass c;
-				colclass deserializedStore = null;
-				string jsonText = null;
-				c = CreateObject();
-				var s = new Newtonsoft.Json.JsonSerializerSettings();
-				s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
-				jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
-				for (int i = 0; i < count; i++)
-				{
-					deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
-				}
-				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-			}
-		}
+		//private static void jsonnet4_deserialize()
+		//{
+		//	Console.WriteLine();
+		//	Console.Write("json.net4 deserialize");
+		//	for (int pp = 0; pp < 5; pp++)
+		//	{
+		//		DateTime st = DateTime.Now;
+		//		colclass c;
+		//		colclass deserializedStore = null;
+		//		string jsonText = null;
+		//		c = CreateObject();
+		//		var s = new Newtonsoft.Json.JsonSerializerSettings();
+		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+		//		jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
+		//		for (int i = 0; i < count; i++)
+		//		{
+		//			deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
+		//		}
+		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+		//	}
+		//}
 
-		private static void jsonnet4_serialize()
-		{
-			Console.WriteLine();
-			Console.Write("json.net4 serialize");
-			for (int pp = 0; pp < 5; pp++)
-			{
-				DateTime st = DateTime.Now;
-				colclass c = CreateObject();
-				Newtonsoft.Json.JsonSerializerSettings s = null;
-				string jsonText = null;
-				s = new Newtonsoft.Json.JsonSerializerSettings();
-				s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+		//private static void jsonnet4_serialize()
+		//{
+		//	Console.WriteLine();
+		//	Console.Write("json.net4 serialize");
+		//	for (int pp = 0; pp < 5; pp++)
+		//	{
+		//		DateTime st = DateTime.Now;
+		//		colclass c = CreateObject();
+		//		Newtonsoft.Json.JsonSerializerSettings s = null;
+		//		string jsonText = null;
+		//		s = new Newtonsoft.Json.JsonSerializerSettings();
+		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
 
-				for (int i = 0; i < count; i++)
-				{
-					jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
-				}
-				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-			}
-		}
+		//		for (int i = 0; i < count; i++)
+		//		{
+		//			jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
+		//		}
+		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+		//	}
+		//}
 
 		//private static void stack_deserialize()
 		//{

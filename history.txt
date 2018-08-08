@@ -1,9 +1,12 @@
 2.1.36*
-- minor optimization tweaks
+- optimization tweaks ~30% boost on deserialize
+- changed internal tolower to tolowerinvariant 
+- internal json parser fixed char pointer
+- internal reflection struct to class
+-
 
 2.1.35
 - moved .net 3.5 project to own folder to mitigate conflicting obj builds
-- 
 
 2.1.34
 - ability to create internal/private objects (removed the public access restriction on classes)
