@@ -77,8 +77,7 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\fastjson\fastJSON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -138,6 +137,9 @@
     <Compile Include="..\fastJSON\SafeDictionary.cs">
       <Link>SafeDictionary.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fastJSON.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
