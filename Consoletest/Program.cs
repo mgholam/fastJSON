@@ -99,51 +99,51 @@ namespace consoletest
         //    return new TimeSpan(long.Parse(data));
         //}
 
-        public static colclass CreateObject()
+        public static ColClass CreateObject()
         {
-            var c = new colclass();
+            var c = new ColClass();
 
-            c.booleanValue = true;
-            c.ordinaryDecimal = 3;
+            c.BooleanValue = true;
+            c.OrdinaryDecimal = 3;
 
             if (exotic)
             {
-                c.nullableGuid = Guid.NewGuid();
-                c.hash = new Hashtable();
-                c.bytes = new byte[1024];
-                c.stringDictionary = new Dictionary<string, baseclass>();
-                c.objectDictionary = new Dictionary<baseclass, baseclass>();
-                c.intDictionary = new Dictionary<int, baseclass>();
-                c.nullableDouble = 100.003;
+                c.NullableGuid = Guid.NewGuid();
+                c.Hash = new Hashtable();
+                c.Bytes = new byte[1024];
+                c.StringDictionary = new Dictionary<string, BaseClass>();
+                c.ObjectDictionary = new Dictionary<BaseClass, BaseClass>();
+                c.IntDictionary = new Dictionary<int, BaseClass>();
+                c.NullableDouble = 100.003;
 
                 if (dsser)
-                    c.dataset = ds;
-                c.nullableDecimal = 3.14M;
+                    c.Dataset = ds;
+                c.NullableDecimal = 3.14M;
 
-                c.hash.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
-                c.hash.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+                c.Hash.Add(new Class1("0", "hello", Guid.NewGuid()), new Class2("1", "code", "desc"));
+                c.Hash.Add(new Class2("0", "hello", "pppp"), new Class1("1", "code", Guid.NewGuid()));
 
-                c.stringDictionary.Add("name1", new class2("1", "code", "desc"));
-                c.stringDictionary.Add("name2", new class1("1", "code", Guid.NewGuid()));
+                c.StringDictionary.Add("name1", new Class2("1", "code", "desc"));
+                c.StringDictionary.Add("name2", new Class1("1", "code", Guid.NewGuid()));
 
-                c.intDictionary.Add(1, new class2("1", "code", "desc"));
-                c.intDictionary.Add(2, new class1("1", "code", Guid.NewGuid()));
+                c.IntDictionary.Add(1, new Class2("1", "code", "desc"));
+                c.IntDictionary.Add(2, new Class1("1", "code", Guid.NewGuid()));
 
-                c.objectDictionary.Add(new class1("0", "hello", Guid.NewGuid()), new class2("1", "code", "desc"));
-                c.objectDictionary.Add(new class2("0", "hello", "pppp"), new class1("1", "code", Guid.NewGuid()));
+                c.ObjectDictionary.Add(new Class1("0", "hello", Guid.NewGuid()), new Class2("1", "code", "desc"));
+                c.ObjectDictionary.Add(new Class2("0", "hello", "pppp"), new Class1("1", "code", Guid.NewGuid()));
 
-                c.arrayType = new baseclass[2];
-                c.arrayType[0] = new class1();
-                c.arrayType[1] = new class2();
+                c.ArrayType = new BaseClass[2];
+                c.ArrayType[0] = new Class1();
+                c.ArrayType[1] = new Class2();
             }
 
 
-            c.items.Add(new class1("1", "1", Guid.NewGuid()));
-            c.items.Add(new class2("2", "2", "desc1"));
-            c.items.Add(new class1("3", "3", Guid.NewGuid()));
-            c.items.Add(new class2("4", "4", "desc2"));
+            c.Items.Add(new Class1("1", "1", Guid.NewGuid()));
+            c.Items.Add(new Class2("2", "2", "desc1"));
+            c.Items.Add(new Class1("3", "3", Guid.NewGuid()));
+            c.Items.Add(new Class2("4", "4", "desc2"));
 
-            c.laststring = "" + DateTime.Now;
+            c.Laststring = "" + DateTime.Now;
 
             return c;
         }
@@ -185,11 +185,11 @@ namespace consoletest
         {
             Console.WriteLine();
             Console.Write("fastjson deserialize");
-            colclass c = CreateObject();
+            ColClass c = CreateObject();
             var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
-                colclass deserializedStore;
+                ColClass deserializedStore;
                 string jsonText = null;
 
                 stopwatch.Restart();
@@ -197,7 +197,7 @@ namespace consoletest
                 //Console.WriteLine(" size = " + jsonText.Length);
                 for (int i = 0; i < count; i++)
                 {
-                    deserializedStore = (colclass)fastJSON.JSON.ToObject(jsonText);
+                    deserializedStore = (ColClass)fastJSON.JSON.ToObject(jsonText);
                 }
                 stopwatch.Stop();
                 Console.Write("\t" + stopwatch.ElapsedMilliseconds);
@@ -208,7 +208,7 @@ namespace consoletest
         {
             Console.WriteLine();
             Console.Write("fastjson serialize");
-            colclass c = CreateObject();
+            ColClass c = CreateObject();
             var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
@@ -227,13 +227,13 @@ namespace consoletest
         {
             Console.WriteLine();
             Console.Write("bin deserialize");
-            colclass c = CreateObject();
+            ColClass c = CreateObject();
             var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 MemoryStream ms = new MemoryStream();
-                colclass deserializedStore = null;
+                ColClass deserializedStore = null;
                 stopwatch.Restart();
                 bf.Serialize(ms, c);
                 //Console.WriteLine(" size = " +ms.Length);
@@ -242,7 +242,7 @@ namespace consoletest
                     stopwatch.Stop(); // we stop then resume the stopwatch here so we don't factor in Seek()'s execution
                     ms.Seek(0L, SeekOrigin.Begin);
                     stopwatch.Start();
-                    deserializedStore = (colclass)bf.Deserialize(ms);
+                    deserializedStore = (ColClass)bf.Deserialize(ms);
                 }
                 stopwatch.Stop();
                 Console.Write("\t" + stopwatch.ElapsedMilliseconds);
@@ -252,7 +252,7 @@ namespace consoletest
         private static void bin_serialize()
         {
             Console.Write("\r\nbin serialize");
-            colclass c = CreateObject();
+            ColClass c = CreateObject();
             var stopwatch = new Stopwatch();
             for (int pp = 0; pp < tcount; pp++)
             {
@@ -277,12 +277,12 @@ namespace consoletest
 		{
 			Console.WriteLine();
 			Console.Write("msjson serialize");
-			colclass c = CreateObject();
+			ColClass c = CreateObject();
 			var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
 			for (int pp = 0; pp < tcount; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass deserializedStore = null;
+				ColClass deserializedStore = null;
 				string jsonText = null;
 
 				//jsonText =sws.Serialize(c);
@@ -290,7 +290,7 @@ namespace consoletest
 				for (int i = 0; i < count; i++)
 				{
 					jsonText =sws.Serialize(c);
-					//deserializedStore = (colclass)sws.DeserializeObject(jsonText);
+					//deserializedStore = (ColClass)sws.DeserializeObject(jsonText);
 				}
 				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 			}
@@ -300,7 +300,7 @@ namespace consoletest
 //		{
 //			Console.WriteLine();
 //			Console.Write("stack serialize");
-//			colclass c = CreateObject();
+//			ColClass c = CreateObject();
 //			for (int pp = 0; pp < 5; pp++)
 //			{
 //				DateTime st = DateTime.Now;
@@ -318,19 +318,19 @@ namespace consoletest
 //		{
 //			Console.WriteLine();
 //			Console.Write("fastjson deserialize");
-//			colclass c = CreateObject();
+//			ColClass c = CreateObject();
 //			var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
 //			for (int pp = 0; pp < tcount; pp++)
 //			{
 //				DateTime st = DateTime.Now;
-//				colclass deserializedStore = null;
+//				ColClass deserializedStore = null;
 //				string jsonText = null;
 //
 //				jsonText =sws.Serialize(c);
 //				//Console.WriteLine(" size = " + jsonText.Length);
 //				for (int i = 0; i < count; i++)
 //				{
-//					deserializedStore = (colclass)sws.DeserializeObject(jsonText);
+//					deserializedStore = (ColClass)sws.DeserializeObject(jsonText);
 //				}
 //				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 //			}
@@ -343,8 +343,8 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c;
-				colclass deserializedStore = null;
+				ColClass c;
+				ColClass deserializedStore = null;
 				string jsonText = null;
 				c = Tests.mytests.CreateObject();
 				var s = new Newtonsoft.Json.JsonSerializerSettings();
@@ -352,7 +352,7 @@ namespace consoletest
 				jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
 				for (int i = 0; i < count; i++)
 				{
-					deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
+					deserializedStore = (ColClass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(ColClass), s);
 				}
 				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 			}
@@ -365,7 +365,7 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c = Tests.mytests.CreateObject();
+				ColClass c = Tests.mytests.CreateObject();
 				Newtonsoft.Json.JsonSerializerSettings s = null;
 				string jsonText = null;
 				s = new Newtonsoft.Json.JsonSerializerSettings();
@@ -386,14 +386,14 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c;
-				colclass deserializedStore = null;
+				ColClass c;
+				ColClass deserializedStore = null;
 				string jsonText = null;
 				c = Tests.mytests.CreateObject();
 				jsonText = ServiceStack.Text.JsonSerializer.SerializeToString(c);
 				for (int i = 0; i < count; i++)
 				{
-					deserializedStore = ServiceStack.Text.JsonSerializer.DeserializeFromString<colclass>(jsonText);
+					deserializedStore = ServiceStack.Text.JsonSerializer.DeserializeFromString<ColClass>(jsonText);
 				}
 				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 			}
@@ -406,8 +406,8 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c;
-				colclass deserializedStore = null;
+				ColClass c;
+				ColClass deserializedStore = null;
 				string jsonText = null;
 				c = Tests.mytests.CreateObject();
 				var s = new json.net.JsonSerializerSettings();
@@ -415,7 +415,7 @@ namespace consoletest
 				jsonText = json.net.JsonConvert.SerializeObject(c, json.net.Formatting.Indented, s);
 				for (int i = 0; i < count; i++)
 				{
-					deserializedStore = (colclass)json.net.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
+					deserializedStore = (ColClass)json.net.JsonConvert.DeserializeObject(jsonText, typeof(ColClass), s);
 				}
 				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 			}
@@ -428,7 +428,7 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c = Tests.mytests.CreateObject();
+				ColClass c = Tests.mytests.CreateObject();
 				json.net.JsonSerializerSettings s = null;
 				string jsonText = null;
 				s = new json.net.JsonSerializerSettings();
@@ -449,14 +449,14 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c;
-				colclass deserializedStore = null;
+				ColClass c;
+				ColClass deserializedStore = null;
 				string jsonText = null;
 				c = Tests.mytests.CreateObject();
 				jsonText = BizFX.Common.JSON.JsonMapper.ToJson(c);
 				for (int i = 0; i < count; i++)
 				{
-					deserializedStore = (colclass)BizFX.Common.JSON.JsonMapper.ToObject(jsonText);
+					deserializedStore = (ColClass)BizFX.Common.JSON.JsonMapper.ToObject(jsonText);
 				}
 				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
 			}
@@ -469,7 +469,7 @@ namespace consoletest
 			for (int pp = 0; pp < 5; pp++)
 			{
 				DateTime st = DateTime.Now;
-				colclass c;
+				ColClass c;
 				string jsonText = null;
 				c = Tests.mytests.CreateObject();
 				for (int i = 0; i < count; i++)

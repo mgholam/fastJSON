@@ -198,10 +198,11 @@ namespace fastJSON
                 else
                 {
                     if (pendingSeparator) _output.Append(',');
-                    if (_params.SerializeToLowerCaseNames)
+                    /*if (_params.SerializeToLowerCaseNames)
                         WritePair(key.ToLower(), nameValueCollection[key]);
                     else
-                        WritePair(key, nameValueCollection[key]);
+                        WritePair(key, nameValueCollection[key]);*/
+                    WritePair(_params.TransformCase(key), nameValueCollection[key]);
                     pendingSeparator = true;
                 }
             }
@@ -224,10 +225,11 @@ namespace fastJSON
                     if (pendingSeparator) _output.Append(',');
 
                     string k = (string)entry.Key;
-                    if (_params.SerializeToLowerCaseNames)
+                    /*if (_params.SerializeToLowerCaseNames)
                         WritePair(k.ToLower(), entry.Value);
                     else
-                        WritePair(k, entry.Value);
+                        WritePair(k, entry.Value);*/
+                    WritePair(_params.TransformCase(k), entry.Value);
                     pendingSeparator = true;
                 }
             }
@@ -489,10 +491,11 @@ namespace fastJSON
                         _output.Append(',');
                     if (p.memberName != null)
                         WritePair(p.memberName, o);
-                    else if (_params.SerializeToLowerCaseNames)
+                    else /*if (_params.SerializeToLowerCaseNames)
                         WritePair(p.lcName, o);
                     else
-                        WritePair(p.Name, o);
+                        WritePair(p.Name, o);*/
+                        WritePair(_params.TransformCase(p.Name), o);
                     if (o != null && _params.UseExtensions)
                     {
                         Type tt = o.GetType();
@@ -562,10 +565,11 @@ namespace fastJSON
                     if (pendingSeparator) _output.Append(',');
 
                     string k = (string)entry.Key;
-                    if (_params.SerializeToLowerCaseNames)
+                    /*if (_params.SerializeToLowerCaseNames)
                         WritePair(k.ToLower(), entry.Value);
                     else
-                        WritePair(k, entry.Value);
+                        WritePair(k, entry.Value);*/
+                    WritePair(_params.TransformCase(k), entry.Value);
                     pendingSeparator = true;
                 }
             }
@@ -586,10 +590,11 @@ namespace fastJSON
                     if (pendingSeparator) _output.Append(',');
                     string k = entry.Key;
 
-                    if (_params.SerializeToLowerCaseNames)
+                    /*if (_params.SerializeToLowerCaseNames)
                         WritePair(k.ToLower(), entry.Value);
                     else
-                        WritePair(k, entry.Value);
+                        WritePair(k, entry.Value);*/
+                    WritePair(_params.TransformCase(k), entry.Value);
                     pendingSeparator = true;
                 }
             }

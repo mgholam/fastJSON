@@ -15,6 +15,12 @@ namespace fastJSON
 
     public sealed class JSONParameters
     {
+    	/// <summary>
+        /// Case transformation delegate.
+    	/// </summary>
+        /// <param name="s">The s.</param>
+    	/// <returns></returns>
+    	public delegate string CaseTransformationHandler(string s);
         /// <summary>
         /// Use the optimized fast Dataset Schema format (default = True)
         /// </summary>
@@ -87,10 +93,6 @@ namespace fastJSON
         /// </summary>
         public bool InlineCircularReferences = false;
         /// <summary>
-        /// Save property/field names as lowercase (default = false)
-        /// </summary>
-        public bool SerializeToLowerCaseNames = false;
-        /// <summary>
         /// Formatter indent spaces (default = 3)
         /// </summary>
         public byte FormatterIndentSpaces = 3;
@@ -136,9 +138,54 @@ namespace fastJSON
                 UsingGlobalTypes = UsingGlobalTypes
             };
         }
+
+        /// <summary>
+        /// Collection of hard-wired transform functions. 
+        /// The order in this array must correspond to values of <see cref="CaseTransformation"/>'s members.
+        /// </summary>
+        private static readonly CaseTransformationHandler[] TransformFunctions =
+        {
+            s => s,
+            s => (s == null) ? null : s.ToLower(),
+            s => (s == null) ? null : string.Concat(s.Substring(0, 1).ToLower(), s.Substring(1)),
+            s => (s == null) ? null : s.ToUpper()
+        };
+
+        private CaseTransformation _serializeToLowerCaseNames;
+        /// <summary>
+        /// Case transformation for property/field names (default = NoChange)
+        /// </summary>
+        public CaseTransformation SerializeToLowerCaseNames
+    	{
+            get { return _serializeToLowerCaseNames; }
+        	set
+        		{
+        			_serializeToLowerCaseNames = value;
+        			TransformCase = TransformFunctions[(int)value];
+        		}
+        }
+    
+    
+    	/// <summary>
+    	/// Current case transformation function.
+    	/// </summary>
+    	public CaseTransformationHandler TransformCase { get; private set; }
+
+}
+
+/// <summary>
+/// Name case transformation for serialization.
+/// </summary>
+public enum CaseTransformation
+    {
+    	// NOTE: please keep this ordering / int values unchanged...or change it only when you know what you're doing [cscs]
+    	NoChange = 0,
+    	ToLowerCase = 1,
+    	ToPascalCase = 2,
+    	ToUpperCase = 3
     }
 
-    public static class JSON
+public static class JSON
     {
         /// <summary>
         /// Globally set-able parameters for controlling the serializer

@@ -1625,7 +1625,7 @@ public class tests
         r.Field1 = "dsasdF";
         r.Field2 = 2312;
         r.date = DateTime.Now;
-        var s = JSON.ToNiceJSON(r, new JSONParameters { SerializeToLowerCaseNames = true });
+        var s = JSON.ToNiceJSON(r, new JSONParameters { SerializeToLowerCaseNames = CaseTransformation.NoChange });
         Console.WriteLine(s);
         var o = JSON.ToObject(s);
         Assert.IsNotNull(o);
