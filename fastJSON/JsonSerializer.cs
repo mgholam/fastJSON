@@ -672,7 +672,17 @@ namespace fastJSON
                     case '\n': _output.Append("\\n"); break;
                     case '"':
                     case '\\': _output.Append('\\'); _output.Append(c); break;
-                    case '\0': _output.Append("\\u0000"); break;
+                    case '\0':
+                        if (_useEscapedUnicode)
+                        {
+                            _output.Append("\\u");
+                            _output.Append(((int) c).ToString("X4", NumberFormatInfo.InvariantInfo));
+                        }
+                        else
+                        {
+                            _output.Append("\\0");
+                        }
+                        break;
                     default:
                         if (_useEscapedUnicode)
                         {

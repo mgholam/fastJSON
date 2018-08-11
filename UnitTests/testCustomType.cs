@@ -10,6 +10,33 @@ namespace UnitTests
     class testCustomType
     {
         [Test]
+        public static void SerializeStringWithZeroEscapeTest()
+        {
+
+            fastJSON.JSONParameters param = new JSONParameters();
+            param.SerializeNullValues = false;
+            param.UseExtensions = false;
+            param.UseFastGuid = false;
+            param.UseEscapedUnicode = true; 
+            var testClass01 = new TestClass01();
+            testClass01.stringid = "Test\0Test";
+
+            var newJson = JSON.ToJSON(testClass01, param);
+            Assert.True(newJson.Contains("\\u0000"), "wrong repre of \\0");
+
+            param = new JSONParameters();
+            param.SerializeNullValues = false;
+            param.UseExtensions = false;
+            param.UseFastGuid = false;
+            param.UseEscapedUnicode = false;
+            testClass01 = new TestClass01();
+            testClass01.stringid = "L6645230045235\00175";
+
+            newJson = JSON.ToJSON(testClass01, param);
+            Assert.True(newJson.Contains("L6645230045235\\00175"), "wrong repre of without escaping unicode \\0");
+        }
+
+        [Test]
         public static void ParseIntToStringTest()
         {
 

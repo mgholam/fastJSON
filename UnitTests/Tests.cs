@@ -2669,7 +2669,7 @@ public class tests
     {
         var t = "test\0test";
         Console.WriteLine(t);
-        var s = fastJSON.JSON.ToJSON(t, new JSONParameters { UseEscapedUnicode = false });
+        var s = fastJSON.JSON.ToJSON(t, new JSONParameters { UseEscapedUnicode = true });
         Assert.True(s.Contains("\\u0000"));
         Console.WriteLine(s);
         var o = fastJSON.JSON.ToObject<string>(s);
