@@ -284,6 +284,7 @@ namespace fastJSON
             // Need to start back one place because the first digit is also a token and would have been consumed
             var startIndex = index - 1;
             bool dec = false;
+            bool dob = false;
             do
             {
                 if (index == _len)
@@ -292,7 +293,9 @@ namespace fastJSON
 
                 if ((c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')
                 {
-                    if (c == '.' || c == 'e' || c == 'E')
+                    if (/*c == '.' ||*/ c == 'e' || c == 'E')
+                        dob = true;
+                    if (c == '.')
                         dec = true;
                     if (++index == _len)
                         break;//throw new Exception("Unexpected end of string whilst parsing number");
@@ -301,12 +304,12 @@ namespace fastJSON
                 break;
             } while (true);
 
-            if (dec)
+            if (dob)
             {
                 string s = UnsafeSubstring(p, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            if (index - startIndex < 20 && json[startIndex] != '-')
+            if (dec == false && index - startIndex < 20 && json[startIndex] != '-')
                 return Helper.CreateLong(json, startIndex, index - startIndex);
             else
             {
