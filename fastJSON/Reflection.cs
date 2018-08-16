@@ -391,18 +391,30 @@ namespace fastJSON
                 CreateList c = null;
                 if (_conlistcache.TryGetValue(objtype, out c))
                 {
-                    return c(count);
+                    if (c != null) // kludge : non capacity lists
+                        return c(count);
+                    else
+                        return FastCreateInstance(objtype);
                 }
                 else
                 {
-                    DynamicMethod dynMethod = new DynamicMethod("_fcil", objtype, new Type[] { typeof(int) }, true);
-                    ILGenerator ilGen = dynMethod.GetILGenerator();
-                    ilGen.Emit(OpCodes.Ldarg_0);
-                    ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
-                    ilGen.Emit(OpCodes.Ret);
-                    c = (CreateList)dynMethod.CreateDelegate(typeof(CreateList));
-                    _conlistcache.Add(objtype, c);
-                    return c(count);
+                    var cinfo = objtype.GetConstructor(new Type[] { typeof(int) });
+                    if (cinfo != null)
+                    {
+                        DynamicMethod dynMethod = new DynamicMethod("_fcil", objtype, new Type[] { typeof(int) }, true);
+                        ILGenerator ilGen = dynMethod.GetILGenerator();
+                        ilGen.Emit(OpCodes.Ldarg_0);
+                        ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(new Type[] { typeof(int) }));
+                        ilGen.Emit(OpCodes.Ret);
+                        c = (CreateList)dynMethod.CreateDelegate(typeof(CreateList));
+                        _conlistcache.Add(objtype, c);
+                        return c(count);
+                    }
+                    else
+                    {
+                        _conlistcache.Add(objtype, null);// kludge : non capacity lists
+                        return FastCreateInstance(objtype);
+                    }
                 }
             }
             catch (Exception exc)

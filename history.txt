@@ -1,3 +1,7 @@
+2.1.37
+- fixed json parser to create a decimal number if the string does not have an exponent
+- fixed creating lists without capacity constructor 
+
 2.1.36
 - optimization tweaks ~30% boost on deserialize
 - changed internal tolower to tolowerinvariant 
