@@ -236,7 +236,7 @@ namespace fastJSON
 
         private void WriteCustom(object obj)
         {
-            Serialize s;
+            Reflection.Serialize s;
             Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
             WriteStringFast(s(obj));
         }

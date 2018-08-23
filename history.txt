@@ -1,6 +1,8 @@
-2.1.37
+2.2.0
 - fixed json parser to create a decimal number if the string does not have an exponent
-- fixed creating lists without capacity constructor 
+- fixed fast creating lists without capacity constructor 
+- unified Reflection.cs 
+- * breaking runtime change if using RegisterCustomType() *
 
 2.1.36
 - optimization tweaks ~30% boost on deserialize

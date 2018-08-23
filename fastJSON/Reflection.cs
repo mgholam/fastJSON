@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Collections;
 using System.Text;
 using System.Runtime.Serialization;
+#if NET4
+using System.Linq;
+#endif
 #if !SILVERLIGHT
 using System.Data;
 #endif
@@ -81,6 +84,11 @@ namespace fastJSON
         }
         public static Reflection Instance { get { return instance; } }
 
+        public static bool RDBMode = false;
+
+        public delegate string Serialize(object data);
+        public delegate object Deserialize(string data);
+
         public delegate object GenericSetter(object target, object value);
         public delegate object GenericGetter(object obj);
         private delegate object CreateObject();
@@ -138,6 +146,11 @@ namespace fastJSON
             return b;
         }
 
+        public static string UnicodeGetString(byte[] b)
+        {
+            return UnicodeGetString(b, 0, b.Length);
+        }
+
         public unsafe static string UnicodeGetString(byte[] bytes, int offset, int buflen)
         {
             string str = "";
@@ -175,7 +188,7 @@ namespace fastJSON
 
         internal bool IsTypeRegistered(Type t)
         {
-            if (_customSerializer.Count == 0)
+            if (_customSerializer.Count() == 0)
                 return false;
             Serialize s;
             return _customSerializer.TryGetValue(t, out s);
@@ -370,12 +383,18 @@ namespace fastJSON
             else
             {
                 Type t = Type.GetType(typename);
-                //if (t == null) // RaptorDB : loading runtime assemblies
-                //{
-                //    t = Type.GetType(typename, (name) => {
-                //        return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
-                //    }, null, true);
-                //}
+#if NET4
+                if (RDBMode)
+                {
+                    if (t == null) // RaptorDB : loading runtime assemblies
+                    {
+                        t = Type.GetType(typename, (name) =>
+                        {
+                            return AppDomain.CurrentDomain.GetAssemblies().Where(z => z.FullName == name.FullName).FirstOrDefault();
+                        }, null, true);
+                    }
+                }
+#endif
                 _typecache.Add(typename, t);
                 return t;
             }

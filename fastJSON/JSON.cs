@@ -10,8 +10,8 @@ using System.Collections.Specialized;
 
 namespace fastJSON
 {
-    public delegate string Serialize(object data);
-    public delegate object Deserialize(string data);
+    //public delegate string Serialize(object data);
+    //public delegate object Deserialize(string data);
 
     public sealed class JSONParameters
     {
@@ -340,7 +340,7 @@ namespace fastJSON
         /// <param name="type"></param>
         /// <param name="serializer"></param>
         /// <param name="deserializer"></param>
-        public static void RegisterCustomType(Type type, Serialize serializer, Deserialize deserializer)
+        public static void RegisterCustomType(Type type, Reflection.Serialize serializer, Reflection.Deserialize deserializer)
         {
             Reflection.Instance.RegisterCustomType(type, serializer, deserializer);
         }
@@ -351,8 +351,6 @@ namespace fastJSON
         {
             Reflection.Instance.ClearReflectionCache();
         }
-
-
     }
 
     internal class deserializer

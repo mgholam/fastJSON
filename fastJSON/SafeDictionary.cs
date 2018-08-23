@@ -23,7 +23,10 @@ namespace fastJSON
                 return _Dictionary.TryGetValue(key, out value);
         }
 
-        public int Count { get { lock (_Padlock) return _Dictionary.Count; } }
+        public int Count()
+        {
+            lock (_Padlock) return _Dictionary.Count;
+        }
 
         public TValue this[TKey key]
         {
