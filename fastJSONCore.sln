@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fastJSONcore", "fastJSONcore\fastJSON.csproj", "{32DBA62B-6F46-423F-9A2E-05CF451B0BAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fastJSON", "fastJSONcore\fastJSON.csproj", "{32DBA62B-6F46-423F-9A2E-05CF451B0BAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
