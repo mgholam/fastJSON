@@ -254,10 +254,37 @@ namespace fastJSON
 
         private void WriteGuid(Guid g)
         {
-            if (_params.UseFastGuid == false)
-                WriteStringFast(g.ToString());
-            else
+            if (_params.UseFastGuid)
+            {
                 WriteBytes(g.ToByteArray());
+            }
+            else
+            {
+                switch (_params.GuidStringFormat)
+                {
+                    case "N":
+                    case "D":
+                    case "B":
+                    case "P":
+                        WriteStringFast(g.ToString(_params.GuidStringFormat).ToUpperInvariant());
+                        break;
+                    case "X":
+                        WriteStringFast(g.ToString("X").ToUpperInvariant().Replace('X', 'x'));
+                        break;
+                    case "n":
+                    case "d":
+                    case "b":
+                    case "p":
+                        WriteStringFast(g.ToString(_params.GuidStringFormat.ToUpperInvariant()).ToLowerInvariant());
+                        break;
+                    case "x":
+                        WriteStringFast(g.ToString("X").ToLowerInvariant());
+                        break;
+                    default:
+                WriteStringFast(g.ToString());
+                        break;
+                }
+            }
         }
 
         private void WriteBytes(byte[] bytes)

@@ -29,6 +29,19 @@ namespace fastJSON
         /// Use the fast GUID format (default = True)
         /// </summary>
         public bool UseFastGuid = true;
+
+        /// <summary>
+        /// The format to use when serializing GUID values.
+        /// Lower case will use lower case 'a'...'f', upper case will use upper case letters 'A'...'F'
+        ///
+        /// N: 00000000000000000000000000000000
+	    /// D: 00000000-0000-0000-0000-000000000000
+	    /// B: {00000000-0000-0000-0000-000000000000}
+	    /// P: (00000000-0000-0000-0000-000000000000)
+	    /// X: {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}}
+        /// </summary>
+        public string GuidStringFormat = null;       // use fastJSON format
+
         /// <summary>
         /// Serialize null values to the output (default = True)
         /// </summary>
