@@ -13,7 +13,6 @@ using System.Linq.Expressions;
 using System.Diagnostics;
 using System.Linq;
 using System.Dynamic;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Collections.ObjectModel;
 
@@ -3001,5 +3000,24 @@ public class tests
         TestObject copyObject = new TestObject();
         fastJSON.JSON.FillObject(copyObject, jsonData);
     }
+
+    [Test]
+    public static void Dates()
+    {
+        var s = "\"2018-09-01T09:38:27\"";
+
+        var d = JSON.ToObject<DateTime>(s, new JSONParameters { UseUTCDateTime = false });
+
+        Assert.AreEqual(9, d.Hour);
+    }
+
+
+    //[Test]
+    //public static void autoconvtest()
+    //{
+    //    var j = JSON.ToObject<int>("\"G\"", new JSONParameters { AutoConvertStringToNumbers = false });
+    //    var i = JSON.ToObject<Item>("{\"Id\":\"G\"}", new JSONParameters { AutoConvertStringToNumbers = false });
+    //}
+
 }// UnitTests.Tests
 //}

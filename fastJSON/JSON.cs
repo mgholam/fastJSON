@@ -98,6 +98,12 @@ namespace fastJSON
         /// TESTING - allow non quoted keys in the json like javascript (default = false)
         /// </summary>
         public bool AllowNonQuotedKeys = false;
+        /// <summary>
+        /// Auto convert string values to numbers when needed (default = true)
+        /// 
+        /// When disabled you will get an exception if the types don't match
+        /// </summary>
+        public bool AutoConvertStringToNumbers = true;
 
         public void FixValues()
         {
@@ -133,7 +139,8 @@ namespace fastJSON
                 UseOptimizedDatasetSchema = UseOptimizedDatasetSchema,
                 UseUTCDateTime = UseUTCDateTime,
                 UseValuesOfEnums = UseValuesOfEnums,
-                UsingGlobalTypes = UsingGlobalTypes
+                UsingGlobalTypes = UsingGlobalTypes,
+                AutoConvertStringToNumbers = AutoConvertStringToNumbers
             };
         }
     }
@@ -482,16 +489,20 @@ namespace fastJSON
                 string s = value as string;
                 if (s == null)
                     return (int)((long)value);
-                else
+                else if (_params.AutoConvertStringToNumbers)
                     return Helper.CreateInteger(s, 0, s.Length);
+                else
+                    throw new Exception("AutoConvertStringToNumbers is disabled for converting string : " + value);
             }
             else if (conversionType == typeof(long))
             {
                 string s = value as string;
                 if (s == null)
                     return (long)value;
-                else
+                else if (_params.AutoConvertStringToNumbers)
                     return Helper.CreateLong(s, 0, s.Length);
+                else
+                    throw new Exception("AutoConvertStringToNumbers is disabled for converting string : " + value);
             }
             else if (conversionType == typeof(string))
                 return (string)value;
@@ -705,8 +716,8 @@ namespace fastJSON
 
                         switch (pi.Type)
                         {
-                            case myPropInfoType.Int: oset = (int)Helper.AutoConv(v); break;
-                            case myPropInfoType.Long: oset = Helper.AutoConv(v); break;
+                            case myPropInfoType.Int: oset = (int)Helper.AutoConv(v, _params); break;
+                            case myPropInfoType.Long: oset = Helper.AutoConv(v, _params); break;
                             case myPropInfoType.String: oset = v.ToString(); break;
                             case myPropInfoType.Bool: oset = Helper.BoolConv(v); break;
                             case myPropInfoType.DateTime: oset = Helper.CreateDateTime((string)v, _params.UseUTCDateTime); break;

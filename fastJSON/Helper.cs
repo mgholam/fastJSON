@@ -51,12 +51,17 @@ namespace fastJSON
             return oset;
         }
 
-        public static long AutoConv(object value)
+        public static long AutoConv(object value, JSONParameters param)
         {
             if (value is string)
             {
-                string s = (string)value;
-                return CreateLong(s, 0, s.Length);
+                if (param.AutoConvertStringToNumbers == true)
+                {
+                    string s = (string)value;
+                    return CreateLong(s, 0, s.Length);
+                }
+                else
+                    throw new Exception("AutoConvertStringToNumbers is disabled for converting string : " + value);
             }
             else if (value is long)
                 return (long)value;
