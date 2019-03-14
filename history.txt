@@ -1,3 +1,6 @@
+2.2.2
+- thread safe json formatter (thanks to Ondrej Medek)
+
 2.2.1
 - added JSONParameters.AutoConvertStringToNumbers to control the auto conversion, if false you will get an exception 
 - fixed file names in nuget package on linux 
