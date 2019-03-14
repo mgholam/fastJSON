@@ -13,7 +13,7 @@ namespace fastJSON
 
         public static string PrettyPrint(string input)
         {
-            return PrettyPrint(input, "   ");
+            return PrettyPrint(input, new string(' ', JSON.Parameters.FormatterIndentSpaces));// "   ");
         }
 
         public static string PrettyPrint(string input, string spaces)
