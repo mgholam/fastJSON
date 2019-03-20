@@ -238,7 +238,7 @@ namespace fastJSON
         {
             Reflection.Serialize s;
             Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
-            WriteStringFast(s(obj));
+            _output.Append(s(obj));
         }
 
         private void WriteEnum(Enum e)
