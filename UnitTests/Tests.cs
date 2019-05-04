@@ -3011,6 +3011,33 @@ public class tests
         Assert.AreEqual(9, d.Hour);
     }
 
+    [Test]
+    public static void diclistdouble()
+    {
+        var d = new Dictionary<int, List<double>>();
+        d.Add(1, new List<double> { 1.1, 2.2, 3.3 });
+        d.Add(2, new List<double> { 4.4, 5.5, 6.6 });
+        var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+
+        var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true});
+
+        Assert.AreEqual(2, o.Count);
+        Assert.AreEqual(1.1, o[1][0]);
+    }
+
+    [Test]
+    public static void dicarraydouble()
+    {
+        var d = new Dictionary<int, double[]>();
+        d.Add(1, new List<double> { 1.1, 2.2, 3.3 }.ToArray());
+        d.Add(2, new List<double> { 4.4, 5.5, 6.6 }.ToArray());
+        var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+
+        var o = JSON.ToObject<Dictionary<int, double[]>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
+        Assert.AreEqual(2, o.Count);
+        Assert.AreEqual(1.1, o[1][0]);
+    }
 
     //[Test]
     //public static void autoconvtest()

@@ -552,7 +552,7 @@ namespace fastJSON
         private void DoParseList(IList parse, Type it, IList o)
         {
             Dictionary<string, object> globals = new Dictionary<string, object>();
-            
+
             foreach (var k in parse)
             {
                 _usingglobals = false;
@@ -583,10 +583,13 @@ namespace fastJSON
             Type[] gtypes = Reflection.Instance.GetGenericArguments(type);
             Type t1 = null;
             Type t2 = null;
+            bool dictionary = false;
             if (gtypes != null)
             {
                 t1 = gtypes[0];
                 t2 = gtypes[1];
+                if (t2 != null)
+                    dictionary = t2.Name.StartsWith("Dictionary");
             }
 
             var arraytype = t2.GetElementType();
@@ -599,7 +602,7 @@ namespace fastJSON
                     object v;
                     object k = ChangeType(kv.Key, t1);
 
-                    if (t2.Name.StartsWith("Dictionary")) // deserialize a dictionary
+                    if (dictionary) // deserialize a dictionary
                         v = RootDictionary(kv.Value, t2);
 
                     else if (kv.Value is Dictionary<string, object>)
@@ -878,11 +881,21 @@ namespace fastJSON
             IDictionary col = (IDictionary)Reflection.Instance.FastCreateInstance(pt);
             Type t1 = null;
             Type t2 = null;
+            Type generictype = null;
             if (types != null)
             {
                 t1 = types[0];
                 t2 = types[1];
             }
+            Type arraytype = t2;
+            if (t2 != null)
+            {
+                var ga = Reflection.Instance.GetGenericArguments(t2);// t2.GetGenericArguments();
+                if (ga.Length > 0)
+                    generictype = ga[0];
+                arraytype = t2.GetElementType();
+            }
+            bool root = typeof(IDictionary).IsAssignableFrom(t2);
 
             foreach (Dictionary<string, object> values in reader)
             {
@@ -894,10 +907,18 @@ namespace fastJSON
                 else
                     key = ChangeType(key, t1);
 
-                if (typeof(IDictionary).IsAssignableFrom(t2))
+                if (root)
                     val = RootDictionary(val, t2);
+
                 else if (val is Dictionary<string, object>)
                     val = ParseDictionary((Dictionary<string, object>)val, globalTypes, t2, null);
+
+                else if (types != null && t2.IsArray)
+                    val = CreateArray((List<object>)val, t2, arraytype, globalTypes);
+
+                else if (val is IList)
+                    val = CreateGenericList((List<object>)val, t2, generictype, globalTypes);
+
                 else
                     val = ChangeType(val, t2);
 

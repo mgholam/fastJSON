@@ -175,6 +175,19 @@ namespace consoletest
 
         public static void Main(string[] args)
         {
+            //var d = new Dictionary<int, List<double>>();
+            //d.Add(1, new List<double> { 1.1, 2.2, 3.3 });
+            //d.Add(2, new List<double> { 4.4, 5.5, 6.6 });
+            //var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+            //var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
+            //var d = new Dictionary<int, double[]>();
+            //d.Add(1, new List<double> { 1.1, 2.2, 3.3 }.ToArray());
+            //d.Add(2, new List<double> { 4.4, 5.5, 6.6 }.ToArray());
+            //var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+            //var o = JSON.ToObject<Dictionary<int, double[]>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
+
             //fastjson_serialize(100);
             //newton_serialize(100);
             //fastjson_deserialize(10);
