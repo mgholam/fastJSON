@@ -1,3 +1,6 @@
+2.2.3.1
+- made JSONParameters.MakeCopy() public 
+
 2.2.3
 - bug fix deserialize Dictionary<int,List<X>> without extensions (thanks to Ondrej Medek)
 - bug fix deserialize Dictionary<int,X[]> without extensions 

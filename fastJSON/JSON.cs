@@ -116,7 +116,7 @@ namespace fastJSON
                 ShowReadOnlyProperties = true;
         }
 
-        internal JSONParameters MakeCopy()
+        public JSONParameters MakeCopy()
         {
             return new JSONParameters
             {
