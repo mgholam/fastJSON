@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿// Copyright © 2011-2019 Mehdi Gholam
+using System.Collections.Generic;
 
 namespace fastJSON
 {

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿// Copyright © 2011-2019 Mehdi Gholam
+using System.Text;
 
 namespace fastJSON
 {

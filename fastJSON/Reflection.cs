@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright © 2011-2019 Mehdi Gholam
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Reflection;

@@ -1,3 +1,8 @@
+2.2.3.2
+- Added copyright in the fastJSON source
+- Changing the copyright in AssemblyInfo.cs
+- Updating the version to match the GitHub version
+
 2.2.3.1
 - made JSONParameters.MakeCopy() public 
 
