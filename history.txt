@@ -1,3 +1,6 @@
+2.2.4
+- optimized CreateLong() and CreateInteger() (thanks to djmarcus)
+
 2.2.3.1
 - made JSONParameters.MakeCopy() public 
 
