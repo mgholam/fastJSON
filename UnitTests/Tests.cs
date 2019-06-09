@@ -3020,7 +3020,7 @@ public class tests
         var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
 
         var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true});
-
+        
         Assert.AreEqual(2, o.Count);
         Assert.AreEqual(1.1, o[1][0]);
     }
@@ -3037,6 +3037,24 @@ public class tests
 
         Assert.AreEqual(2, o.Count);
         Assert.AreEqual(1.1, o[1][0]);
+    }
+
+    public class nt
+    {
+        public int a;
+    }
+
+
+    [Test]
+    public static void numberchecks()
+    {
+        var s = "{'a':+1234567}".Replace("'","\"");
+        var o = JSON.ToObject<nt>(s);
+        Assert.AreEqual(1234567L, o.a);
+
+        s = "{'a':-1234567}".Replace("'", "\"");
+        o = JSON.ToObject<nt>(s);
+        Assert.AreEqual(-1234567L, o.a);
     }
 
     //[Test]
