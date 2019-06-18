@@ -154,7 +154,7 @@ namespace consoletest
         //    var data = TestClass.CreateList(20000);
 
         //    string jsonText = PetaJson.Json.Format(data);//, PetaJson.JsonOptions.Flush);// JSON.ToJSON(data, new fastJSON.JSONParameters { UseExtensions = false });
-            
+
         //    //File.WriteAllText("FastJson.json", jsonText);
         //    Stopwatch s = new Stopwatch();
         //    for (int tests = 0; tests < count; tests++)
@@ -172,9 +172,21 @@ namespace consoletest
 
         //}
 
+        public class rofield
+        {
+            public readonly int age = 10;
+            public string name = "a";
+        }
 
         public static void Main(string[] args)
         {
+            var o1 = new rofield();
+            var s = JSON.ToJSON(o1, new JSONParameters { ShowReadOnlyProperties = true });
+            var b = s.Contains("age");
+            var o2 = new rofield();
+
+            s = JSON.ToJSON(o2, new JSONParameters { ShowReadOnlyProperties = false });
+            b = s.Contains("age");
             //var d = new Dictionary<int, List<double>>();
             //d.Add(1, new List<double> { 1.1, 2.2, 3.3 });
             //d.Add(2, new List<double> { 4.4, 5.5, 6.6 });
@@ -223,7 +235,7 @@ namespace consoletest
             //bin_serialize();
             fastjson_serialize();
             //jsonnet4_serialize();
-            
+
             //bin_deserialize();
             fastjson_deserialize();
             //jsonnet4_deserialize();
@@ -447,216 +459,216 @@ namespace consoletest
         }
 
         #region [   other tests  ]
-        
-		//private static void systemweb_serialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("msjson serialize");
-		//	colclass c = CreateObject();
-		//	var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
-		//	for (int pp = 0; pp < tcount; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass deserializedStore = null;
-		//		string jsonText = null;
 
-		//		//jsonText =sws.Serialize(c);
-		//		//Console.WriteLine(" size = " + jsonText.Length);
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			jsonText =sws.Serialize(c);
-		//			//deserializedStore = (colclass)sws.DeserializeObject(jsonText);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void systemweb_serialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("msjson serialize");
+        //	colclass c = CreateObject();
+        //	var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
+        //	for (int pp = 0; pp < tcount; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass deserializedStore = null;
+        //		string jsonText = null;
 
-//		private static void stack_serialize()
-//		{
-//			Console.WriteLine();
-//			Console.Write("stack serialize");
-//			colclass c = CreateObject();
-//			for (int pp = 0; pp < 5; pp++)
-//			{
-//				DateTime st = DateTime.Now;
-//				string jsonText = null;
-//
-//				for (int i = 0; i < count; i++)
-//				{
-//					jsonText = ServiceStack.Text.JsonSerializer.SerializeToString(c);
-//				}
-//				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-//			}
-//		}		
+        //		//jsonText =sws.Serialize(c);
+        //		//Console.WriteLine(" size = " + jsonText.Length);
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			jsonText =sws.Serialize(c);
+        //			//deserializedStore = (colclass)sws.DeserializeObject(jsonText);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//private static void systemweb_deserialize()
-//		{
-//			Console.WriteLine();
-//			Console.Write("fastjson deserialize");
-//			colclass c = CreateObject();
-//			var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
-//			for (int pp = 0; pp < tcount; pp++)
-//			{
-//				DateTime st = DateTime.Now;
-//				colclass deserializedStore = null;
-//				string jsonText = null;
-//
-//				jsonText =sws.Serialize(c);
-//				//Console.WriteLine(" size = " + jsonText.Length);
-//				for (int i = 0; i < count; i++)
-//				{
-//					deserializedStore = (colclass)sws.DeserializeObject(jsonText);
-//				}
-//				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-//			}
-//		}
+        //		private static void stack_serialize()
+        //		{
+        //			Console.WriteLine();
+        //			Console.Write("stack serialize");
+        //			colclass c = CreateObject();
+        //			for (int pp = 0; pp < 5; pp++)
+        //			{
+        //				DateTime st = DateTime.Now;
+        //				string jsonText = null;
+        //
+        //				for (int i = 0; i < count; i++)
+        //				{
+        //					jsonText = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+        //				}
+        //				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //			}
+        //		}		
 
-		//private static void jsonnet4_deserialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("json.net4 deserialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c;
-		//		colclass deserializedStore = null;
-		//		string jsonText = null;
-		//		c = CreateObject();
-		//		var s = new Newtonsoft.Json.JsonSerializerSettings();
-		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
-		//		jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void systemweb_deserialize()
+        //		{
+        //			Console.WriteLine();
+        //			Console.Write("fastjson deserialize");
+        //			colclass c = CreateObject();
+        //			var sws = new System.Web.Script.Serialization.JavaScriptSerializer();
+        //			for (int pp = 0; pp < tcount; pp++)
+        //			{
+        //				DateTime st = DateTime.Now;
+        //				colclass deserializedStore = null;
+        //				string jsonText = null;
+        //
+        //				jsonText =sws.Serialize(c);
+        //				//Console.WriteLine(" size = " + jsonText.Length);
+        //				for (int i = 0; i < count; i++)
+        //				{
+        //					deserializedStore = (colclass)sws.DeserializeObject(jsonText);
+        //				}
+        //				Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //			}
+        //		}
 
-		//private static void jsonnet4_serialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("json.net4 serialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c = CreateObject();
-		//		Newtonsoft.Json.JsonSerializerSettings s = null;
-		//		string jsonText = null;
-		//		s = new Newtonsoft.Json.JsonSerializerSettings();
-		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+        //private static void jsonnet4_deserialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("json.net4 deserialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c;
+        //		colclass deserializedStore = null;
+        //		string jsonText = null;
+        //		c = CreateObject();
+        //		var s = new Newtonsoft.Json.JsonSerializerSettings();
+        //		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+        //		jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void jsonnet4_serialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("json.net4 serialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c = CreateObject();
+        //		Newtonsoft.Json.JsonSerializerSettings s = null;
+        //		string jsonText = null;
+        //		s = new Newtonsoft.Json.JsonSerializerSettings();
+        //		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
 
-		//private static void stack_deserialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("stack deserialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c;
-		//		colclass deserializedStore = null;
-		//		string jsonText = null;
-		//		c = Tests.mytests.CreateObject();
-		//		jsonText = ServiceStack.Text.JsonSerializer.SerializeToString(c);
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			deserializedStore = ServiceStack.Text.JsonSerializer.DeserializeFromString<colclass>(jsonText);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, Newtonsoft.Json.Formatting.Indented, s);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//private static void jsonnet_deserialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("json.net deserialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c;
-		//		colclass deserializedStore = null;
-		//		string jsonText = null;
-		//		c = CreateObject();
-		//		var s = new Newtonsoft.Json.JsonSerializerSettings();
-		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
-		//		jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, s);
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void stack_deserialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("stack deserialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c;
+        //		colclass deserializedStore = null;
+        //		string jsonText = null;
+        //		c = Tests.mytests.CreateObject();
+        //		jsonText = ServiceStack.Text.JsonSerializer.SerializeToString(c);
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			deserializedStore = ServiceStack.Text.JsonSerializer.DeserializeFromString<colclass>(jsonText);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//private static void jsonnet_serialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("json.net serialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c = CreateObject();
-  //              Newtonsoft.Json.JsonSerializerSettings s = null;
-		//		string jsonText = null;
-		//		s = new Newtonsoft.Json.JsonSerializerSettings();
-		//		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+        //private static void jsonnet_deserialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("json.net deserialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c;
+        //		colclass deserializedStore = null;
+        //		string jsonText = null;
+        //		c = CreateObject();
+        //		var s = new Newtonsoft.Json.JsonSerializerSettings();
+        //		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
+        //		jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, s);
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			deserializedStore = (colclass)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonText, typeof(colclass), s);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, s);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void jsonnet_serialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("json.net serialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c = CreateObject();
+        //              Newtonsoft.Json.JsonSerializerSettings s = null;
+        //		string jsonText = null;
+        //		s = new Newtonsoft.Json.JsonSerializerSettings();
+        //		s.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.All;
 
-		//private static void litjson_deserialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("litjson deserialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c;
-		//		colclass deserializedStore = null;
-		//		string jsonText = null;
-		//		c = Tests.mytests.CreateObject();
-		//		jsonText = BizFX.Common.JSON.JsonMapper.ToJson(c);
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			deserializedStore = (colclass)BizFX.Common.JSON.JsonMapper.ToObject(jsonText);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			jsonText = Newtonsoft.Json.JsonConvert.SerializeObject(c, s);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		//private static void litjson_serialize()
-		//{
-		//	Console.WriteLine();
-		//	Console.Write("litjson serialize");
-		//	for (int pp = 0; pp < 5; pp++)
-		//	{
-		//		DateTime st = DateTime.Now;
-		//		colclass c;
-		//		string jsonText = null;
-		//		c = Tests.mytests.CreateObject();
-		//		for (int i = 0; i < count; i++)
-		//		{
-		//			jsonText = BizFX.Common.JSON.JsonMapper.ToJson(c);
-		//		}
-		//		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
-		//	}
-		//}
+        //private static void litjson_deserialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("litjson deserialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c;
+        //		colclass deserializedStore = null;
+        //		string jsonText = null;
+        //		c = Tests.mytests.CreateObject();
+        //		jsonText = BizFX.Common.JSON.JsonMapper.ToJson(c);
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			deserializedStore = (colclass)BizFX.Common.JSON.JsonMapper.ToObject(jsonText);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
 
-		
-		 
+        //private static void litjson_serialize()
+        //{
+        //	Console.WriteLine();
+        //	Console.Write("litjson serialize");
+        //	for (int pp = 0; pp < 5; pp++)
+        //	{
+        //		DateTime st = DateTime.Now;
+        //		colclass c;
+        //		string jsonText = null;
+        //		c = Tests.mytests.CreateObject();
+        //		for (int i = 0; i < count; i++)
+        //		{
+        //			jsonText = BizFX.Common.JSON.JsonMapper.ToJson(c);
+        //		}
+        //		Console.Write("\t" + DateTime.Now.Subtract(st).TotalMilliseconds );
+        //	}
+        //}
+
+
+
         #endregion
     }
 }

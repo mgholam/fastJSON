@@ -473,11 +473,13 @@ namespace fastJSON
                 append = true;
             }
 
-            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties, _params.IgnoreAttributes);
+            Getters[] g = Reflection.Instance.GetGetters(t, /*_params.ShowReadOnlyProperties,*/ _params.IgnoreAttributes);
             int c = g.Length;
             for (int ii = 0; ii < c; ii++)
             {
                 var p = g[ii];
+                if (_params.ShowReadOnlyProperties == false && p.ReadOnly)
+                    continue;
                 object o = p.Getter(obj);
                 if (_params.SerializeNullValues == false && (o == null || o is DBNull))
                 {

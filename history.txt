@@ -1,3 +1,7 @@
+2.2.5
+- bug fix ShowReadOnlyProperties and fields
+- bug fix ToJSON() and changing ShowReadOnlyProperties per call on a type
+
 2.2.4
 - optimized CreateLong() and CreateInteger() (thanks to djmarcus)
 
