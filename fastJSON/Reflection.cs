@@ -268,7 +268,8 @@ namespace fastJSON
                     myPropInfo d = CreateMyProp(f.FieldType, f.Name);
                     if (f.IsLiteral == false)
                     {
-                        d.setter = Reflection.CreateSetField(type, f);
+                        if (f.IsInitOnly == false)
+                            d.setter = Reflection.CreateSetField(type, f);
                         if (d.setter != null)
                             d.CanWrite = true;
                         d.getter = Reflection.CreateGetField(type, f);
@@ -753,7 +754,7 @@ namespace fastJSON
 #endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName , ReadOnly = read_only});
+                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName, ReadOnly = read_only });
             }
 
             FieldInfo[] fi = type.GetFields(bf);
@@ -795,7 +796,7 @@ namespace fastJSON
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLowerInvariant(), memberName = mName , ReadOnly= read_only});
+                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLowerInvariant(), memberName = mName, ReadOnly = read_only });
                 }
             }
             val = getters.ToArray();
