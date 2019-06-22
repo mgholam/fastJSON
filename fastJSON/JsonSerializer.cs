@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright © 2011-2019 Mehdi Gholam
+using System;
 using System.Collections;
 using System.Collections.Generic;
 #if !SILVERLIGHT

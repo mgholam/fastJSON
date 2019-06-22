@@ -5,6 +5,11 @@
 2.2.4
 - optimized CreateLong() and CreateInteger() (thanks to djmarcus)
 
+2.2.3.2
+- Added copyright in the fastJSON source
+- Changing the copyright in AssemblyInfo.cs
+- Updating the version to match the GitHub version
+
 2.2.3.1
 - made JSONParameters.MakeCopy() public 
 
@@ -458,5 +463,5 @@
 - system.dbnull -> null
 - skips readonly properties
 
-1.1 
+1.1
 - 26% performance boost on dataset
