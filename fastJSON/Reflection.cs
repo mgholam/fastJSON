@@ -22,6 +22,7 @@ namespace fastJSON
         public string lcName;
         public string memberName;
         public Reflection.GenericGetter Getter;
+        public bool ReadOnly;
     }
 
     public enum myPropInfoType
@@ -701,7 +702,7 @@ namespace fastJSON
             return (GenericGetter)getter.CreateDelegate(typeof(GenericGetter));
         }
 
-        public Getters[] GetGetters(Type type, bool ShowReadOnlyProperties, List<Type> IgnoreAttributes)
+        public Getters[] GetGetters(Type type, /*bool ShowReadOnlyProperties,*/ List<Type> IgnoreAttributes)
         {
             Getters[] val = null;
             if (_getterscache.TryGetValue(type, out val))
@@ -714,12 +715,13 @@ namespace fastJSON
             List<Getters> getters = new List<Getters>();
             foreach (PropertyInfo p in props)
             {
+                bool read_only = false;
                 if (p.GetIndexParameters().Length > 0)
                 {// Property is an indexer
                     continue;
                 }
-                if (!p.CanWrite && (ShowReadOnlyProperties == false))//|| isAnonymous == false))
-                    continue;
+                if (!p.CanWrite)// && (ShowReadOnlyProperties == false))//|| isAnonymous == false))
+                    read_only = true; //continue;
                 if (IgnoreAttributes != null)
                 {
                     bool found = false;
@@ -751,12 +753,15 @@ namespace fastJSON
 #endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
-                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName });
+                    getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName , ReadOnly = read_only});
             }
 
             FieldInfo[] fi = type.GetFields(bf);
             foreach (var f in fi)
             {
+                bool read_only = false;
+                if (f.IsInitOnly) // && (ShowReadOnlyProperties == false))//|| isAnonymous == false))
+                    read_only = true;//continue;
                 if (IgnoreAttributes != null)
                 {
                     bool found = false;
@@ -790,7 +795,7 @@ namespace fastJSON
                 {
                     GenericGetter g = CreateGetField(type, f);
                     if (g != null)
-                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLowerInvariant(), memberName = mName });
+                        getters.Add(new Getters { Getter = g, Name = f.Name, lcName = f.Name.ToLowerInvariant(), memberName = mName , ReadOnly= read_only});
                 }
             }
             val = getters.ToArray();

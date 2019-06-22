@@ -1,4 +1,4 @@
-﻿// Copyright © 2011-2019 Mehdi Gholam
+// Copyright © 2011-2019 Mehdi Gholam
 using System.Reflection;
 
 [assembly: AssemblyTitle("fastJSON")]
@@ -7,5 +7,5 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © 2011-2019 Mehdi Gholam.")]
 
 
-[assembly: AssemblyVersion("2.2.3.2")]
-[assembly: AssemblyFileVersion("2.2.3.2")]
+[assembly: AssemblyVersion("2.2.5.0")]
+[assembly: AssemblyFileVersion("2.2.5.0")]

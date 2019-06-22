@@ -3057,6 +3057,26 @@ public class tests
         Assert.AreEqual(-1234567L, o.a);
     }
 
+    public class rofield
+    {
+        public static readonly int age = 10;
+        public string name = "a";
+    }
+
+    [Test]
+    public static void readonlyfield()
+    {
+        var o = new rofield();
+
+        var s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = false});
+        Console.WriteLine(s);
+        Assert.False(s.Contains("age"));
+        
+        s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = true });
+        Console.WriteLine(s);
+        Assert.True(s.Contains("age"));
+    }
+
     //[Test]
     //public static void autoconvtest()
     //{
