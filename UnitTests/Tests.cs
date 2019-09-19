@@ -3019,8 +3019,8 @@ public class tests
         d.Add(2, new List<double> { 4.4, 5.5, 6.6 });
         var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
 
-        var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true});
-        
+        var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
         Assert.AreEqual(2, o.Count);
         Assert.AreEqual(1.1, o[1][0]);
     }
@@ -3048,7 +3048,7 @@ public class tests
     [Test]
     public static void numberchecks()
     {
-        var s = "{'a':+1234567}".Replace("'","\"");
+        var s = "{'a':+1234567}".Replace("'", "\"");
         var o = JSON.ToObject<nt>(s);
         Assert.AreEqual(1234567L, o.a);
 
@@ -3068,13 +3068,20 @@ public class tests
     {
         var o = new rofield();
 
-        var s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = false});
+        var s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = false });
         Console.WriteLine(s);
         Assert.False(s.Contains("age"));
-        
+
         s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = true });
         Console.WriteLine(s);
         Assert.True(s.Contains("age"));
+    }
+
+    [Test]
+    public static void intarr()
+    {
+        var o = JSON.ToObject<int[]>("[1,2,-3]");
+        Assert.AreEqual(o[2], -3);
     }
 
     //[Test]
@@ -3085,4 +3092,5 @@ public class tests
     //}
 
 }// UnitTests.Tests
-//}
+ //}
+

@@ -309,7 +309,7 @@ namespace fastJSON
                 string s = UnsafeSubstring(p, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            if (dec == false && index - startIndex < 20 && json[startIndex] != '-')
+            if (dec == false && index - startIndex < 20 )// && json[startIndex] != '-')
                 return Helper.CreateLong(json, startIndex, index - startIndex);
             else
             {
