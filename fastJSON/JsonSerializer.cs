@@ -19,12 +19,16 @@ namespace fastJSON
         private int _MAX_DEPTH = 20;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
-        private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
+        private Dictionary<object, int> _cirobj;
         private JSONParameters _params;
         private bool _useEscapedUnicode = false;
 
         internal JSONSerializer(JSONParameters param)
         {
+            if (param.OverrideObjectHashCodeChecking)
+                _cirobj = new Dictionary<object, int>(10, ReferenceEqualityComparer.Default);
+            else
+                _cirobj = new Dictionary<object, int>();
             _params = param;
             _useEscapedUnicode = _params.UseEscapedUnicode;
             _MAX_DEPTH = _params.SerializerMaxDepth;

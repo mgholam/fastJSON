@@ -3084,6 +3084,73 @@ public class tests
         Assert.AreEqual(o[2], -3);
     }
 
+
+    public class Circle
+    {
+        public Point Center { get; set; }
+        public int Radius { get; set; }
+    }
+
+    public class Point
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public Point() { X = Y = 0; }
+
+        public Point(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Point p) return p.X == X && p.Y == Y;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return X + Y;//.GetHashCode() * 23 + Y.GetHashCode() * 17;
+        }
+    }
+
+    [Test]
+    public static void refchecking1()
+    {
+        var p = new Point(0, 1);
+        var circles = new Circle[]
+        {
+            new Circle() { Center = new Point(0, 0), Radius = 1 },
+            new Circle() { Center = p, Radius = 2 },
+            new Circle() { Center = p, Radius = 3 }
+        };
+        var jp = new JSONParameters { OverrideObjectHashCodeChecking = true };
+        var json = JSON.ToNiceJSON(circles);//, jp);
+        Console.WriteLine(json);
+        var oc = JSON.ToObject<Circle[]>(json, jp);
+        Assert.AreEqual(3, oc.Length);
+        Assert.AreEqual(oc[2].Center.Y, 1);
+    }
+    [Test]
+    public static void refchecking2()
+    {
+        var circles = new Circle[]
+        {
+            new Circle() { Center = new Point(0, 0), Radius = 1 },
+            new Circle() { Center = new Point(0, 1), Radius = 2 },
+            new Circle() { Center = new Point(0, 1), Radius = 3 }
+        };
+        var jp = new JSONParameters { OverrideObjectHashCodeChecking = true, InlineCircularReferences = true };
+
+        var json = JSON.ToNiceJSON(circles, jp);
+        Console.WriteLine(json);
+        var oc = JSON.ToObject<Circle[]>(json, jp);
+        Assert.AreEqual(3, oc.Length);
+        Assert.AreEqual(oc[2].Center.Y, 1);
+    }
+
     //[Test]
     //public static void autoconvtest()
     //{

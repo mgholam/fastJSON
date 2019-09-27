@@ -104,6 +104,10 @@ namespace fastJSON
         /// When disabled you will get an exception if the types don't match
         /// </summary>
         public bool AutoConvertStringToNumbers = true;
+        /// <summary>
+        /// Override object equality hash code checking (default = false)
+        /// </summary>
+        public bool OverrideObjectHashCodeChecking = false;
 
         public void FixValues()
         {
@@ -140,7 +144,8 @@ namespace fastJSON
                 UseUTCDateTime = UseUTCDateTime,
                 UseValuesOfEnums = UseValuesOfEnums,
                 UsingGlobalTypes = UsingGlobalTypes,
-                AutoConvertStringToNumbers = AutoConvertStringToNumbers
+                AutoConvertStringToNumbers = AutoConvertStringToNumbers,
+                OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking
             };
         }
     }
@@ -364,13 +369,18 @@ namespace fastJSON
     {
         public deserializer(JSONParameters param)
         {
+            if (param.OverrideObjectHashCodeChecking)
+                _circobj = new Dictionary<object, int>(10, ReferenceEqualityComparer.Default);
+            else
+                _circobj = new Dictionary<object, int>();
+
             param.FixValues();
             _params = param.MakeCopy();
         }
 
         private JSONParameters _params;
         private bool _usingglobals = false;
-        private Dictionary<object, int> _circobj = new Dictionary<object, int>();
+        private Dictionary<object, int> _circobj;// = new Dictionary<object, int>();
         private Dictionary<int, object> _cirrev = new Dictionary<int, object>();
 
         public T ToObject<T>(string json)
