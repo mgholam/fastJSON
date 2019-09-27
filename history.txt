@@ -1,4 +1,4 @@
-2.2.6*
+2.2.6
 - bug fix reading a negative number in int[]
 - bug fix object equality hash code checking with JSONParameters.OverrideObjectHashCodeChecking (thanks to MTantos1)
 
