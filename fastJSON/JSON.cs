@@ -108,6 +108,12 @@ namespace fastJSON
         /// Override object equality hash code checking (default = false)
         /// </summary>
         public bool OverrideObjectHashCodeChecking = false;
+        /// <summary>
+        /// Checking black list types to prevent friday 13th json attacks (default = true)
+        /// 
+        /// Will throw an exception if encountered and set
+        /// </summary>
+        public bool BlackListTypeChecking = true;
 
         public void FixValues()
         {
@@ -145,7 +151,8 @@ namespace fastJSON
                 UseValuesOfEnums = UseValuesOfEnums,
                 UsingGlobalTypes = UsingGlobalTypes,
                 AutoConvertStringToNumbers = AutoConvertStringToNumbers,
-                OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking
+                OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking,
+                BlackListTypeChecking = BlackListTypeChecking
             };
         }
     }
@@ -681,11 +688,11 @@ namespace fastJSON
                     if (globaltypes != null && globaltypes.TryGetValue((string)tn, out tname))
                         tn = tname;
                 }
-                type = Reflection.Instance.GetTypeFromCache((string)tn);
+                type = Reflection.Instance.GetTypeFromCache((string)tn, _params.BlackListTypeChecking);
             }
 
             if (type == null)
-                throw new Exception("Cannot determine type");
+                throw new Exception("Cannot determine type : " + tn);
 
             string typename = type.FullName;
             object o = input;

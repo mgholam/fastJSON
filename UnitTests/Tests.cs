@@ -3151,6 +3151,30 @@ public class tests
         Assert.AreEqual(oc[2].Center.Y, 1);
     }
 
+    [Test]
+    public static void HackTest()
+    {
+        var s = @"{'$type':'System.Configuration.Install.AssemblyInstaller,System.Configuration.Install, Version=4.0.0.0,culture=neutral,PublicKeyToken=b03f5f7f11d50a3a',
+'Path':'file:///"
+.Replace("\'", "\"") + typeof(JSON).Assembly.Location.Replace("\\","/") + "\"}";
+
+        var fail = false;
+        try
+        {
+            var o = JSON.ToObject(s, new JSONParameters { BlackListTypeChecking = true });
+            Console.WriteLine(o.GetType().Name);
+            //Assert.AreEqual(o.GetType().Name, "");
+            fail = true;
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            //Assert.Pass();
+        }
+        if (fail)
+            Assert.Fail();
+    }
+
     //[Test]
     //public static void autoconvtest()
     //{
