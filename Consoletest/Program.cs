@@ -211,6 +211,27 @@ namespace consoletest
 
         public static void Main(string[] args)
         {
+//            var str = @"{
+//    '$types':{
+//        'System.Windows.Data.ObjectDataProvider, PresentationFramework, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = 31bf3856ad364e35':'1',
+//        'System.Diagnostics.Process, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'2',
+//        'System.Diagnostics.ProcessStartInfo, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'3'
+//    },
+//    '$type':'1',
+//    'ObjectInstance':{
+//        '$type':'2',
+//        'StartInfo':{
+//            '$type':'3',
+//            'FileName':'cmd',
+//            'Arguments':'/c notepad'
+//        }
+//    },
+//    'MethodName':'Start'
+//}".Replace("'","\"");
+
+//            var ooo = JSON.ToObject(str, new JSONParameters { BlackListTypeChecking = false });
+
+
             var p = new Point(0, 1);
             var circles = new Circle[]
             {

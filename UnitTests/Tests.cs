@@ -3154,9 +3154,26 @@ public class tests
     [Test]
     public static void HackTest()
     {
-        var s = @"{'$type':'System.Configuration.Install.AssemblyInstaller,System.Configuration.Install, Version=4.0.0.0,culture=neutral,PublicKeyToken=b03f5f7f11d50a3a',
-'Path':'file:///"
-.Replace("\'", "\"") + typeof(JSON).Assembly.Location.Replace("\\","/") + "\"}";
+        //        var s = @"{'$type':'System.Configuration.Install.AssemblyInstaller,System.Configuration.Install, Version=4.0.0.0,culture=neutral,PublicKeyToken=b03f5f7f11d50a3a',
+        //'Path':'file:///"
+        //.Replace("\'", "\"") + typeof(JSON).Assembly.Location.Replace("\\","/") + "\"}";
+        var s = @"{
+    '$types':{
+        'System.Windows.Data.ObjectDataProvider, PresentationFramework, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = 31bf3856ad364e35':'1',
+        'System.Diagnostics.Process, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'2',
+        'System.Diagnostics.ProcessStartInfo, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'3'
+    },
+    '$type':'1',
+    'ObjectInstance':{
+        '$type':'2',
+        'StartInfo':{
+            '$type':'3',
+            'FileName':'cmd',
+            'Arguments':'/c notepad hacked'
+        }
+    },
+    'MethodName':'Start'
+}".Replace("'", "\"");
 
         var fail = false;
         try
@@ -3166,7 +3183,7 @@ public class tests
             //Assert.AreEqual(o.GetType().Name, "");
             fail = true;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             //Assert.Pass();
@@ -3174,6 +3191,8 @@ public class tests
         if (fail)
             Assert.Fail();
     }
+
+
 
     //[Test]
     //public static void autoconvtest()
