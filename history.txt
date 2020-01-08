@@ -1,3 +1,73 @@
+2.3.1
+- optimized black list checking
+
+2.3.0
+- bug fix reading a negative number in int[]
+- bug fix object equality hash code checking with JSONParameters.OverrideObjectHashCodeChecking (thanks to MTantos1)
+- added JSONParameters.BlackListTypeChecking default true for friday 13th json attack checking
+
+2.2.5
+- bug fix ShowReadOnlyProperties and fields
+- bug fix ToJSON() and changing ShowReadOnlyProperties per call on a type
+
+2.2.4
+- optimized CreateLong() and CreateInteger() (thanks to djmarcus)
+
+2.2.3.1
+- made JSONParameters.MakeCopy() public 
+
+2.2.3
+- bug fix deserialize Dictionary<int,List<X>> without extensions (thanks to Ondrej Medek)
+- bug fix deserialize Dictionary<int,X[]> without extensions 
+
+2.2.2
+- thread safe json formatter (thanks to Ondrej Medek)
+
+2.2.1
+- added JSONParameters.AutoConvertStringToNumbers to control the auto conversion, if false you will get an exception 
+- fixed file names in nuget package on linux 
+
+2.2.0
+- fixed json parser to create a decimal number if the string does not have an exponent
+- fixed fast creating lists without capacity constructor 
+- unified Reflection.cs 
+- * breaking runtime change if using RegisterCustomType() *
+
+2.1.36
+- optimization tweaks ~30% boost on deserialize
+- changed internal tolower to tolowerinvariant 
+- internal json parser fixed char pointer
+- internal reflection struct to class
+
+2.1.35
+- moved .net 3.5 project to own folder to mitigate conflicting obj builds
+
+2.1.34
+- ability to create internal/private objects (removed the public access restriction on classes)
+
+2.1.33
+- case insensitive enum (thanks to AgentFire)
+- auto covert to boolean (number >0 , string : 1, true, yes, on)
+- fixed .net 3.5 project output framework version
+
+2.1.32
+- Non public setter / readonly property support (thanks to rbeurskens)
+- unify reflection.cs with fastBinaryJSON
+
+2.1.31
+- auto convert to string on deserialize if the object property is string and the json value is not
+- fixed side effect of changing JSONParameters.UsingGlobalTypes inside classes and affecting the original value
+- fixed deserialize nested Dictionary without extensions with generic ToObject<>
+
+2.1.29
+- added JSONParameters.AllowNonQuotedKeys for non standard javascript like json
+- signed .net core and standard assembly
+
+2.1.28
+- bug fix deserializing array of objects with type information
+- test for above 
+- support for .net core and netstandard2.0 via separate project
+
 2.1.27
 - bug fix case in DataMember attributes (thanks to Elvis Lam)
 - added ToObject(string json, Type type, JSONParameters par) 

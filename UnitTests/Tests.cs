@@ -13,8 +13,8 @@ using System.Linq.Expressions;
 using System.Diagnostics;
 using System.Linq;
 using System.Dynamic;
-using System.IO;
 using System.Runtime.Serialization;
+using System.Collections.ObjectModel;
 
 //namespace UnitTests
 //{
@@ -900,7 +900,7 @@ public class tests
     public static void DynamicTest()
     {
         string s = "{\"Name\":\"aaaaaa\",\"Age\":10,\"dob\":\"2000-01-01 00:00:00Z\",\"inner\":{\"prop\":30},\"arr\":[1,{\"a\":2},3,4,5,6]}";
-        dynamic d = fastJSON.JSON.ToDynamic(s);
+        dynamic d = JSON.ToDynamic(s);
         var ss = d.Name;
         var oo = d.Age;
         var dob = d.dob;
@@ -914,12 +914,12 @@ public class tests
 
         s = "{\"ints\":[1,2,3,4,5]}";
 
-        d = fastJSON.JSON.ToDynamic(s);
+        d = JSON.ToDynamic(s);
         var o = d.ints[0];
         Assert.AreEqual(1, o);
 
         s = "[1,2,3,4,5,{\"key\":90}]";
-        d = fastJSON.JSON.ToDynamic(s);
+        d = JSON.ToDynamic(s);
         o = d[2];
         Assert.AreEqual(3, o);
         var p = d[5].key;
@@ -1271,7 +1271,7 @@ public class tests
             {
                 if (objtype.IsClass)
                 {
-                    DynamicMethod dynMethod = new DynamicMethod("_", objtype, null);
+                    DynamicMethod dynMethod = new DynamicMethod("_fcc", objtype, null, true);
                     ILGenerator ilGen = dynMethod.GetILGenerator();
                     ilGen.Emit(OpCodes.Newobj, objtype.GetConstructor(Type.EmptyTypes));
                     ilGen.Emit(OpCodes.Ret);
@@ -1280,7 +1280,7 @@ public class tests
                 }
                 else // structs
                 {
-                    DynamicMethod dynMethod = new DynamicMethod("_", typeof(object), null);
+                    DynamicMethod dynMethod = new DynamicMethod("_fcs", typeof(object), null, true);
                     ILGenerator ilGen = dynMethod.GetILGenerator();
                     var lv = ilGen.DeclareLocal(objtype);
                     ilGen.Emit(OpCodes.Ldloca_S, lv);
@@ -2813,11 +2813,394 @@ public class tests
         var data2 = JSON.ToObject<TestData>(jsonData);
 
         // OK, since data member name is "foo" which is all in lower case
-        Assert.AreEqual(data.Foo ,data2.Foo);
+        Assert.AreEqual(data.Foo, data2.Foo);
 
         // Fails, since data member name is "Bar", but the library looks for "bar" when setting the value
-        Assert.AreEqual(data.Bar , data2.Bar);
+        Assert.AreEqual(data.Bar, data2.Bar);
     }
 
+
+    public class test { public string name = "me"; }
+    [Test]
+    public static void ArrayOfObjectExtOff()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters { UseExtensions = false });
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithoutTypeInfoToObjectTyped()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject<test[]>(s);
+        Console.WriteLine(o.GetType().ToString());
+        Assert.AreEqual(typeof(test[]), o.GetType());
+    }
+    [Test]
+    public static void ArrayOfObjectsWithTypeInfoToObject()
+    {
+        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var o = JSON.ToObject(s);
+        Console.WriteLine(o.GetType().ToString());
+        var i = o as List<object>;
+        Assert.AreEqual(typeof(test), i[0].GetType());
+    }
+
+    public class nskeys
+    {
+        public string name;
+        public int age;
+        public string address;
+    }
+    [Test]
+    public static void NonStandardKey()
+    {
+        //var s = "{\"name\":\"m:e\", \"age\":42, \"address\":\"here\"}";
+        //var o = JSON.ToObject<nskeys>(s);
+
+
+        var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
+        var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("m:e", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+
+        s = "{name  \t  :\"me\", age : 42, address  :\"here\"}";
+        o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+
+        s = "{    name   :\"me\", age : 42, address :    \"here\"}";
+        o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        Assert.AreEqual("me", o.name);
+        Assert.AreEqual("here", o.address);
+        Assert.AreEqual(42, o.age);
+    }
+
+    public class cis
+    {
+        public string age;
+    }
+
+    [Test]
+    public static void ConvertInt2String()
+    {
+        var s = "{\"age\":42}";
+        var o = JSON.ToObject<cis>(s);
+    }
+
+    [Test]
+    public static void dicofdic()
+    {
+        var s = "{ 'Section1' : { 'Key1' : 'Value1', 'Key2' : 'Value2', 'Key3' : 'Value3', 'Key4' : 'Value4', 'Key5' : 'Value5' } }".Replace("\'", "\"");
+        var o = JSON.ToObject<Dictionary<string, Dictionary<string, string>>>(s);
+        var v = o["Section1"];
+
+        Assert.AreEqual(5, v.Count);
+        Assert.AreEqual("Value2", v["Key2"]);
+    }
+
+    public class readonlyProps
+    {
+        public List<string> Collection { get; }
+
+        public readonlyProps(List<string> collection)
+        {
+            Collection = collection;
+        }
+
+        public readonlyProps()
+        {
+        }
+    }
+
+    [Test]
+    public static void ReadOnlyProperty() // rbeurskens 
+    {
+        var dto = new readonlyProps(new List<string> { "test", "test2" });
+
+        JSON.Parameters.ShowReadOnlyProperties = true;
+        var s = JSON.ToJSON(dto);
+        var o = JSON.ToObject<readonlyProps>(s);
+
+        Assert.IsNotNull(o);
+        CollectionAssert.AreEqual(dto.Collection, o.Collection);
+    }
+
+    public class nsb
+    {
+        public bool one = false; // number 1
+        public bool two = false; // string 1
+        public bool three = false; // string true
+        public bool four = false; // string on
+        public bool five = false; // string yes
+    }
+    [Test]
+    public static void NonStrictBoolean()
+    {
+        var s = "{'one':1,'two':'1','three':'true','four':'on','five':'yes'}".Replace("\'", "\"");
+
+        var o = JSON.ToObject<nsb>(s);
+        Assert.AreEqual(true, o.one);
+        Assert.AreEqual(true, o.two);
+        Assert.AreEqual(true, o.three);
+        Assert.AreEqual(true, o.four);
+        Assert.AreEqual(true, o.five);
+    }
+
+    private class npc
+    {
+        public int a = 1;
+        public int b = 2;
+    }
+    [Test]
+    public static void NonPublicClass()
+    {
+        var p = new npc();
+        p.a = 10;
+        p.b = 20;
+        var s = JSON.ToJSON(p);
+        var o = (npc)JSON.ToObject(s);
+        Assert.AreEqual(10, o.a);
+        Assert.AreEqual(20, o.b);
+    }
+
+    public class Item
+    {
+        public int Id { get; set; }
+        public string Data { get; set; }
+    }
+
+    public class TestObject
+    {
+        public int Id { get; set; }
+        public string Stuff { get; set; }
+        public virtual ObservableCollection<Item> Items { get; set; }
+    }
+
+
+    [Test]
+    public static void noncapacitylist()
+    {
+        TestObject testObject = new TestObject
+        {
+            Id = 1,
+            Stuff = "test",
+            Items = new ObservableCollection<Item>()
+        };
+
+        testObject.Items.Add(new Item { Id = 1, Data = "Item 1" });
+        testObject.Items.Add(new Item { Id = 2, Data = "Item 2" });
+
+        string jsonData = fastJSON.JSON.ToNiceJSON(testObject);
+        Console.WriteLine(jsonData);
+
+        TestObject copyObject = new TestObject();
+        fastJSON.JSON.FillObject(copyObject, jsonData);
+    }
+
+    [Test]
+    public static void Dates()
+    {
+        var s = "\"2018-09-01T09:38:27\"";
+
+        var d = JSON.ToObject<DateTime>(s, new JSONParameters { UseUTCDateTime = false });
+
+        Assert.AreEqual(9, d.Hour);
+    }
+
+    [Test]
+    public static void diclistdouble()
+    {
+        var d = new Dictionary<int, List<double>>();
+        d.Add(1, new List<double> { 1.1, 2.2, 3.3 });
+        d.Add(2, new List<double> { 4.4, 5.5, 6.6 });
+        var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+
+        var o = JSON.ToObject<Dictionary<int, List<double>>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
+        Assert.AreEqual(2, o.Count);
+        Assert.AreEqual(1.1, o[1][0]);
+    }
+
+    [Test]
+    public static void dicarraydouble()
+    {
+        var d = new Dictionary<int, double[]>();
+        d.Add(1, new List<double> { 1.1, 2.2, 3.3 }.ToArray());
+        d.Add(2, new List<double> { 4.4, 5.5, 6.6 }.ToArray());
+        var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+
+        var o = JSON.ToObject<Dictionary<int, double[]>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
+
+        Assert.AreEqual(2, o.Count);
+        Assert.AreEqual(1.1, o[1][0]);
+    }
+
+    public class nt
+    {
+        public int a;
+    }
+
+
+    [Test]
+    public static void numberchecks()
+    {
+        var s = "{'a':+1234567}".Replace("'", "\"");
+        var o = JSON.ToObject<nt>(s);
+        Assert.AreEqual(1234567L, o.a);
+
+        s = "{'a':-1234567}".Replace("'", "\"");
+        o = JSON.ToObject<nt>(s);
+        Assert.AreEqual(-1234567L, o.a);
+    }
+
+    public class rofield
+    {
+        public static readonly int age = 10;
+        public string name = "a";
+    }
+
+    [Test]
+    public static void readonlyfield()
+    {
+        var o = new rofield();
+
+        var s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = false });
+        Console.WriteLine(s);
+        Assert.False(s.Contains("age"));
+
+        s = JSON.ToJSON(o, new JSONParameters { ShowReadOnlyProperties = true });
+        Console.WriteLine(s);
+        Assert.True(s.Contains("age"));
+    }
+
+    [Test]
+    public static void intarr()
+    {
+        var o = JSON.ToObject<int[]>("[1,2,-3]");
+        Assert.AreEqual(o[2], -3);
+    }
+
+
+    public class Circle
+    {
+        public Point Center { get; set; }
+        public int Radius { get; set; }
+    }
+
+    public class Point
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public Point() { X = Y = 0; }
+
+        public Point(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Point p) return p.X == X && p.Y == Y;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return X + Y;//.GetHashCode() * 23 + Y.GetHashCode() * 17;
+        }
+    }
+
+    [Test]
+    public static void refchecking1()
+    {
+        var p = new Point(0, 1);
+        var circles = new Circle[]
+        {
+            new Circle() { Center = new Point(0, 0), Radius = 1 },
+            new Circle() { Center = p, Radius = 2 },
+            new Circle() { Center = p, Radius = 3 }
+        };
+        var jp = new JSONParameters { OverrideObjectHashCodeChecking = true };
+        var json = JSON.ToNiceJSON(circles);//, jp);
+        Console.WriteLine(json);
+        var oc = JSON.ToObject<Circle[]>(json, jp);
+        Assert.AreEqual(3, oc.Length);
+        Assert.AreEqual(oc[2].Center.Y, 1);
+    }
+    [Test]
+    public static void refchecking2()
+    {
+        var circles = new Circle[]
+        {
+            new Circle() { Center = new Point(0, 0), Radius = 1 },
+            new Circle() { Center = new Point(0, 1), Radius = 2 },
+            new Circle() { Center = new Point(0, 1), Radius = 3 }
+        };
+        var jp = new JSONParameters { OverrideObjectHashCodeChecking = true, InlineCircularReferences = true };
+
+        var json = JSON.ToNiceJSON(circles, jp);
+        Console.WriteLine(json);
+        var oc = JSON.ToObject<Circle[]>(json, jp);
+        Assert.AreEqual(3, oc.Length);
+        Assert.AreEqual(oc[2].Center.Y, 1);
+    }
+
+    [Test]
+    public static void HackTest()
+    {
+        //        var s = @"{'$type':'System.Configuration.Install.AssemblyInstaller,System.Configuration.Install, Version=4.0.0.0,culture=neutral,PublicKeyToken=b03f5f7f11d50a3a',
+        //'Path':'file:///"
+        //.Replace("\'", "\"") + typeof(JSON).Assembly.Location.Replace("\\","/") + "\"}";
+        var s = @"{
+    '$types':{
+        'System.Windows.Data.ObjectDataProvider, PresentationFramework, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = 31bf3856ad364e35':'1',
+        'System.Diagnostics.Process, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'2',
+        'System.Diagnostics.ProcessStartInfo, System, Version = 4.0.0.0, Culture = neutral, PublicKeyToken = b77a5c561934e089':'3'
+    },
+    '$type':'1',
+    'ObjectInstance':{
+        '$type':'2',
+        'StartInfo':{
+            '$type':'3',
+            'FileName':'cmd',
+            'Arguments':'/c notepad hacked'
+        }
+    },
+    'MethodName':'Start'
+}".Replace("'", "\"");
+
+        var fail = false;
+        try
+        {
+            var o = JSON.ToObject(s, new JSONParameters { BlackListTypeChecking = true });
+            Console.WriteLine(o.GetType().Name);
+            //Assert.AreEqual(o.GetType().Name, "");
+            fail = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            //Assert.Pass();
+        }
+        if (fail)
+            Assert.Fail();
+    }
+
+
+
+    //[Test]
+    //public static void autoconvtest()
+    //{
+    //    var j = JSON.ToObject<int>("\"G\"", new JSONParameters { AutoConvertStringToNumbers = false });
+    //    var i = JSON.ToObject<Item>("{\"Id\":\"G\"}", new JSONParameters { AutoConvertStringToNumbers = false });
+    //}
+
 }// UnitTests.Tests
-//}
+ //}
+

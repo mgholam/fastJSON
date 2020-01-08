@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;NET4</TargetFrameworks>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Version>2.2.0.0</Version>
+    <FileVersion>2.2.0.0</FileVersion>
+    <Description>smallest fastest polymorphic json serializer</Description>
+    <Copyright>2010-2018</Copyright>
+    <Authors>M. Gholam</Authors>
+    <PackageProjectUrl>https://www.codeproject.com/Articles/159450/fastJSON</PackageProjectUrl>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\fastJSON\fastJSON.snk</AssemblyOriginatorKeyFile>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0; NET4;</DefineConstants>
+    <OutputPath>..\output\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\fastJSON\dynamic.cs" Link="dynamic.cs" />
+    <Compile Include="..\fastJSON\Formatter.cs" Link="Formatter.cs" />
+    <Compile Include="..\fastJSON\Getters.cs" Link="Getters.cs" />
+    <Compile Include="..\fastJSON\Helper.cs" Link="Helper.cs" />
+    <Compile Include="..\fastJSON\JSON.cs" Link="JSON.cs" />
+    <Compile Include="..\fastJSON\JsonParser.cs" Link="JsonParser.cs" />
+    <Compile Include="..\fastJSON\JsonSerializer.cs" Link="JsonSerializer.cs" />
+    <Compile Include="..\fastJSON\Reflection.cs" Link="Reflection.cs" />
+    <Compile Include="..\fastJSON\SafeDictionary.cs" Link="SafeDictionary.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Reflection.Emit.Lightweight">
+      <Version>4.3.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

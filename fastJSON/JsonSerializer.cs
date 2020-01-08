@@ -19,12 +19,16 @@ namespace fastJSON
         private int _MAX_DEPTH = 20;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
-        private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
+        private Dictionary<object, int> _cirobj;
         private JSONParameters _params;
         private bool _useEscapedUnicode = false;
 
         internal JSONSerializer(JSONParameters param)
         {
+            if (param.OverrideObjectHashCodeChecking)
+                _cirobj = new Dictionary<object, int>(10, ReferenceEqualityComparer.Default);
+            else
+                _cirobj = new Dictionary<object, int>();
             _params = param;
             _useEscapedUnicode = _params.UseEscapedUnicode;
             _MAX_DEPTH = _params.SerializerMaxDepth;
@@ -116,7 +120,7 @@ namespace fastJSON
             else if (obj is TimeSpan)
                 _output.Append(((TimeSpan)obj).Ticks);
 
-#if net4
+#if NET4
             else if (_params.KVStyleStringDictionary == false &&
                 obj is IEnumerable<KeyValuePair<string, object>>)
 
@@ -124,7 +128,7 @@ namespace fastJSON
 #endif
 
             else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
-                obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+                obj.GetType().IsGenericType && Reflection.Instance.GetGenericArguments(obj.GetType())[0] == typeof(string))
 
                 WriteStringDictionary((IDictionary)obj);
             else if (obj is IDictionary)
@@ -199,7 +203,7 @@ namespace fastJSON
                 {
                     if (pendingSeparator) _output.Append(',');
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(key.ToLower(), nameValueCollection[key]);
+                        WritePair(key.ToLowerInvariant(), nameValueCollection[key]);
                     else
                         WritePair(key, nameValueCollection[key]);
                     pendingSeparator = true;
@@ -225,7 +229,7 @@ namespace fastJSON
 
                     string k = (string)entry.Key;
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;
@@ -236,7 +240,7 @@ namespace fastJSON
 
         private void WriteCustom(object obj)
         {
-            Serialize s;
+            Reflection.Serialize s;
             Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
             WriteStringFast(s(obj));
         }
@@ -473,11 +477,13 @@ namespace fastJSON
                 append = true;
             }
 
-            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties, _params.IgnoreAttributes);
+            Getters[] g = Reflection.Instance.GetGetters(t, /*_params.ShowReadOnlyProperties,*/ _params.IgnoreAttributes);
             int c = g.Length;
             for (int ii = 0; ii < c; ii++)
             {
                 var p = g[ii];
+                if (_params.ShowReadOnlyProperties == false && p.ReadOnly)
+                    continue;
                 object o = p.Getter(obj);
                 if (_params.SerializeNullValues == false && (o == null || o is DBNull))
                 {
@@ -563,7 +569,7 @@ namespace fastJSON
 
                     string k = (string)entry.Key;
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;
@@ -587,7 +593,7 @@ namespace fastJSON
                     string k = entry.Key;
 
                     if (_params.SerializeToLowerCaseNames)
-                        WritePair(k.ToLower(), entry.Value);
+                        WritePair(k.ToLowerInvariant(), entry.Value);
                     else
                         WritePair(k, entry.Value);
                     pendingSeparator = true;

@@ -77,23 +77,12 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>fastJSON.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\fastjson\fastJSON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="dynamic.cs" />
-    <Compile Include="Getters.cs" />
-    <Compile Include="Formatter.cs" />
-    <Compile Include="JsonSerializer.cs" />
-    <Compile Include="JSON.cs" />
-    <Compile Include="JsonParser.cs" />
-    <Compile Include="Reflection.cs" />
-    <Compile Include="SafeDictionary.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -118,7 +107,36 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fastJSON.snk" />
+    <Compile Include="..\fastJSON\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\dynamic.cs">
+      <Link>dynamic.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\Formatter.cs">
+      <Link>Formatter.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\Getters.cs">
+      <Link>Getters.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\Helper.cs">
+      <Link>Helper.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\JSON.cs">
+      <Link>JSON.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\JsonParser.cs">
+      <Link>JsonParser.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\JsonSerializer.cs">
+      <Link>JsonSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\Reflection.cs">
+      <Link>Reflection.cs</Link>
+    </Compile>
+    <Compile Include="..\fastJSON\SafeDictionary.cs">
+      <Link>SafeDictionary.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
