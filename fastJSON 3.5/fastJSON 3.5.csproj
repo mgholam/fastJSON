@@ -77,7 +77,7 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\fastjson\fastJSON.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\fastJSON\fastJSON.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
