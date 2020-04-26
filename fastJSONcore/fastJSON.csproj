@@ -1,17 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;NET4</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>2.2.0.0</Version>
-    <FileVersion>2.2.0.0</FileVersion>
-    <Description>smallest fastest polymorphic json serializer</Description>
-    <Copyright>2010-2018</Copyright>
     <Authors>M. Gholam</Authors>
     <PackageProjectUrl>https://www.codeproject.com/Articles/159450/fastJSON</PackageProjectUrl>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\fastJSON\fastJSON.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\fastJSON\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
     <Compile Include="..\fastJSON\dynamic.cs" Link="dynamic.cs" />
     <Compile Include="..\fastJSON\Formatter.cs" Link="Formatter.cs" />
     <Compile Include="..\fastJSON\Getters.cs" Link="Getters.cs" />

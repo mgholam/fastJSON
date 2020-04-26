@@ -321,7 +321,7 @@ public class tests
         var s = JSON.ToJSON(r);
         Console.WriteLine(JSON.Beautify(s));
         var o = JSON.ToObject(s);
-
+        Console.WriteLine((o as Retclass).Field2);
         Assert.AreEqual(2312, (o as Retclass).Field2);
     }
 
@@ -2727,13 +2727,19 @@ public class tests
     }
 
     [Test]
+    public static void dec()
+    {
+
+    }
+
+    [Test]
     public static void digitlimits()
     {
         var d = new DigitLimit();
         d.Fmin = float.MinValue;// serializer loss on tostring() 
         d.Fmax = float.MaxValue;// serializer loss on tostring()
-        d.MminDec = -7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
-        d.MmaxDec = +7.9228162514264337593543950335m; //OK to be serialized but lost precision in deserialization
+        d.MminDec = -7.9228162514264337593543950335m; 
+        d.MmaxDec = +7.9228162514264337593543950335m; 
 
         d.Mmin = decimal.MinValue;
         d.Mmax = decimal.MaxValue;
@@ -2787,8 +2793,8 @@ public class tests
         // precision loss
         //Assert.AreEqual(d.Fmax, o.Fmax);
         //Assert.AreEqual(d.Fmin, o.Fmin);
-        //Assert.AreEqual(d.MmaxDec, o.MmaxDec);
-        //Assert.AreEqual(d.MminDec, o.MminDec);
+        Assert.AreEqual(d.MmaxDec, o.MmaxDec);
+        Assert.AreEqual(d.MminDec, o.MminDec);
     }
 
 
@@ -2862,18 +2868,21 @@ public class tests
 
         var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
         var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        //Console.WriteLine("t1");
         Assert.AreEqual("m:e", o.name);
         Assert.AreEqual("here", o.address);
         Assert.AreEqual(42, o.age);
 
         s = "{name  \t  :\"me\", age : 42, address  :\"here\"}";
         o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        //Console.WriteLine("t2");
         Assert.AreEqual("me", o.name);
         Assert.AreEqual("here", o.address);
         Assert.AreEqual(42, o.age);
 
         s = "{    name   :\"me\", age : 42, address :    \"here\"}";
         o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+        //Console.WriteLine("t3");
         Assert.AreEqual("me", o.name);
         Assert.AreEqual("here", o.address);
         Assert.AreEqual(42, o.age);
@@ -3192,6 +3201,43 @@ public class tests
             Assert.Fail();
     }
 
+    [Test]
+    public static void TestNull()
+    {
+        var o1 = new NullTestClass();
+        o1.Test = null;
+        string s = JSON.ToJSON(o1);
+        var o2 = JSON.ToObject<NullTestClass>(s);
+        Assert.AreEqual(o1.Test, o2.Test);
+    }
+
+    public class NullTestClass
+    {
+        public object Test
+        {
+            get; set;
+        }
+
+        public NullTestClass()
+        {
+            this.Test = new object();
+        }
+    }
+
+
+    //public static void paramobjfunc()
+    //{
+    //    var str = "";
+    //    var o = JSON.ToObject(str, new JSONParameters
+    //    {
+    //        CreateParameterConstructorObject = (t) =>
+    //        {
+    //            if (t == typeof(NullTestClass))
+    //                return new NullTestClass();
+    //            else return null;
+    //        }
+    //    });
+    //}
 
 
     //[Test]

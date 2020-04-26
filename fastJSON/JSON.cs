@@ -10,9 +10,6 @@ using System.Collections.Specialized;
 
 namespace fastJSON
 {
-    //public delegate string Serialize(object data);
-    //public delegate object Deserialize(string data);
-
     public sealed class JSONParameters
     {
         /// <summary>
@@ -114,6 +111,12 @@ namespace fastJSON
         /// Will throw an exception if encountered and set
         /// </summary>
         public bool BlackListTypeChecking = true;
+        /// <summary>
+        /// Fully Qualify the DataSet Schema (default = false)
+        /// 
+        /// If you get deserialize errors with DataSets and DataTables
+        /// </summary>
+        public bool FullyQualifiedDataSetSchema = false;
 
         public void FixValues()
         {
@@ -152,7 +155,8 @@ namespace fastJSON
                 UsingGlobalTypes = UsingGlobalTypes,
                 AutoConvertStringToNumbers = AutoConvertStringToNumbers,
                 OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking,
-                BlackListTypeChecking = BlackListTypeChecking
+                BlackListTypeChecking = BlackListTypeChecking,
+                FullyQualifiedDataSetSchema = FullyQualifiedDataSetSchema
             };
         }
     }
@@ -591,7 +595,6 @@ namespace fastJSON
             DoParseList((IList)parse, it, o);
             var array = Array.CreateInstance(it, o.Count);
             o.CopyTo(array, 0);
-
             return array;
         }
 
@@ -730,10 +733,9 @@ namespace fastJSON
 
                 if (pi.CanWrite)
                 {
+                    object oset = null;
                     if (v != null)
                     {
-                        object oset = null;
-
                         switch (pi.Type)
                         {
                             case myPropInfoType.Int: oset = (int)Helper.AutoConv(v, _params); break;
@@ -780,8 +782,8 @@ namespace fastJSON
                                 break;
                         }
 
-                        o = pi.setter(o, oset);
                     }
+                    o = pi.setter(o, oset);
                 }
             }
             return o;
@@ -793,7 +795,9 @@ namespace fastJSON
             {
                 myPropInfo p = props[kv.Key];
                 object o = p.getter(obj);
-                Type t = Type.GetType((string)kv.Value);
+                // blacklist checking
+                Type t = //Type.GetType((string)kv.Value);
+                        Reflection.Instance.GetTypeFromCache((string)kv.Value, true);
                 if (t == typeof(Guid))
                     p.setter(obj, Helper.CreateGuid((string)o));
             }
@@ -968,7 +972,10 @@ namespace fastJSON
                 {
                     if (ds.Tables.Contains(ms.Info[i]) == false)
                         ds.Tables.Add(ms.Info[i]);
-                    ds.Tables[ms.Info[i]].Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
+                    // blacklist checking
+                    var t = //Type.GetType(ms.Info[i + 2]);
+                            Reflection.Instance.GetTypeFromCache(ms.Info[i + 2], true);
+                    ds.Tables[ms.Info[i]].Columns.Add(ms.Info[i + 1], t);
                 }
             }
 
@@ -1008,8 +1015,9 @@ namespace fastJSON
 
             foreach (List<object> row in rows)
             {
-                object[] v = new object[row.Count];
-                row.CopyTo(v, 0);
+                //object[] v = row.ToArray(); //new object[row.Count];
+                //row.CopyTo(v, 0);
+                var v = row;
                 foreach (int i in guidcols)
                 {
                     string s = (string)v[i];
@@ -1031,7 +1039,7 @@ namespace fastJSON
                             v[i] = Helper.CreateDateTime(s, _params.UseUTCDateTime);
                     }
                 }
-                dt.Rows.Add(v);
+                dt.Rows.Add(v.ToArray());
             }
 
             dt.EndLoadData();
@@ -1056,7 +1064,10 @@ namespace fastJSON
                 dt.TableName = ms.Info[0];
                 for (int i = 0; i < ms.Info.Count; i += 3)
                 {
-                    dt.Columns.Add(ms.Info[i + 1], Type.GetType(ms.Info[i + 2]));
+                    // blacklist checking
+                    var t = //Type.GetType(ms.Info[i + 2]);
+                            Reflection.Instance.GetTypeFromCache(ms.Info[i + 2], true);
+                    dt.Columns.Add(ms.Info[i + 1], t);
                 }
             }
 

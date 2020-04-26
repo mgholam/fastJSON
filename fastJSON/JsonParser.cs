@@ -35,17 +35,51 @@ namespace fastJSON
         int index;
         bool allownonquotedkey = false;
         int _len = 0;
+        //static Token[] tokenlookup = null; // new Token[255];
 
         internal JsonParser(string json, bool AllowNonQuotedKeys)
         {
             this.allownonquotedkey = AllowNonQuotedKeys;
             this.json = json.ToCharArray();
             _len = json.Length;
+            //if (tokenlookup == null)
+            //{
+            //    tokenlookup = new Token[255];
+
+            //    tokenlookup['0'] = Token.Number;
+            //    tokenlookup['1'] = Token.Number;
+            //    tokenlookup['2'] = Token.Number;
+            //    tokenlookup['3'] = Token.Number;
+            //    tokenlookup['4'] = Token.Number;
+            //    tokenlookup['5'] = Token.Number;
+            //    tokenlookup['6'] = Token.Number;
+            //    tokenlookup['7'] = Token.Number;
+            //    tokenlookup['8'] = Token.Number;
+            //    tokenlookup['9'] = Token.Number;
+            //    tokenlookup['-'] = Token.Number;
+            //    tokenlookup['+'] = Token.Number;
+            //    tokenlookup['.'] = Token.Number;
+
+            //    tokenlookup['{'] = Token.Curly_Open;
+            //    tokenlookup['}'] = Token.Curly_Close;
+            //    tokenlookup['['] = Token.Squared_Open;
+            //    tokenlookup[']'] = Token.Squared_Close;
+
+            //    tokenlookup[','] = Token.Comma;
+            //    tokenlookup['\"'] = Token.String;
+            //    tokenlookup['\t'] = Token.String;
+            //    tokenlookup[' '] = Token.String;
+            //    tokenlookup[':'] = Token.Colon;
+
+            //    tokenlookup['f'] = Token.False;
+            //    tokenlookup['t'] = Token.True;
+            //    tokenlookup['n'] = Token.Null;
+            //}
         }
 
         public unsafe object Decode()
         {
-            fixed(char* p = json)
+            fixed (char* p = json)
                 return ParseValue(p, false);
         }
 
@@ -309,12 +343,13 @@ namespace fastJSON
                 string s = UnsafeSubstring(p, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            if (dec == false && index - startIndex < 20 )// && json[startIndex] != '-')
+            if (dec == false && index - startIndex < 20)// && json[startIndex] != '-')
                 return Helper.CreateLong(json, startIndex, index - startIndex);
             else
             {
                 string s = UnsafeSubstring(p, startIndex, index - startIndex);//json.Substring(startIndex, index - startIndex);
-                return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
+                return //Helper.ParseDecimal(s);
+                   decimal.Parse(s, NumberFormatInfo.InvariantInfo);
             }
         }
 
@@ -348,23 +383,23 @@ namespace fastJSON
             do
             {
                 //fixed (char* p = json)
-                {
-                    c = p[index];
+                //{
+                c = p[index];
 
-                    if (c == '/' && p[index + 1] == '/') // c++ style single line comments
+                if (c == '/' && p[index + 1] == '/') // c++ style single line comments
+                {
+                    index++;
+                    index++;
+                    do
                     {
-                        index++;
-                        index++;
-                        do
-                        {
-                            c = p[index];
-                            if (c == '\r' || c == '\n') break; // read till end of line
-                        }
-                        while (++index < len);
+                        c = p[index];
+                        if (c == '\r' || c == '\n') break; // read till end of line
                     }
-                    if (c > ' ') break;
-                    if (c != ' ' && c != '\t' && c != '\n' && c != '\r') break;
+                    while (++index < len);
                 }
+                if (c > ' ') break;
+                if (c != ' ' && c != '\t' && c != '\n' && c != '\r') break;
+                //}
             } while (++index < len);
 
             if (index == len)
@@ -373,98 +408,136 @@ namespace fastJSON
             }
 
             //fixed (char* p = json)
+            //{
+            c = p[index];
+
+            index++;
+
+            //var tok = tokenlookup[c];
+
+            //switch (tok)
+            //{
+            //    case Token.True:
+            //        if (len - index >= 3 &&
+            //            p[index + 0] == 'r' &&
+            //            p[index + 1] == 'u' &&
+            //            p[index + 2] == 'e')
+            //        {
+            //            index += 3;
+            //            return Token.True;
+            //        }
+            //        break;
+            //    case Token.False:
+            //        if (len - index >= 4 &&
+            //            p[index + 0] == 'a' &&
+            //            p[index + 1] == 'l' &&
+            //            p[index + 2] == 's' &&
+            //            p[index + 3] == 'e')
+            //        {
+            //            index += 4;
+            //            return Token.False;
+            //        }
+            //        break;
+
+            //    case Token.Null:
+            //        if (len - index >= 3 &&
+            //            p[index + 0] == 'u' &&
+            //            p[index + 1] == 'l' &&
+            //            p[index + 2] == 'l')
+            //        {
+            //            index += 3;
+            //            return Token.Null;
+            //        }
+            //        break;
+            //}
+
+            switch (c)
             {
-                c = p[index];
+                case '{':
+                    return Token.Curly_Open;
 
-                index++;
+                case '}':
+                    return Token.Curly_Close;
 
-                switch (c)
-                {
-                    case '{':
-                        return Token.Curly_Open;
+                case '[':
+                    return Token.Squared_Open;
 
-                    case '}':
-                        return Token.Curly_Close;
+                case ']':
+                    return Token.Squared_Close;
 
-                    case '[':
-                        return Token.Squared_Open;
+                case ',':
+                    return Token.Comma;
 
-                    case ']':
-                        return Token.Squared_Close;
+                case '"':
+                    return Token.String;
 
-                    case ',':
-                        return Token.Comma;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                case '+':
+                case '.':
+                    return Token.Number;
 
-                    case '"':
-                        return Token.String;
+                case ':':
+                    return Token.Colon;
 
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                    case '-':
-                    case '+':
-                    case '.':
-                        return Token.Number;
+                case 'f':
+                    if (len - index >= 4 &&
+                        p[index + 0] == 'a' &&
+                        p[index + 1] == 'l' &&
+                        p[index + 2] == 's' &&
+                        p[index + 3] == 'e')
+                    {
+                        index += 4;
+                        return Token.False;
+                    }
+                    break;
 
-                    case ':':
-                        return Token.Colon;
+                case 't':
+                    if (len - index >= 3 &&
+                        p[index + 0] == 'r' &&
+                        p[index + 1] == 'u' &&
+                        p[index + 2] == 'e')
+                    {
+                        index += 3;
+                        return Token.True;
+                    }
+                    break;
 
-                    case 'f':
-                        if (len - index >= 4 &&
-                            p[index + 0] == 'a' &&
-                            p[index + 1] == 'l' &&
-                            p[index + 2] == 's' &&
-                            p[index + 3] == 'e')
-                        {
-                            index += 4;
-                            return Token.False;
-                        }
-                        break;
-
-                    case 't':
-                        if (len - index >= 3 &&
-                            p[index + 0] == 'r' &&
-                            p[index + 1] == 'u' &&
-                            p[index + 2] == 'e')
-                        {
-                            index += 3;
-                            return Token.True;
-                        }
-                        break;
-
-                    case 'n':
-                        if (len - index >= 3 &&
-                            p[index + 0] == 'u' &&
-                            p[index + 1] == 'l' &&
-                            p[index + 2] == 'l')
-                        {
-                            index += 3;
-                            return Token.Null;
-                        }
-                        break;
-                }
+                case 'n':
+                    if (len - index >= 3 &&
+                        p[index + 0] == 'u' &&
+                        p[index + 1] == 'l' &&
+                        p[index + 2] == 'l')
+                    {
+                        index += 3;
+                        return Token.Null;
+                    }
+                    break;
             }
-            if (allownonquotedkey)
+
+            if (allownonquotedkey )//&& tok == Token.String)
             {
                 index--;
                 return Token.String;
             }
+
+            //return tok;
             else
                 throw new Exception("Could not find token at index " + --index);
         }
 
-        private static unsafe string UnsafeSubstring(//char[] source, 
-            char* p, int startIndex, int length)
+        private static unsafe string UnsafeSubstring(char* p, int startIndex, int length)
         {
-            //fixed (char* c = source)
-                return new string(p, startIndex, length);
+            return new string(p, startIndex, length);
         }
     }
 }

@@ -89,9 +89,9 @@ namespace fastJSON
                     _output.Append("\"NaN\"");
                 else if (double.IsInfinity(d))
                 {
-                    _output.Append("\"");
+                    _output.Append('\"');
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
-                    _output.Append("\"");
+                    _output.Append('\"');
                 }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
@@ -103,9 +103,9 @@ namespace fastJSON
                     _output.Append("\"NaN\"");
                 else if (float.IsInfinity(d))
                 {
-                    _output.Append("\"");
+                    _output.Append('\"');
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
-                    _output.Append("\"");
+                    _output.Append('\"');
                 }
                 else
                     _output.Append(((IConvertible)obj).ToString(NumberFormatInfo.InvariantInfo));
@@ -165,7 +165,7 @@ namespace fastJSON
         private void WriteDateTimeOffset(DateTimeOffset d)
         {
             DateTime dt = _params.UseUTCDateTime ? d.UtcDateTime : d.DateTime;
-            
+
             write_date_value(dt);
 
             var ticks = dt.Ticks % TimeSpan.TicksPerSecond;
@@ -177,11 +177,11 @@ namespace fastJSON
             else
             {
                 if (d.Offset.Hours > 0)
-                    _output.Append("+");
+                    _output.Append('+');
                 else
-                    _output.Append("-");
+                    _output.Append('-');
                 _output.Append(d.Offset.Hours.ToString("00", NumberFormatInfo.InvariantInfo));
-                _output.Append(":");
+                _output.Append(':');
                 _output.Append(d.Offset.Minutes.ToString("00", NumberFormatInfo.InvariantInfo));
             }
 
@@ -321,7 +321,10 @@ namespace fastJSON
             {
                 m.Info.Add(ds.TableName);
                 m.Info.Add(c.ColumnName);
-                m.Info.Add(c.DataType.ToString());
+                if (_params.FullyQualifiedDataSetSchema)
+                    m.Info.Add(c.DataType.AssemblyQualifiedName);
+                else
+                    m.Info.Add(c.DataType.ToString());
             }
             // FEATURE : serialize relations and constraints here
 
@@ -342,7 +345,10 @@ namespace fastJSON
                 {
                     m.Info.Add(t.TableName);
                     m.Info.Add(c.ColumnName);
-                    m.Info.Add(c.DataType.ToString());
+                    if (_params.FullyQualifiedDataSetSchema)
+                        m.Info.Add(c.DataType.AssemblyQualifiedName);
+                    else
+                        m.Info.Add(c.DataType.ToString());
                 }
             }
             // FEATURE : serialize relations and constraints here
@@ -433,7 +439,7 @@ namespace fastJSON
                     //_circular = true;
                     _output.Append("{\"$i\":");
                     _output.Append(i.ToString());
-                    _output.Append("}");
+                    _output.Append('}');
                     return;
                 }
             }
@@ -502,7 +508,7 @@ namespace fastJSON
                     if (o != null && _params.UseExtensions)
                     {
                         Type tt = o.GetType();
-                        if (tt == typeof(System.Object))
+                        if (tt == typeof(object))
                             map.Add(p.Name, tt.ToString());
                     }
                     append = true;
@@ -613,7 +619,7 @@ namespace fastJSON
                 if (pendingSeparator) _output.Append(',');
                 _output.Append('{');
                 WritePair("k", entry.Key);
-                _output.Append(",");
+                _output.Append(',');
                 WritePair("v", entry.Value);
                 _output.Append('}');
 
@@ -651,7 +657,7 @@ namespace fastJSON
                 }
                 else
                 {
-                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c!='\0')// && c != ':' && c!=',')
+                    if (c != '\t' && c != '\n' && c != '\r' && c != '\"' && c != '\\' && c != '\0')// && c != ':' && c!=',')
                     {
                         if (runIndex == -1)
                             runIndex = index;
@@ -668,9 +674,9 @@ namespace fastJSON
 
                 switch (c)
                 {
-                    case '\t': _output.Append("\\t"); break;
-                    case '\r': _output.Append("\\r"); break;
-                    case '\n': _output.Append("\\n"); break;
+                    case '\t': _output.Append('\\').Append('t'); break;
+                    case '\r': _output.Append('\\').Append('r'); break;
+                    case '\n': _output.Append('\\').Append('n'); break;
                     case '"':
                     case '\\': _output.Append('\\'); _output.Append(c); break;
                     case '\0': _output.Append("\\u0000"); break;
