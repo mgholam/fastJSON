@@ -149,6 +149,9 @@ namespace fastJSON
             else if (obj is NameValueCollection)
                 WriteNV((NameValueCollection)obj);
 
+            else if (obj is Array)
+                WriteArrayRanked((Array)obj);
+
             else if (obj is IEnumerable)
                 WriteArray((IEnumerable)obj);
 
@@ -556,6 +559,32 @@ namespace fastJSON
                 pendingSeperator = true;
             }
             _output.Append(']');
+        }
+
+        private void WriteArrayRanked(Array array)
+        {
+            if (array.Rank == 1)
+                WriteArray(array);
+            else
+            {
+                // FIX : use getlength 
+                var x = array.GetLength(0);
+                var y = array.GetLength(1);
+
+                _output.Append('[');
+
+                bool pendingSeperator = false;
+
+                foreach (object obj in array)
+                {
+                    if (pendingSeperator) _output.Append(',');
+
+                    WriteValue(obj);
+
+                    pendingSeperator = true;
+                }
+                _output.Append(']');
+            }
         }
 
         private void WriteStringDictionary(IDictionary dic)

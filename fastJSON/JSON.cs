@@ -105,12 +105,14 @@ namespace fastJSON
         /// Override object equality hash code checking (default = false)
         /// </summary>
         public bool OverrideObjectHashCodeChecking = false;
+        [Obsolete("Racist term removed, please use BadListTypeChecking")]
+        public bool BlackListTypeChecking = true;
         /// <summary>
-        /// Checking black list types to prevent friday 13th json attacks (default = true)
+        /// Checking list of bad types to prevent friday 13th json attacks (default = true)
         /// 
         /// Will throw an exception if encountered and set
         /// </summary>
-        public bool BlackListTypeChecking = true;
+        public bool BadListTypeChecking = true;
         /// <summary>
         /// Fully Qualify the DataSet Schema (default = false)
         /// 
@@ -155,8 +157,9 @@ namespace fastJSON
                 UsingGlobalTypes = UsingGlobalTypes,
                 AutoConvertStringToNumbers = AutoConvertStringToNumbers,
                 OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking,
-                BlackListTypeChecking = BlackListTypeChecking,
-                FullyQualifiedDataSetSchema = FullyQualifiedDataSetSchema
+                //BlackListTypeChecking = BlackListTypeChecking,
+                FullyQualifiedDataSetSchema = FullyQualifiedDataSetSchema,
+                BadListTypeChecking = BadListTypeChecking
             };
         }
     }
@@ -691,7 +694,7 @@ namespace fastJSON
                     if (globaltypes != null && globaltypes.TryGetValue((string)tn, out tname))
                         tn = tname;
                 }
-                type = Reflection.Instance.GetTypeFromCache((string)tn, _params.BlackListTypeChecking);
+                type = Reflection.Instance.GetTypeFromCache((string)tn, _params.BadListTypeChecking);
             }
 
             if (type == null)

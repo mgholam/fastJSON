@@ -58,9 +58,9 @@ namespace fastJSON
         public Reflection.GenericGetter getter;
         public Type[] GenericTypes;
         public string Name;
-#if NET4
+//#if NET4
         public string memberName;
-#endif
+//#endif
         public myPropInfoType Type;
         public bool CanWrite;
 
@@ -253,13 +253,20 @@ namespace fastJSON
                     if (d.setter != null)
                         d.CanWrite = true;
                     d.getter = Reflection.CreateGetMethod(type, p);
-#if NET4
                     var att = p.GetCustomAttributes(true);
                     foreach (var at in att)
                     {
-                        if (at is DataMemberAttribute)
+#if NET4
+                        if (at is System.Runtime.Serialization.DataMemberAttribute)
                         {
-                            var dm = (DataMemberAttribute)at;
+                            var dm = (System.Runtime.Serialization.DataMemberAttribute)at;
+                            if (dm.Name != "")
+                                d.memberName = dm.Name;
+                        }
+#endif
+                        if (at is fastJSON.DataMemberAttribute)
+                        {
+                            var dm = (fastJSON.DataMemberAttribute)at;
                             if (dm.Name != "")
                                 d.memberName = dm.Name;
                         }
@@ -267,7 +274,6 @@ namespace fastJSON
                     if (d.memberName != null)
                         sd.Add(d.memberName, d);
                     else
-#endif
                     sd.Add(p.Name.ToLowerInvariant(), d);
                 }
                 FieldInfo[] fi = type.GetFields(bf);
@@ -281,13 +287,20 @@ namespace fastJSON
                         if (d.setter != null)
                             d.CanWrite = true;
                         d.getter = Reflection.CreateGetField(type, f);
-#if NET4
                         var att = f.GetCustomAttributes(true);
                         foreach (var at in att)
                         {
-                            if (at is DataMemberAttribute)
+#if NET4
+                            if (at is System.Runtime.Serialization.DataMemberAttribute)
                             {
-                                var dm = (DataMemberAttribute)at;
+                                var dm = (System.Runtime.Serialization.DataMemberAttribute)at;
+                                if (dm.Name != "")
+                                    d.memberName = dm.Name;
+                            }
+#endif
+                            if (at is fastJSON.DataMemberAttribute)
+                            {
+                                var dm = (fastJSON.DataMemberAttribute)at;
                                 if (dm.Name != "")
                                     d.memberName = dm.Name;
                             }
@@ -295,7 +308,6 @@ namespace fastJSON
                         if (d.memberName != null)
                             sd.Add(d.memberName, d);
                         else
-#endif
                         sd.Add(f.Name.ToLowerInvariant(), d);
                     }
                 }
@@ -755,20 +767,28 @@ namespace fastJSON
                         continue;
                 }
                 string mName = null;
-#if NET4
                 var att = p.GetCustomAttributes(true);
                 foreach (var at in att)
                 {
-                    if (at is DataMemberAttribute)
+#if NET4
+                    if (at is System.Runtime.Serialization.DataMemberAttribute)
                     {
-                        var dm = (DataMemberAttribute)at;
+                        var dm = (System.Runtime.Serialization.DataMemberAttribute)at;
+                        if (dm.Name != "")
+                        {
+                            mName = dm.Name;
+                        }
+                    }
+#endif
+                    if (at is fastJSON.DataMemberAttribute)
+                    {
+                        var dm = (fastJSON.DataMemberAttribute)at;
                         if (dm.Name != "")
                         {
                             mName = dm.Name;
                         }
                     }
                 }
-#endif
                 GenericGetter g = CreateGetMethod(type, p);
                 if (g != null)
                     getters.Add(new Getters { Getter = g, Name = p.Name, lcName = p.Name.ToLowerInvariant(), memberName = mName, ReadOnly = read_only });
@@ -795,20 +815,28 @@ namespace fastJSON
                         continue;
                 }
                 string mName = null;
-#if NET4
                 var att = f.GetCustomAttributes(true);
                 foreach (var at in att)
                 {
-                    if (at is DataMemberAttribute)
+#if NET4
+                    if (at is System.Runtime.Serialization.DataMemberAttribute)
                     {
-                        var dm = (DataMemberAttribute)at;
+                        var dm = (System.Runtime.Serialization.DataMemberAttribute)at;
+                        if (dm.Name != "")
+                        {
+                            mName = dm.Name;
+                        }
+                    }
+#endif
+                    if(at is fastJSON.DataMemberAttribute)
+                    {
+                        var dm = (fastJSON.DataMemberAttribute)at;
                         if (dm.Name != "")
                         {
                             mName = dm.Name;
                         }
                     }
                 }
-#endif
                 if (f.IsLiteral == false)
                 {
                     GenericGetter g = CreateGetField(type, f);

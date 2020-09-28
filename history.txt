@@ -1,3 +1,7 @@
+2.3.3
+- removed racist term from code
+- add fastSJON.DataMember attribute for .net v2+
+
 2.3.2
 - added JSONParameters.FullyQualifiedDataSetSchema for edge case datasets
 - blacklist type checking in DataTable 

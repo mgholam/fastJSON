@@ -2644,9 +2644,10 @@ public class tests
 
     public class dmember
     {
-        [DataMember(Name = "prop")]
+        [System.Runtime.Serialization.DataMember(Name = "prop")]
         public string MyProperty;
-        [DataMember(Name = "id")]
+        //[System.Runtime.Serialization.DataMember(Name = "id")]
+        [fastJSON.DataMember(Name = "id")]
         public int docid;
     }
     [Test]
@@ -2800,10 +2801,11 @@ public class tests
 
     public class TestData
     {
-        [DataMember(Name = "foo")]
+        [System.Runtime.Serialization.DataMember(Name = "foo")]
+        //[fastJSON.DataMember(Name = "foo")]
         public string Foo { get; set; }
 
-        [DataMember(Name = "Bar")]
+        [System.Runtime.Serialization.DataMember(Name = "Bar")]
         public string Bar { get; set; }
     }
     [Test]
@@ -3187,7 +3189,7 @@ public class tests
         var fail = false;
         try
         {
-            var o = JSON.ToObject(s, new JSONParameters { BlackListTypeChecking = true });
+            var o = JSON.ToObject(s, new JSONParameters { BadListTypeChecking = true });
             Console.WriteLine(o.GetType().Name);
             //Assert.AreEqual(o.GetType().Name, "");
             fail = true;
@@ -3224,6 +3226,44 @@ public class tests
         }
     }
 
+    //[Test]
+    //public static void ma()
+    //{
+    //    var a = new int[2, 3] { { 1, 2, 3 },{ 4, 5, 6 } };
+    //    //var b = new int[2][3];//{ { 1, 2, 3 }, { 4, 5, 6 } };
+
+    //    Console.WriteLine(a.Rank);
+    //    Console.WriteLine(a.GetLength(0));
+    //    Console.WriteLine(a.GetLength(1));
+
+    //    var s = JSON.ToJSON(a);
+    //    Console.WriteLine(s);
+    //    var o = JSON.ToObject<int[,]>(s);
+
+    //}
+
+    //public class WordEntry
+    //{
+    //    public List<Guid> Class { set; get; }
+    //    public List<int> EdgePaths { set; get; }
+    //    public List<int> RelatedWords { set; get; }
+    //    public String Word { set; get; }
+    //    public bool Plural { set; get; }
+    //    //public Tense TenseState { set; get; }
+    //    public Guid RootForm { set; get; }
+    //    public Guid ID { set; get; }
+    //    public Single UseFrequency { set; get; }
+    //    public List<int> PartsofSpeech { set; get; }
+    //}
+       
+    //[Test]
+    //public static void emptylist()
+    //{
+    //    var s = "{ 'Class': ['K2JFO+FwG0CfeuTFE283AQ=='], 'EdgePaths': [-1537686140], 'RelatedWords': [], 'Word': 'Tum-ti-tum', 'Plural': false, 'TenseState': 'present', 'RootForm': 'AAAAAAAAAAAAAAAAAAAAAA==', 'ID': '78LPEHC0wkiQQu6DvX9wzQ==', 'UseFrequency': 0, 'PartsofSpeech': [] }";
+
+    //    var o = JSON.ToObject<WordEntry>(s.Replace("\'","\""));
+
+    //}
 
     //public static void paramobjfunc()
     //{
