@@ -4,17 +4,17 @@
 
 2.3.2
 - added JSONParameters.FullyQualifiedDataSetSchema for edge case datasets
-- blacklist type checking in DataTable 
+- badlist type checking in DataTable 
 - fix for null values for objects (thanks to ADLER1)
 
 2.3.1
-- optimized black list checking
+- optimized bad list checking
 - fixed dotnet core project to use AssemblyInfo.cs
 
 2.3.0
 - bug fix reading a negative number in int[]
 - bug fix object equality hash code checking with JSONParameters.OverrideObjectHashCodeChecking (thanks to MTantos1)
-- added JSONParameters.BlackListTypeChecking default true for friday 13th json attack checking
+- added JSONParameters.BadListTypeChecking default true for friday 13th json attack checking
 
 2.2.5
 - bug fix ShowReadOnlyProperties and fields
