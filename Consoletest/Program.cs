@@ -101,11 +101,25 @@ namespace consoletest
             public string address;
         }
 
+        public class Import
+        {
+            public List<Ticket> tickets { get; set; }
+        }
+
+        public class Ticket
+        {
+            public long id { get; set; }
+            public long? group_id { get; set; }
+        }
+
         public static void Main(string[] args)
         {
+            var contents = File.ReadAllText("d:/tickets.json");
+            var d = fastJSON.JSON.ToObject<Import>(contents);
 
-            var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
-            var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
+
+            //var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
+            //var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
 
             //Stopwatch sw = new Stopwatch();
             //sw.Start();

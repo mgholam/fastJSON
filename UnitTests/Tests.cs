@@ -338,7 +338,7 @@ public class tests
         r.ds = CreateDataset().Tables[0];
 #endif
 
-        var s = JSON.ToJSON(r);
+        var s = JSON.ToNiceJSON(r);
         Console.WriteLine(s);
         var o = JSON.ToObject(s);
         Assert.NotNull(o);
@@ -878,17 +878,23 @@ public class tests
     {
         var ds = CreateDataset();
 
-        var s = JSON.ToJSON(ds);
+        var s = JSON.ToNiceJSON(ds);
+        //Console.WriteLine(s);
 
         var o = JSON.ToObject<DataSet>(s);
-        var p = JSON.ToObject(s, typeof(DataSet));
-
-        Assert.AreEqual(typeof(DataSet), o.GetType());
         Assert.IsNotNull(o);
+        Assert.AreEqual(typeof(DataSet), o.GetType());
         Assert.AreEqual(2, o.Tables.Count);
 
+        var p = JSON.ToObject(s, typeof(DataSet));
+        Assert.IsNotNull(p);
+        Assert.AreEqual(typeof(DataSet), p.GetType());
+        Assert.AreEqual(2, (p as DataSet).Tables.Count);
 
-        s = JSON.ToJSON(ds.Tables[0]);
+
+        s = JSON.ToNiceJSON(ds.Tables[0]);
+        Console.WriteLine(s);
+
         var oo = JSON.ToObject<DataTable>(s);
         Assert.IsNotNull(oo);
         Assert.AreEqual(typeof(DataTable), oo.GetType());
@@ -1032,6 +1038,7 @@ public class tests
         dd.d.Add("a", new List<string> { "1", "2", "3" });
         dd.d.Add("b", new List<string> { "4", "5", "7" });
         string s = JSON.ToJSON(dd, new JSONParameters { UseExtensions = false });
+        Console.WriteLine(s);
         var o = JSON.ToObject<diclist>(s);
         Assert.AreEqual(3, o.d["a"].Count);
 
@@ -1097,7 +1104,8 @@ public class tests
         var stringField = new OneOtherConcreteClass("lol");
         var list = new List<abstractClass>() { intField, stringField };
 
-        var json = JSON.ToJSON(list);
+        var json = JSON.ToNiceJSON(list, new JSONParameters());
+        Console.WriteLine(json);
         var objects = JSON.ToObject<List<abstractClass>>(json);
     }
 
@@ -1151,12 +1159,14 @@ public class tests
         nv.Add("1", "a");
         nv.Add("2", "b");
         var s = JSON.ToJSON(nv);
+        Console.WriteLine(s);
         var oo = JSON.ToObject<NameValueCollection>(s);
         Assert.AreEqual("a", oo["1"]);
         var sd = new StringDictionary();
         sd.Add("1", "a");
         sd.Add("2", "b");
         s = JSON.ToJSON(sd);
+        Console.WriteLine(s);
         var o = JSON.ToObject<StringDictionary>(s);
         Assert.AreEqual("b", o["2"]);
 
@@ -1165,6 +1175,7 @@ public class tests
         c.nv = nv;
         c.sd = sd;
         s = JSON.ToJSON(c);
+        Console.WriteLine(s);
         var ooo = JSON.ToObject(s);
         Assert.AreEqual("a", (ooo as coltest).nv["1"]);
         Assert.AreEqual("b", (ooo as coltest).sd["2"]);
@@ -2739,8 +2750,8 @@ public class tests
         var d = new DigitLimit();
         d.Fmin = float.MinValue;// serializer loss on tostring() 
         d.Fmax = float.MaxValue;// serializer loss on tostring()
-        d.MminDec = -7.9228162514264337593543950335m; 
-        d.MmaxDec = +7.9228162514264337593543950335m; 
+        d.MminDec = -7.9228162514264337593543950335m;
+        d.MmaxDec = +7.9228162514264337593543950335m;
 
         d.Mmin = decimal.MinValue;
         d.Mmax = decimal.MaxValue;
@@ -2805,9 +2816,10 @@ public class tests
         //[fastJSON.DataMember(Name = "foo")]
         public string Foo { get; set; }
 
-        [System.Runtime.Serialization.DataMember(Name = "Bar")]
+        //[System.Runtime.Serialization.DataMember(Name = "bar")]
         public string Bar { get; set; }
     }
+
     [Test]
     public static void ConvertTest()
     {
@@ -2817,6 +2829,7 @@ public class tests
             Bar = "bar_value"
         };
         var jsonData = JSON.ToJSON(data);
+        Console.WriteLine(jsonData);
 
         var data2 = JSON.ToObject<TestData>(jsonData);
 
@@ -2848,7 +2861,8 @@ public class tests
     [Test]
     public static void ArrayOfObjectsWithTypeInfoToObject()
     {
-        var s = JSON.ToJSON(new test[] { new test(), new test() });
+        var s = JSON.ToJSON(new test[] { new test(), new test() }, new JSONParameters());
+        Console.WriteLine(s);
         var o = JSON.ToObject(s);
         Console.WriteLine(o.GetType().ToString());
         var i = o as List<object>;
@@ -2868,7 +2882,7 @@ public class tests
         //var o = JSON.ToObject<nskeys>(s);
 
 
-        var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";
+        var s = "{name:\"m:e\", age   \t:42, \"address\":\"here\"}";
         var o = JSON.ToObject<nskeys>(s, new JSONParameters { AllowNonQuotedKeys = true });
         //Console.WriteLine("t1");
         Assert.AreEqual("m:e", o.name);
@@ -3043,6 +3057,7 @@ public class tests
         d.Add(1, new List<double> { 1.1, 2.2, 3.3 }.ToArray());
         d.Add(2, new List<double> { 4.4, 5.5, 6.6 }.ToArray());
         var s = JSON.ToJSON(d, new JSONParameters { UseExtensions = false });
+        Console.WriteLine(s);
 
         var o = JSON.ToObject<Dictionary<int, double[]>>(s, new JSONParameters { AutoConvertStringToNumbers = true });
 
@@ -3208,7 +3223,8 @@ public class tests
     {
         var o1 = new NullTestClass();
         o1.Test = null;
-        string s = JSON.ToJSON(o1);
+        string s = JSON.ToJSON(o1, new JSONParameters());
+        Console.WriteLine(s);
         var o2 = JSON.ToObject<NullTestClass>(s);
         Assert.AreEqual(o1.Test, o2.Test);
     }
@@ -3255,7 +3271,7 @@ public class tests
     //    public Single UseFrequency { set; get; }
     //    public List<int> PartsofSpeech { set; get; }
     //}
-       
+
     //[Test]
     //public static void emptylist()
     //{

@@ -219,7 +219,7 @@ namespace fastJSON
 
             if (obj.GetType().IsGenericType)
                 t = Reflection.Instance.GetGenericTypeDefinition(obj.GetType());
-            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
+            if (typeof(IDictionary).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t))
                 param.UsingGlobalTypes = false;
 
             // FEATURE : enable extensions when you can deserialize anon types
@@ -233,7 +233,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object Parse(string json)
         {
-            return new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode();
+            return new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode(null);
         }
 #if NET4
         /// <summary>
@@ -315,7 +315,7 @@ namespace fastJSON
         /// <returns></returns>
         public static object FillObject(object input, string json)
         {
-            Dictionary<string, object> ht = new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode() as Dictionary<string, object>;
+            Dictionary<string, object> ht = new JsonParser(json, Parameters.AllowNonQuotedKeys).Decode(input.GetType()) as Dictionary<string, object>;
             if (ht == null) return null;
             return new deserializer(Parameters).ParseDictionary(ht, null, input.GetType(), input);
         }
@@ -429,10 +429,10 @@ namespace fastJSON
             if (type != null && type.IsGenericType)
                 t = Reflection.Instance.GetGenericTypeDefinition(type);
             _usingglobals = _params.UsingGlobalTypes;
-            if (t == typeof(Dictionary<,>) || t == typeof(List<>))
+            if (typeof(IDictionary).IsAssignableFrom(t) || typeof(List<>).IsAssignableFrom(t))
                 _usingglobals = false;
 
-            object o = new JsonParser(json, _params.AllowNonQuotedKeys).Decode();
+            object o = new JsonParser(json, _params.AllowNonQuotedKeys).Decode(type);
             if (o == null)
                 return null;
 #if !SILVERLIGHT
@@ -446,7 +446,7 @@ namespace fastJSON
 #endif
             if (o is IDictionary)
             {
-                if (type != null && t == typeof(Dictionary<,>)) // deserialize a dictionary
+                if (type != null && typeof(Dictionary<,>).IsAssignableFrom(t)) // deserialize a dictionary
                     return RootDictionary(o, type);
                 else // deserialize an object
                     return ParseDictionary(o as Dictionary<string, object>, null, type, null);
@@ -455,7 +455,7 @@ namespace fastJSON
             {
                 if (type != null)
                 {
-                    if (t == typeof(Dictionary<,>)) // kv format
+                    if (typeof(Dictionary<,>).IsAssignableFrom(t)) // kv format
                         return RootDictionary(o, type);
                     else if (t == typeof(List<>)) // deserialize to generic list
                         return RootList(o, type);

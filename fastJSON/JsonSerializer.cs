@@ -567,9 +567,9 @@ namespace fastJSON
                 WriteArray(array);
             else
             {
-                // FIX : use getlength 
-                var x = array.GetLength(0);
-                var y = array.GetLength(1);
+                // FIXx : use getlength 
+                //var x = array.GetLength(0);
+                //var y = array.GetLength(1);
 
                 _output.Append('[');
 

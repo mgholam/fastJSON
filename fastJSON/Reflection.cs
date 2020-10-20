@@ -58,9 +58,9 @@ namespace fastJSON
         public Reflection.GenericGetter getter;
         public Type[] GenericTypes;
         public string Name;
-//#if NET4
+        //#if NET4
         public string memberName;
-//#endif
+        //#endif
         public myPropInfoType Type;
         public bool CanWrite;
 
@@ -104,7 +104,7 @@ namespace fastJSON
         private SafeDictionary<Type, Type[]> _genericTypes = new SafeDictionary<Type, Type[]>(10);
         private SafeDictionary<Type, Type> _genericTypeDef = new SafeDictionary<Type, Type>(10);
         private static SafeDictionary<short, OpCode> _opCodes;
-        private static List<string> _blacklistTypes = new List<string>()
+        private static List<string> _badlistTypes = new List<string>()
         {
             "system.configuration.install.assemblyinstaller",
             "system.activities.presentation.workflowdesigner",
@@ -274,7 +274,7 @@ namespace fastJSON
                     if (d.memberName != null)
                         sd.Add(d.memberName, d);
                     else
-                    sd.Add(p.Name.ToLowerInvariant(), d);
+                        sd.Add(p.Name.ToLowerInvariant(), d);
                 }
                 FieldInfo[] fi = type.GetFields(bf);
                 foreach (FieldInfo f in fi)
@@ -308,7 +308,7 @@ namespace fastJSON
                         if (d.memberName != null)
                             sd.Add(d.memberName, d);
                         else
-                        sd.Add(f.Name.ToLowerInvariant(), d);
+                            sd.Add(f.Name.ToLowerInvariant(), d);
                     }
                 }
 
@@ -398,7 +398,7 @@ namespace fastJSON
             }
         }
 
-        internal Type GetTypeFromCache(string typename, bool blacklistChecking)
+        internal Type GetTypeFromCache(string typename, bool badlistChecking)
         {
             Type val = null;
             if (_typecache.TryGetValue(typename, out val))
@@ -406,10 +406,10 @@ namespace fastJSON
             else
             {
                 // check for BLACK LIST types -> more secure when using $type
-                if (blacklistChecking)
+                if (badlistChecking)
                 {
                     var tn = typename.Trim().ToLowerInvariant();
-                    foreach (var s in _blacklistTypes)
+                    foreach (var s in _badlistTypes)
                         if (tn.StartsWith(s, StringComparison.Ordinal))
                             throw new Exception("Black list type encountered, possible attack vector when using $type : " + typename);
                 }
@@ -828,7 +828,7 @@ namespace fastJSON
                         }
                     }
 #endif
-                    if(at is fastJSON.DataMemberAttribute)
+                    if (at is fastJSON.DataMemberAttribute)
                     {
                         var dm = (fastJSON.DataMemberAttribute)at;
                         if (dm.Name != "")

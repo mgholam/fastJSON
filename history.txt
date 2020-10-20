@@ -1,3 +1,6 @@
+2.4.0
+- optimized the parser for skipping when type provided and $types not in json 
+
 2.3.3
 - removed racist term from code
 - add fastSJON.DataMember attribute for .net v2+
