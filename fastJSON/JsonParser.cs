@@ -99,7 +99,7 @@ namespace fastJSON
                         BuildLookup(objtype);
 
                         // reset if no properties found
-                        if (_lookup.Count() == 7)
+                        if (_parseJsonType == false || _lookup.Count() == 7)
                             _lookup = null;
                     }
                 }
@@ -126,6 +126,7 @@ namespace fastJSON
 
             return false;
         }
+
 
         private void BuildLookup(Type objtype)
         {
@@ -191,6 +192,11 @@ namespace fastJSON
 
                     if (t.IsGenericType)
                     {
+                        if (typeof(IDictionary).IsAssignableFrom(t))
+                        {
+                            _parseJsonType = false;
+                            return;
+                        }
                         // t = list
                         foreach (var e in t.GetGenericArguments())
                         {
