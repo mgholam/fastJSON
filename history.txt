@@ -1,4 +1,4 @@
-2.4.0
+2.3.5
 - optimized the parser for skipping when type provided and $types not in json 
 
 2.3.3
