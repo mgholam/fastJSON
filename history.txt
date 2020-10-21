@@ -1,3 +1,7 @@
+2.3.5.1
+- added nuget package for nunit to the test project
+- code cleanup
+
 2.3.5
 - optimized the parser for skipping when type provided and $types not in json 
 
