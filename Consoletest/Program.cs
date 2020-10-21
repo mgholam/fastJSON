@@ -114,8 +114,8 @@ namespace consoletest
 
         public static void Main(string[] args)
         {
-            var contents = File.ReadAllText("d:/tickets.json");
-            var d = fastJSON.JSON.ToObject<Import>(contents);
+            //var contents = File.ReadAllText("d:/tickets.json");
+            //var d = fastJSON.JSON.ToObject<Import>(contents);
 
 
             //var s = "{name:\"m:e\", age:42, \"address\":\"here\"}";

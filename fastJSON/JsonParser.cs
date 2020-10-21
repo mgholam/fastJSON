@@ -127,6 +127,31 @@ namespace fastJSON
             return false;
         }
 
+        private void BuildGenericTypeLookup(Type t)
+        {
+            foreach (var e in t.GetGenericArguments())
+            {
+                if (e.IsPrimitive)
+                    continue;
+
+                bool isstruct = e.IsValueType && !e.IsEnum;
+
+                if ((e.IsClass || isstruct || e.IsAbstract) && e != typeof(string) && e != typeof(DateTime) && e != typeof(Guid))
+                {
+                    BuildLookup(e);
+                }
+            }
+        }
+
+        private void BuildArrayTypeLookup(Type t)
+        {
+            bool isstruct = t.IsValueType && !t.IsEnum;
+
+            if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
+            {
+                BuildLookup(t.GetElementType());
+            }
+        }
 
         private void BuildLookup(Type objtype)
         {
@@ -144,30 +169,12 @@ namespace fastJSON
                 return;
 
             if (objtype.IsGenericType)
-            {
-                foreach (var e in objtype.GetGenericArguments())
-                {
-                    if (e.IsPrimitive)
-                        continue;
-
-                    bool isstruct = e.IsValueType && !e.IsEnum;
-
-                    if ((e.IsClass || isstruct || e.IsAbstract) && e != typeof(string) && e != typeof(DateTime) && e != typeof(Guid))
-                    {
-                        BuildLookup(e);
-                    }
-                }
-            }
+                BuildGenericTypeLookup(objtype);
 
             else if (objtype.IsArray)
             {
                 Type t = objtype;
-                bool isstruct = t.IsValueType && !t.IsEnum;
-
-                if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
-                {
-                    BuildLookup(t.GetElementType());
-                }
+                BuildArrayTypeLookup(objtype);
             }
             else
             {
@@ -177,41 +184,18 @@ namespace fastJSON
 
                     _lookup.Add(m.Key, true);
 
-                    // t = class
-
-                    bool isstruct = t.IsValueType && !t.IsEnum;
-
                     if (t.IsArray)
-                    {
-                        if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
-                        {
-                            BuildLookup(t.GetElementType());
-                        }
-                    }
-
+                        BuildArrayTypeLookup(t);
 
                     if (t.IsGenericType)
                     {
+                        // skip if dictionary
                         if (typeof(IDictionary).IsAssignableFrom(t))
                         {
                             _parseJsonType = false;
                             return;
                         }
-                        // t = list
-                        foreach (var e in t.GetGenericArguments())
-                        {
-                            if (e.IsPrimitive)
-                                continue;
-
-                            isstruct = e.IsValueType && !e.IsEnum;
-
-                            if ((e.IsClass || isstruct || e.IsAbstract) && e != typeof(string) && e != typeof(DateTime) && e != typeof(Guid))
-                            {
-                                BuildLookup(e);
-                            }
-                        }
-
-                        // t = dictionary
+                        BuildGenericTypeLookup(t);
                     }
                 }
             }
@@ -295,7 +279,6 @@ namespace fastJSON
                             obj[name] = ParseValue(p);
                         }
                         break;
-                        //}
                 }
             }
         }
