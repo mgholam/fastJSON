@@ -101,24 +101,25 @@ namespace consoletest
             public string address;
         }
 
-        public class Import
-        {
-            public List<Ticket> tickets { get; set; }
-        }
+        //public class Import
+        //{
+        //    public List<Ticket> tickets { get; set; }
+        //}
 
-        public class Ticket
-        {
-            public long id { get; set; }
-            public long? group_id { get; set; }
-        }
+        //public class Ticket
+        //{
+        //    public long id { get; set; }
+        //    public long? group_id { get; set; }
+        //}
 
-        public sealed class Model
-        {
-            public Model[] Children { get; set; }
-        }
+        //public sealed class Model
+        //{
+        //    public Model[] Children { get; set; }
+        //}
 
         public static void Main(string[] args)
         {
+            //var o = JSON.ToObject<Model>("{}");
             //var contents = File.ReadAllText("d:/tickets.json");
             //var d = fastJSON.JSON.ToObject<Import>(contents);
 

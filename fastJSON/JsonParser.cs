@@ -152,7 +152,7 @@ namespace fastJSON
         {
             if (_seen.TryGetValue(t, out bool _))
                 return;
-
+            
             bool isstruct = t.IsValueType && !t.IsEnum;
 
             if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
@@ -179,8 +179,6 @@ namespace fastJSON
             if (_seen.TryGetValue(objtype, out bool _))
                 return;
 
-            _seen.Add(objtype, true);
-
             if (objtype.IsGenericType)
                 BuildGenericTypeLookup(objtype);
 
@@ -191,6 +189,8 @@ namespace fastJSON
             }
             else
             {
+                _seen.Add(objtype, true);
+
                 foreach (var m in Reflection.Instance.Getproperties(objtype, objtype.FullName, true))
                 {
                     Type t = m.Value.pt;
