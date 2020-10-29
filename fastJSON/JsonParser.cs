@@ -64,6 +64,7 @@ namespace fastJSON
         bool allownonquotedkey = false;
         int _len = 0;
         SafeDictionary<string, bool> _lookup;
+        SafeDictionary<Type, bool> _seen;
         bool _parseJsonType = false;
 
         internal JsonParser(string json, bool AllowNonQuotedKeys)
@@ -76,6 +77,7 @@ namespace fastJSON
         private void SetupLookup()
         {
             _lookup = new SafeDictionary<string, bool>();
+            _seen = new SafeDictionary<Type, bool>();
             _lookup.Add("$types", true);
             _lookup.Add("$type", true);
             _lookup.Add("$i", true);
@@ -129,6 +131,9 @@ namespace fastJSON
 
         private void BuildGenericTypeLookup(Type t)
         {
+            if (_seen.TryGetValue(t, out bool _))
+                return;
+
             foreach (var e in t.GetGenericArguments())
             {
                 if (e.IsPrimitive)
@@ -145,6 +150,9 @@ namespace fastJSON
 
         private void BuildArrayTypeLookup(Type t)
         {
+            if (_seen.TryGetValue(t, out bool _))
+                return;
+
             bool isstruct = t.IsValueType && !t.IsEnum;
 
             if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
@@ -167,6 +175,11 @@ namespace fastJSON
 
             if (typeof(IDictionary).IsAssignableFrom(objtype))
                 return;
+
+            if (_seen.TryGetValue(objtype, out bool _))
+                return;
+
+            _seen.Add(objtype, true);
 
             if (objtype.IsGenericType)
                 BuildGenericTypeLookup(objtype);

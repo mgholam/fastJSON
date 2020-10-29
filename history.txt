@@ -1,3 +1,6 @@
+2.3.5.2
+- bug fix endless loop parsing recursive types
+
 2.3.5.1
 - added nuget package for nunit to the test project
 - code cleanup

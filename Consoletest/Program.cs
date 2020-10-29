@@ -112,6 +112,11 @@ namespace consoletest
             public long? group_id { get; set; }
         }
 
+        public sealed class Model
+        {
+            public Model[] Children { get; set; }
+        }
+
         public static void Main(string[] args)
         {
             //var contents = File.ReadAllText("d:/tickets.json");
