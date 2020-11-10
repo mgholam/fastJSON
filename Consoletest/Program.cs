@@ -88,18 +88,18 @@ namespace consoletest
         //}
 
 
-        public class rofield
-        {
-            public readonly int age = 10;
-            public string name = "a";
-        }
+        //public class rofield
+        //{
+        //    public readonly int age = 10;
+        //    public string name = "a";
+        //}
 
-        public class nskeys
-        {
-            public string name;
-            public int age;
-            public string address;
-        }
+        //public class nskeys
+        //{
+        //    public string name;
+        //    public int age;
+        //    public string address;
+        //}
 
         //public class Import
         //{
@@ -116,9 +116,45 @@ namespace consoletest
         //{
         //    public Model[] Children { get; set; }
         //}
+        //public class CAlfa : IDisposable
+        //{
+        //    public CAlfa() { }
+
+        //    public void Dispose()
+        //    {
+        //        Bravo.Dispose();
+        //        Bravo = null;
+        //    }
+
+        //    public CBravo Bravo { get; set; } = null;
+        //}
+
+        //public class CBravo : IDisposable
+        //{
+        //    public CBravo() { }
+
+        //    public void Dispose() { }
+
+        //    public string PropertyA { get; set; } = string.Empty;
+        //    public string PropertyB { get; set; } = string.Empty;
+        //}
+
 
         public static void Main(string[] args)
         {
+
+//            var s = @"
+//{ 
+//	'Bravo' :
+
+//    {
+//                'PropertyA' : 'AAA',
+//		'PropertyB' : 'BBB'
+
+//    }
+//        }
+//".Replace("'", "\"");
+//            var o = JSON.ToObject<CAlfa>(s);
             //var o = JSON.ToObject<Model>("{}");
             //var contents = File.ReadAllText("d:/tickets.json");
             //var d = fastJSON.JSON.ToObject<Import>(contents);

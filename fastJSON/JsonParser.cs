@@ -152,7 +152,7 @@ namespace fastJSON
         {
             if (_seen.TryGetValue(t, out bool _))
                 return;
-            
+
             bool isstruct = t.IsValueType && !t.IsEnum;
 
             if ((t.IsClass || isstruct) && t != typeof(string) && t != typeof(DateTime) && t != typeof(Guid))
@@ -210,6 +210,8 @@ namespace fastJSON
                         }
                         BuildGenericTypeLookup(t);
                     }
+                    if (t.FullName.IndexOf("System.") == -1)
+                        BuildLookup(t);
                 }
             }
         }

@@ -1,3 +1,6 @@
+2.3.5.3
+- bug fix BuildLookup() 
+
 2.3.5.2
 - bug fix endless loop parsing recursive types
 
