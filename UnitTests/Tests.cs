@@ -3242,6 +3242,162 @@ public class tests
         }
     }
 
+    [Test]
+    public static void json5_non_leading_zero_decimal()
+    {
+        var s = "{'a':.314}".Replace("'", "\"");
+        var o = (Dictionary<string,object>)JSON.Parse(s);
+        Assert.AreEqual(0.314, (decimal)o["a"]);
+
+        s = "{'a':-.314}".Replace("'", "\"");
+        o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(-0.314, (decimal)o["a"]);
+
+        s = "{'a':0.314}".Replace("'", "\"");
+        o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(0.314, (decimal)o["a"]);
+    }
+
+    [Test]
+    public static void json5_trailing_dot_decimal()
+    {
+        var s = "{'a':314.}".Replace("'", "\"");
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(314, (decimal)o["a"]);
+    }
+
+    [Test]
+    public static void json5_infinity()
+    {
+        Assert.AreEqual(double.PositiveInfinity, JSON.ToObject<double>("Infinity"));
+        Assert.AreEqual(double.PositiveInfinity, JSON.ToObject<double>("+infinity"));
+        Assert.AreEqual(double.NegativeInfinity, JSON.ToObject<double>("-Infinity"));
+
+        var s = "{'a':infinity,'b':1,}".Replace("'", "\"");
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(double.PositiveInfinity, (double)o["a"]);
+        Assert.AreEqual(1, (long)o["b"]);
+
+        s = "{'a':+infinity,'b':1,}".Replace("'", "\"");
+        o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(double.PositiveInfinity, (double)o["a"]);
+        Assert.AreEqual(1, (long)o["b"]);
+
+        s = "{'a':-infinity,'b':1,}".Replace("'", "\"");
+        o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(double.NegativeInfinity, (double)o["a"]);
+        Assert.AreEqual(1, (long)o["b"]);
+    }
+
+    [Test]
+    public static void json5_trailing_comma()
+    {
+        var s = "[1,2,3,]";
+        var o = (List<object>)JSON.Parse(s);
+        Assert.AreEqual(3, o.Count);
+
+        s = "{'a':1, 'b':2, 'c': 3}".Replace("'", "\"");
+        var oo = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(3, oo.Count);
+    }
+
+    [Test]
+    public static void json5_nan()
+    {
+        Assert.AreEqual(double.NaN, JSON.ToObject<double>("nan"));
+        Assert.AreEqual(double.NaN, JSON.ToObject<double>("NaN"));
+        var s = "{'a':NaN,'b':1,}".Replace("'", "\"");
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(double.NaN, (double)o["a"]);
+        Assert.AreEqual(1, (long)o["b"]);
+    }
+
+    [Test]
+    public static void json5_comments()
+    {
+        var oo = JSON.ToObject("/*comment*/null");
+        var s = @"{
+// comment
+    'a' : /*hello
+*/ 1,
+'b':2,
+}
+".Replace("'", "\"");
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(1, (long)o["a"]);
+        Assert.AreEqual(2, (long)o["b"]);
+    }
+
+    [Test]
+    public static void json5_hex_numbers()
+    {
+        Assert.AreEqual(0xff, JSON.ToObject<long>("0xff"));
+        Assert.AreEqual(0xffff, JSON.ToObject<long>("0xffff"));
+        Assert.AreEqual(0xffffff, JSON.ToObject<long>("0xffffff"));
+        Assert.AreEqual(0xffffffff, JSON.ToObject<long>("0xffffffff"));
+        Assert.AreEqual(0x12345678, JSON.ToObject<long>("0x12345678"));
+        var s = @"{
+// comment
+    'a' : /*hello
+*/ 0x11,
+'b': 0XFF2,
+}
+".Replace("'", "\"");
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(0x11, (long)o["a"]);
+        Assert.AreEqual(0xFF2, (long)o["b"]);
+    }
+
+    [Test]
+    public static void json5_single_double_strings()
+    {
+        Assert.AreEqual("non escaped normal", JSON.Parse("\"non escaped normal\""));
+        Assert.AreEqual("non escaped normal - don't", JSON.Parse("\"non escaped normal - don't\""));
+
+        Assert.AreEqual("non escaped single", JSON.Parse("'non escaped single'"));
+        Assert.AreEqual("non escaped single \"", JSON.Parse("'non escaped single \"'"));
+
+        Assert.AreEqual("escaped single \"with double inside\"", JSON.Parse("'escaped single \"with double inside\"'"));
+        Assert.AreEqual("escaped single 'with single inside'", JSON.Parse("'escaped single \\\'with single inside\\\''"));
+        Assert.AreEqual("don't", JSON.Parse("\"don't\"")); // "don't"
+        Assert.AreEqual("don't", JSON.Parse(@"'don\'t'")); // 'don\'t'
+        var s = @"{
+                   // comment
+                   'a' : /*hello
+                          */ 0x11,
+                   'b': 0XFF2,
+                   'c': 'hello there'
+                  }";
+        var o = (Dictionary<string, object>)JSON.Parse(s);
+        Assert.AreEqual(0x11, (long)o["a"]);
+        Assert.AreEqual(0xFF2, (long)o["b"]);
+        Assert.AreEqual("hello there", (string)o["c"]);
+
+        //Assert.Fail();
+    }
+
+    [Test]
+    public static void json5_string_escapes()
+    {
+        Assert.AreEqual("AC/DC", JSON.Parse(@"'\A\C\/\D\C'"));
+    }
+
+    [Test]
+    public static void json5_string_breaks()
+    {
+        var s = @"'this is a cont\   
+inuous line.\
+'";
+        Assert.AreEqual("this is a continuous line.", JSON.Parse(s));
+
+        s = @"'
+hello
+there
+'";
+        Console.WriteLine(JSON.Parse(s));
+        //Assert.Fail();
+    }
+
     //[Test]
     //public static void ma()
     //{

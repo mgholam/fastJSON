@@ -1,3 +1,10 @@
+2.4.0
+- dotnet 5.0 build  
+- debug and release configs working
+- json5 support
+  (nan, infinity, leading/trailing decimal, trailing comma, string escapes, single/double quotes
+   positive/negative prefix, comments, hex numbers, multi line string breaks)
+
 2.3.5.3
 - bug fix BuildLookup() 
 

@@ -120,12 +120,12 @@ namespace fastJSON
             else if (obj is TimeSpan)
                 _output.Append(((TimeSpan)obj).Ticks);
 
-#if NET4
+//#if NET4
             else if (_params.KVStyleStringDictionary == false &&
                 obj is IEnumerable<KeyValuePair<string, object>>)
 
                 WriteStringDictionary((IEnumerable<KeyValuePair<string, object>>)obj);
-#endif
+//#endif
 
             else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
                 obj.GetType().IsGenericType && Reflection.Instance.GetGenericArguments(obj.GetType())[0] == typeof(string))

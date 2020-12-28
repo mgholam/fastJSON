@@ -31,6 +31,10 @@ namespace fastJSON
             False,
             Null//, 
             //Key
+            ,
+            PosInfinity,
+            NegInfinity,
+            NaN
         }
 
         // slower than StringBuilder
@@ -62,14 +66,16 @@ namespace fastJSON
         Token lookAheadToken = Token.None;
         int index;
         bool allownonquotedkey = false;
+        //bool AllowJson5String = false;
         int _len = 0;
         SafeDictionary<string, bool> _lookup;
         SafeDictionary<Type, bool> _seen;
         bool _parseJsonType = false;
 
-        internal JsonParser(string json, bool AllowNonQuotedKeys)
+        internal JsonParser(string json, bool AllowNonQuotedKeys)//, bool AllowJson5String)
         {
-            this.allownonquotedkey = AllowNonQuotedKeys;
+            allownonquotedkey = AllowNonQuotedKeys;
+            //this.AllowJson5String = AllowJson5String;
             this.json = json.ToCharArray();
             _len = json.Length;
         }
@@ -263,7 +269,7 @@ namespace fastJSON
                                 Dictionary<string, object> types = (Dictionary<string, object>)ParseValue(p);
                                 _parseType = false;
                                 // parse $types 
-                                // FIX : performance hit here
+                                // performance hit here
                                 if (_lookup == null)
                                     SetupLookup();
 
@@ -320,14 +326,11 @@ namespace fastJSON
                     break;
 
                 case Token.True:
-                    ConsumeToken();
-                    break;
-
                 case Token.False:
-                    ConsumeToken();
-                    break;
-
                 case Token.Null:
+                case Token.PosInfinity:
+                case Token.NegInfinity:
+                case Token.NaN:
                     ConsumeToken();
                     break;
             }
@@ -463,6 +466,18 @@ namespace fastJSON
                 case Token.Null:
                     ConsumeToken();
                     return null;
+
+                case Token.PosInfinity:
+                    ConsumeToken();
+                    return double.PositiveInfinity;
+
+                case Token.NegInfinity:
+                    ConsumeToken();
+                    return double.NegativeInfinity;
+
+                case Token.NaN:
+                    ConsumeToken();
+                    return double.NaN;
             }
 
             throw new Exception("Unrecognized token at index " + index);
@@ -493,10 +508,14 @@ namespace fastJSON
 
         private unsafe string ParseString(char* p)
         {
+            char quote = p[index - 1];
             ConsumeToken();
 
             if (s.Length > 0)
                 s.Length = 0;
+
+            //if (AllowJson5String)
+            //    return ParseJson5String(p);
 
             int len = _len;
             int run = 0;
@@ -507,7 +526,7 @@ namespace fastJSON
                 var c = p[index + run++];
                 if (c == '\\')
                     break;
-                if (c == '\"')
+                if (c == quote)//'\"')
                 {
                     var str = UnsafeSubstring(p, index, run - 1);
                     index += run;
@@ -519,25 +538,30 @@ namespace fastJSON
             while (index < len)
             {
                 var c = p[index++];
-                if (c == '"')
+                if (c == quote)//'"')
                     return s.ToString();
 
                 if (c != '\\')
                     s.Append(c);
                 else
-                    switch (p[index++])
+                {
+                    c = p[index++];
+                    switch (c)
                     {
-                        case '"':
-                            s.Append('"');
-                            break;
+                        //case '\'':
+                        //    s.Append('\'');
+                        //    break;
+                        //case '"':
+                        //    s.Append('"');
+                        //    break;
 
-                        case '\\':
-                            s.Append('\\');
-                            break;
+                        //case '\\':
+                        //    s.Append('\\');
+                        //    break;
 
-                        case '/':
-                            s.Append('/');
-                            break;
+                        //case '/':
+                        //    s.Append('/');
+                        //    break;
 
                         case 'b':
                             s.Append('\b');
@@ -572,41 +596,29 @@ namespace fastJSON
                                 index += 4;
                             }
                             break;
+                        default:
+                            if (c == '\r' || c == '\n' || c == ' ' || c == '\t')
+                            {
+                                while (c == '\r' || c == '\n' || c == ' ' || c == '\t')
+                                {
+                                    c = p[++index];
+                                }
+                            }
+                            else
+                                s.Append(c);
+                            break;
                     }
+                }
             }
 
 
             return s.ToString();
         }
 
-        //private unsafe string ParseKey(char* p)
-        //{
-        //    var c = p[index];
-        //    if (c == '"')
-        //        return ParseString(p);
-
-        //    else if (allownonquotedkey == false)
-        //        throw new Exception("Expecting a double quoted key and AllowNonQuotedKey is disabled");
-
-        //    ConsumeToken();
-
-        //    int run = 0;
-        //    int l = _len;
-
-        //    while (index + run < l)
-        //    {
-        //        c = p[index + run++];
-
-        //        if (c == ':' || c == ' ' || c == '\t')
-        //        {
-        //            var s = UnsafeSubstring(p, index, (run - 1));
-        //            index += run - 1;
-        //            return s;
-        //        }
-        //    }
-
-        //    throw new Exception("Unexpectedly reached end of string");
-        //}
+        private unsafe string ParseJson5String(char* p)
+        {
+            throw new NotImplementedException();
+        }
 
         private uint ParseSingleChar(char c1, uint multipliyer)
         {
@@ -639,23 +651,18 @@ namespace fastJSON
             bool dec = false;
             bool dob = false;
             bool run = true;
+            if (p[startIndex] == '.') dec = true;
             do
             {
                 if (index == _len)
                     break;
                 var c = p[index];
 
-                //if ((c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')
-                //{
-                //    if (/*c == '.' ||*/ c == 'e' || c == 'E')
-                //        dob = true;
-                //    if (c == '.')
-                //        dec = true;
-                //    if (++index == _len)
-                //        break;//throw new Exception("Unexpected end of string whilst parsing number");
-                //    continue;
-                //}
-                //run = false;// break;
+                if (c == 'x' || c == 'X')
+                {
+                    index++;
+                    return ReadHexNumber(p);
+                }
 
                 switch (c)
                 {
@@ -669,8 +676,8 @@ namespace fastJSON
                     case '7':
                     case '8':
                     case '9':
-                    case '-':
                     case '+':
+                    case '-':
                         index++;
                         break;
                     case 'e':
@@ -697,17 +704,65 @@ namespace fastJSON
 
             if (dob)
             {
-                string s = UnsafeSubstring(p, startIndex, index - startIndex);// json.Substring(startIndex, index - startIndex);
+                string s = UnsafeSubstring(p, startIndex, index - startIndex);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            if (dec == false && index - startIndex < 20)// && json[startIndex] != '-')
+            if (dec == false && index - startIndex < 20)
                 return Helper.CreateLong(json, startIndex, index - startIndex);
             else
             {
-                string s = UnsafeSubstring(p, startIndex, index - startIndex);//json.Substring(startIndex, index - startIndex);
-                return //Helper.ParseDecimal(s);
-                   decimal.Parse(s, NumberFormatInfo.InvariantInfo);
+                string s = UnsafeSubstring(p, startIndex, index - startIndex);
+                return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
             }
+        }
+
+        private unsafe object ReadHexNumber(char* p)
+        {
+            long num = 0L;
+            bool run = true;
+            while (run && index < _len)
+            {
+                char c = p[index];
+                switch (c)
+                {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        index++;
+                        num = (num << 4) + (c - '0');
+                        break;
+                    case 'a':
+                    case 'b':
+                    case 'c':
+                    case 'd':
+                    case 'e':
+                    case 'f':
+                        index++;
+                        num = (num << 4) + (c - 'a') + 10;
+                        break;
+                    case 'A':
+                    case 'B':
+                    case 'C':
+                    case 'D':
+                    case 'E':
+                    case 'F':
+                        index++;
+                        num = (num << 4) + (c - 'A') + 10;
+                        break;
+                    default:
+                        run = false;
+                        break;
+                }
+            }
+
+            return num;
         }
 
         private unsafe Token LookAhead(char* p)
@@ -749,6 +804,24 @@ namespace fastJSON
                     }
                     while (++index < _len);
                 }
+
+                if (c == '/' && p[index + 1] == '*') // c style multi line comments
+                {
+                    index++;
+                    index++;
+                    do
+                    {
+                        c = p[index];
+                        if (c == '*' && p[index + 1] == '/')
+                        {
+                            index += 2;
+                            c = p[index];
+                            break; // read till end of comment
+                        }
+                    }
+                    while (++index < _len);
+                }
+
                 if (c != ' ' && c != '\t' && c != '\n' && c != '\r')
                     break;
                 //switch (c)
@@ -797,8 +870,24 @@ namespace fastJSON
                 case ',':
                     return Token.Comma;
 
+                case '\'':
                 case '"':
                     return Token.String;
+
+                case '-':
+                    if (p[index] == 'i' || p[index] == 'I') // TODO : check all chars ??
+                    {
+                        index += 8;
+                        return Token.NegInfinity;
+                    }
+                    return Token.Number;
+                case '+':
+                    if (p[index] == 'i' || p[index] == 'I') // TODO : check all chars ??
+                    {
+                        index += 8;
+                        return Token.PosInfinity;
+                    }
+                    return Token.Number;
 
                 case '0':
                 case '1':
@@ -810,13 +899,15 @@ namespace fastJSON
                 case '7':
                 case '8':
                 case '9':
-                case '-':
-                case '+':
                 case '.':
                     return Token.Number;
 
                 case ':':
                     return Token.Colon;
+                case 'I':
+                case 'i': // TODO : check complete infinity chars
+                    index += 7;
+                    return Token.PosInfinity;
 
                 case 'f':
                     if (len - index >= 4 &&
@@ -842,6 +933,7 @@ namespace fastJSON
                     break;
 
                 case 'n':
+                case 'N':
                     if (len - index >= 3 &&
                         p[index + 0] == 'u' &&
                         p[index + 1] == 'l' &&
@@ -849,6 +941,13 @@ namespace fastJSON
                     {
                         index += 3;
                         return Token.Null;
+                    }
+                    else if (len - index >= 2 &&
+                         p[index] == 'a' &&
+                         (p[index + 1] == 'n' || p[index + 1] == 'N'))
+                    {
+                        index += 2;
+                        return Token.NaN;
                     }
                     break;
             }
@@ -861,7 +960,7 @@ namespace fastJSON
 
             //return tok;
             else
-                throw new Exception("Could not find token at index " + --index);
+                throw new Exception("Could not find token at index " + --index + " got '" + p[index] + "'");
         }
 
         private static unsafe string UnsafeSubstring(char* p, int startIndex, int length)

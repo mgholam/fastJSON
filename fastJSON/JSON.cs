@@ -120,6 +120,11 @@ namespace fastJSON
         /// </summary>
         public bool FullyQualifiedDataSetSchema = false;
 
+        ///// <summary>
+        ///// PENDING : Allow json5 (default = false)
+        ///// </summary>
+        //public bool AllowJsonFive = false;
+
         public void FixValues()
         {
             if (UseExtensions == false) // disable conflicting params
@@ -129,6 +134,9 @@ namespace fastJSON
             }
             if (EnableAnonymousTypes)
                 ShowReadOnlyProperties = true;
+
+            //if (AllowJsonFive)
+            //    AllowNonQuotedKeys = true;
         }
 
         public JSONParameters MakeCopy()
@@ -159,7 +167,8 @@ namespace fastJSON
                 OverrideObjectHashCodeChecking = OverrideObjectHashCodeChecking,
                 //BlackListTypeChecking = BlackListTypeChecking,
                 FullyQualifiedDataSetSchema = FullyQualifiedDataSetSchema,
-                BadListTypeChecking = BadListTypeChecking
+                BadListTypeChecking = BadListTypeChecking,
+                //AllowJsonFive = AllowJsonFive
             };
         }
     }
