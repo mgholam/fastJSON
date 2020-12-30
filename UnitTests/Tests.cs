@@ -3296,7 +3296,7 @@ public class tests
         var o = (List<object>)JSON.Parse(s);
         Assert.AreEqual(3, o.Count);
 
-        s = "{'a':1, 'b':2, 'c': 3}".Replace("'", "\"");
+        s = "{'a':1, 'b':2, 'c': 3,}".Replace("'", "\"");
         var oo = (Dictionary<string, object>)JSON.Parse(s);
         Assert.AreEqual(3, oo.Count);
     }
@@ -3306,8 +3306,11 @@ public class tests
     {
         Assert.AreEqual(double.NaN, JSON.ToObject<double>("nan"));
         Assert.AreEqual(double.NaN, JSON.ToObject<double>("NaN"));
-        var s = "{'a':NaN,'b':1,}".Replace("'", "\"");
+        Assert.AreEqual(double.NaN, JSON.ToObject<double>("+NaN"));
+        Assert.AreEqual(double.NaN, JSON.ToObject<double>("-NaN"));
+        var s = "{'a':-NaN,'b':1,}".Replace("'", "\"");
         var o = (Dictionary<string, object>)JSON.Parse(s);
+        Console.WriteLine(o["a"]);
         Assert.AreEqual(double.NaN, (double)o["a"]);
         Assert.AreEqual(1, (long)o["b"]);
     }
@@ -3380,6 +3383,7 @@ public class tests
     public static void json5_string_escapes()
     {
         Assert.AreEqual("AC/DC", JSON.Parse(@"'\A\C\/\D\C'"));
+        Assert.AreEqual("123456789", JSON.Parse(@"'\1\2\3\4\5\6\7\8\9'"));
     }
 
     [Test]
@@ -3388,7 +3392,13 @@ public class tests
         var s = @"'this is a cont\   
 inuous line.\
 '";
-        Assert.AreEqual("this is a continuous line.", JSON.Parse(s));
+        var ss = JSON.Parse(s);
+        Console.WriteLine(ss);
+        Assert.AreEqual("this is a continuous line.", ss);
+
+        s = @"'abc\   
+   message'";
+        Assert.AreEqual("abc   message", JSON.Parse(s));
 
         s = @"'
 hello

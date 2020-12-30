@@ -599,9 +599,21 @@ namespace fastJSON
                         default:
                             if (c == '\r' || c == '\n' || c == ' ' || c == '\t')
                             {
+                                // json5 skip ending whitespace till new line
                                 while (c == '\r' || c == '\n' || c == ' ' || c == '\t')
                                 {
-                                    c = p[++index];
+                                    index++;
+                                    c = p[index];
+                                    if (c == '\r' || c == '\n')
+                                    {
+                                        c = p[index + 1];
+                                        if (c == '\r' || c == '\n')
+                                        {
+                                            index += 2;
+                                            c = p[index];
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                             else
@@ -689,6 +701,11 @@ namespace fastJSON
                         index++;
                         dec = true;
                         break;
+                    case 'n':
+                    case 'N':
+                        index += 3;
+                        return double.NaN;
+                    //break;
                     default:
                         run = false;
                         break;

@@ -1,3 +1,7 @@
+2.4.0.1
+- bug fix json5 line break
+- support for json5 +NaN -NaN
+
 2.4.0
 - dotnet 5.0 build  
 - debug and release configs working
