@@ -680,6 +680,9 @@ public class tests
         var s = JSON.ToJSON(d);
         var o = JSON.ToObject<double>(s);
         Assert.AreEqual(d, o);
+
+        var dd = JSON.ToObject("100000000000000000000000000000000000000000");
+        Assert.AreEqual(1e41, dd);
     }
 
     [Test]

@@ -1,3 +1,6 @@
+2.4.0.2
+- numbers > 32 chars treated as double
+
 2.4.0.1
 - bug fix json5 line break
 - support for json5 +NaN -NaN

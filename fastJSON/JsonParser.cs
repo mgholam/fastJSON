@@ -718,17 +718,17 @@ namespace fastJSON
 
             if (skip)
                 return 0;
-
-            if (dob)
+            var len = index - startIndex;
+            if (dob || len > 31)
             {
-                string s = UnsafeSubstring(p, startIndex, index - startIndex);
+                string s = UnsafeSubstring(p, startIndex, len);
                 return double.Parse(s, NumberFormatInfo.InvariantInfo);
             }
-            if (dec == false && index - startIndex < 20)
-                return Helper.CreateLong(json, startIndex, index - startIndex);
+            if (dec == false && len < 20)
+                return Helper.CreateLong(json, startIndex, len);
             else
             {
-                string s = UnsafeSubstring(p, startIndex, index - startIndex);
+                string s = UnsafeSubstring(p, startIndex, len);
                 return decimal.Parse(s, NumberFormatInfo.InvariantInfo);
             }
         }
@@ -841,16 +841,6 @@ namespace fastJSON
 
                 if (c != ' ' && c != '\t' && c != '\n' && c != '\r')
                     break;
-                //switch (c)
-                //{
-                //    case ' ':
-                //    case '\t':
-                //    case '\r':
-                //    case '\n':
-                //        break;
-                //    default:
-                //        return;
-                //}
             } while (++index < _len);
         }
 
