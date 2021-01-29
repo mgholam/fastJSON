@@ -143,18 +143,36 @@ namespace consoletest
         public static void Main(string[] args)
         {
 
-//            var s = @"
-//{ 
-//	'Bravo' :
+            //Dictionary<string, string> col1 = new Dictionary<string, string>();
+            //Dictionary<string, object[]> col2 = new Dictionary<string, object[]>();
+            //col2.Add("Test1", new object[] { 2121000130, new List<object> { "blue", "green", "yellow" } });
+            //col2.ToList().ForEach(x =>
+            //{
+            //    col1.Add(x.Key, JSON.ToJSON(x.Value));
+            //});
+            //string col1json = JSON.ToJSON(col1);
+            //Console.WriteLine(col1json);
 
-//    {
-//                'PropertyA' : 'AAA',
-//		'PropertyB' : 'BBB'
+            //var col1Back = JSON.ToObject<Dictionary<string, string>>(col1json);
+            //Dictionary<string, object[]> col2Back = new Dictionary<string, object[]>();
+            //col1Back.ToList().ForEach(x =>
+            //{
+            //    var data = JSON.ToObject<object[]>(x.Value);
+            //    col2Back.Add(x.Key, data);
+            //});
+            //Console.WriteLine(JSON.ToNiceJSON(col2Back));
+            //            var s = @"
+            //{ 
+            //	'Bravo' :
 
-//    }
-//        }
-//".Replace("'", "\"");
-//            var o = JSON.ToObject<CAlfa>(s);
+            //    {
+            //                'PropertyA' : 'AAA',
+            //		'PropertyB' : 'BBB'
+
+            //    }
+            //        }
+            //".Replace("'", "\"");
+            //            var o = JSON.ToObject<CAlfa>(s);
             //var o = JSON.ToObject<Model>("{}");
             //var contents = File.ReadAllText("d:/tickets.json");
             //var d = fastJSON.JSON.ToObject<Import>(contents);
