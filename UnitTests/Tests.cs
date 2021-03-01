@@ -2664,6 +2664,14 @@ public class tests
         [fastJSON.DataMember(Name = "id")]
         public int docid;
     }
+
+    public class TestObj
+    {
+
+        [fastJSON.DataMember(Name = "D")] 
+        public int SomeData { get; set; } = -1;
+    }
+
     [Test]
     public static void DataMember()
     {
@@ -2677,6 +2685,9 @@ public class tests
         var ss = fastJSON.JSON.ToJSON(o, new JSONParameters { UseExtensions = false });
         Console.WriteLine(ss);
         Assert.AreEqual(s, ss);
+
+        var popop = JSON.ToObject<TestObj>("{'D':9}");
+        Assert.AreEqual(9, popop.SomeData);
     }
 
     [Test]

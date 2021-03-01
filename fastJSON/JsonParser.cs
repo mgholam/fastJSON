@@ -201,7 +201,7 @@ namespace fastJSON
                 {
                     Type t = m.Value.pt;
 
-                    _lookup.Add(m.Key, true);
+                    _lookup.Add(m.Key.ToLowerInvariant(), true);
 
                     if (t.IsArray)
                         BuildArrayTypeLookup(t);

@@ -1,5 +1,6 @@
-2.4.0.3 * 
+2.4.0.3
 - bug fix edge case for deserialize
+- bug fix datamember use 
 
 2.4.0.2 
 - numbers > 32 chars treated as double
