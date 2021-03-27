@@ -739,6 +739,8 @@ namespace fastJSON
                 return val;
 
             var bf = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+            if (type.IsClass == false)
+                bf = BindingFlags.Public | BindingFlags.Instance;
             //if (ShowReadOnlyProperties)
             //    bf |= BindingFlags.NonPublic;
             PropertyInfo[] props = type.GetProperties(bf);

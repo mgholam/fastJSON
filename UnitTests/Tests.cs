@@ -3422,6 +3422,21 @@ there
         //Assert.Fail();
     }
 
+    public struct sstruct
+    {
+        public static int num1 { get; set; }
+        public static int num2;
+    }
+
+    [Test]
+    public static void structstaticproperty()
+    {
+        var o = new sstruct();        
+
+        var s = JSON.ToJSON(o);
+        Console.WriteLine(s);
+    }
+
     //[Test]
     //public static void ma()
     //{
