@@ -3437,6 +3437,22 @@ there
         Console.WriteLine(s);
     }
 
+    [Test]
+    public static void UTCDateTrue()
+    {
+        var dt = new DateTime(2021, 1, 10, 12, 0, 0, DateTimeKind.Utc);
+        var js = JSON.ToJSON(dt);
+        Console.WriteLine(js);
+        Assert.AreEqual(12 , JSON.ToObject<DateTime>(js, new JSONParameters() { UseUTCDateTime = true }).Hour);
+    }
+    [Test]
+    public static void UTCDateFalse()
+    {
+        var dt = new DateTime(2021, 1, 10, 12, 0, 0, DateTimeKind.Utc);
+        var js = JSON.ToJSON(dt);
+        Console.WriteLine(js);
+        Assert.AreEqual(15, JSON.ToObject<DateTime>(js, new JSONParameters() { UseUTCDateTime = false }).Hour);
+    }
     //[Test]
     //public static void ma()
     //{

@@ -1,3 +1,6 @@
+2.4.0.5
+- bug fix UseUTCDateTime = true when deserializing dates 
+
 2.4.0.4
 - bug fix skipping serializing static property in structs
 

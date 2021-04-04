@@ -368,6 +368,8 @@ namespace fastJSON
 
             if (UseUTCDateTime == false && utc == false)
                 return new DateTime(year, month, day, hour, min, sec, ms);
+            else if (UseUTCDateTime && utc)
+                return new DateTime(year, month, day, hour, min, sec, ms, DateTimeKind.Utc);
             else
                 return new DateTime(year, month, day, hour, min, sec, ms, DateTimeKind.Utc).ToLocalTime();
         }
